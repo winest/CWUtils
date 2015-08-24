@@ -1,0 +1,8 @@
+#Whitelist that should still be uploaded
+!Samples/
+!Tools/
+
+#Blacklist that should not be uploaded
+Intermediate/
+Output/
+NotReady/

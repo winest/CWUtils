@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+    <!--<!DOCTYPE root>-->
+<?xml-stylesheet href="mystyle.css" title="Compact" type="text/css"?>
+<root>
+    <child myAttr="1234">Markup is &lt;escaped&gt; for this string</child>
+    <anotherChild>&#x61;</anotherChild>
+    <![CDATA[This is CDATA text.]]>
+    <!--This is a comment 
+    "湯姆" with different encoding
+    Unicode: U+6E6F U+59C6
+    UTF-8: E6 B9 AF E5 A7 86
+    Big5: B4 F6 A9 69
+    -->
+    <oneLineChild />
+    <Person>
+        <Name>湯姆</Name>
+        <addr:Address xmlns:addr="http//www.google.com/address">
+            <addr:Street>XinHua .7</addr:Street>
+            <addr:City>BeiJing</addr:City>
+        </addr:Address>
+        <cont:Contact xmlns:cont="http//www.google.com/contact">
+            <cont:Address>Tom@hotmail.com</cont:Address>
+            <cont:Tel>010-123123123</cont:Tel>
+        </cont:Contact>
+    </Person>
+</root>

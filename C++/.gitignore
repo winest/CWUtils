@@ -1,0 +1,61 @@
+#Whitelist that should still be uploaded
+!Samples/
+!Tools/
+
+#Blacklist that should not be uploaded
+Intermediate/
+Output/
+NotReady/
+
+#Executables
+*.exe
+*.out
+*.app
+
+#Compiled dynamic libraries
+*.so
+*.dylib
+*.dll
+
+#Compiled static libraries
+*.lib
+*.lai
+*.la
+*.a
+
+#Compiled object files
+*.obj
+*.ilk
+*.exp
+*.map
+*.slo
+*.lo
+*.o
+
+#Precompiled headers
+*.ncb
+*.sdf
+*.pch
+*.gch
+*.ipch
+*.idb
+*.dep
+*.tmh
+
+#PDB or log
+*.pdb
+*.wrn
+*.err
+*.log
+*.tlog
+*.sbr
+*.bsc
+
+#Others
+*.suo
+*.user
+*.opt
+*.plg
+*.lastbuildstate
+*.embed.manifest
+*.intermediate.manifest

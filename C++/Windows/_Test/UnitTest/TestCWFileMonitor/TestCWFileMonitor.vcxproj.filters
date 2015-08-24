@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<ItemGroup>
+		<Filter Include="Source Files">
+			<UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+			<Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+		</Filter>
+		<Filter Include="Source Files\CWUiProc">
+			<UniqueIdentifier>{1a8f58c6-e3f8-47ab-a913-cf809f1771bd}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="Source Files\CWUtils">
+			<UniqueIdentifier>{c932f804-ec43-4c3a-99d1-5f2fbe4fc521}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="Header Files">
+			<UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+			<Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+		</Filter>
+		<Filter Include="Header Files\CWUtils">
+			<UniqueIdentifier>{32cb4bcd-fcda-4b0a-b772-fe6f45da81ab}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="Resource Files">
+			<UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+			<Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+		</Filter>
+		<Filter Include="Source Files\CWUi">
+			<UniqueIdentifier>{88efff08-6267-439a-b8bf-dc5c9e43ba68}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="Header Files\CWUi">
+			<UniqueIdentifier>{c674540a-5f58-490c-b16d-11cb710b16d4}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="Header Files\CWUiProc">
+			<UniqueIdentifier>{50f4e1d1-e9b2-464f-8fe1-699614785139}</UniqueIdentifier>
+		</Filter>
+	</ItemGroup>
+	<ItemGroup>
+		<ClCompile Include="stdafx.cpp">
+			<Filter>Source Files</Filter>
+		</ClCompile>
+		<ClCompile Include="TestCWFileMonitor.cpp">
+			<Filter>Source Files</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\..\..\..\CWUi\C++\Windows\CWButton.cpp">
+			<Filter>Source Files\CWUi</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\..\..\..\CWUi\C++\Windows\CWCommonDlg.cpp">
+			<Filter>Source Files\CWUi</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\..\..\..\CWUi\C++\Windows\CWControl.cpp">
+			<Filter>Source Files\CWUi</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\..\..\..\CWUi\C++\Windows\CWDialog.cpp">
+			<Filter>Source Files\CWUi</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\..\..\..\CWUi\C++\Windows\CWEdit.cpp">
+			<Filter>Source Files\CWUi</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\..\..\..\CWUi\C++\Windows\CWLabel.cpp">
+			<Filter>Source Files\CWUi</Filter>
+		</ClCompile>
+		<ClCompile Include="UiProc\ButtonProcs.cpp">
+			<Filter>Source Files\CWUiProc</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\CWFileMonitor.cpp">
+			<Filter>Source Files\CWUtils</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\CWGeneralUtils.cpp">
+			<Filter>Source Files\CWUtils</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\CWVolume.cpp">
+			<Filter>Source Files\CWUtils</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\CWTime.cpp">
+			<Filter>Source Files\CWUtils</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\..\..\..\CWUi\C++\Windows\CWListView.cpp">
+			<Filter>Source Files\CWUi</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\CWProcess.cpp">
+			<Filter>Source Files\CWUtils</Filter>
+		</ClCompile>
+	</ItemGroup>
+	<ItemGroup>
+		<ClInclude Include="resource.h">
+			<Filter>Resource Files</Filter>
+		</ClInclude>
+		<ClInclude Include="stdafx.h">
+			<Filter>Header Files</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\..\..\..\CWUi\C++\Windows\CWButton.h">
+			<Filter>Header Files\CWUi</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\..\..\..\CWUi\C++\Windows\CWCommonDlg.h">
+			<Filter>Header Files\CWUi</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\..\..\..\CWUi\C++\Windows\CWControl.h">
+			<Filter>Header Files\CWUi</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\..\..\..\CWUi\C++\Windows\CWDialog.h">
+			<Filter>Header Files\CWUi</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\..\..\..\CWUi\C++\Windows\CWEdit.h">
+			<Filter>Header Files\CWUi</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\..\..\..\CWUi\C++\Windows\CWLabel.h">
+			<Filter>Header Files\CWUi</Filter>
+		</ClInclude>
+		<ClInclude Include="UiProc\ButtonProcs.h">
+			<Filter>Header Files\CWUiProc</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\CWFileMonitor.h">
+			<Filter>Header Files\CWUtils</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\CWGeneralUtils.h">
+			<Filter>Header Files\CWUtils</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\CWVolume.h">
+			<Filter>Header Files\CWUtils</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\CWTime.h">
+			<Filter>Header Files\CWUtils</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\..\..\..\CWUi\C++\Windows\CWListView.h">
+			<Filter>Header Files\CWUi</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\CWProcess.h">
+			<Filter>Header Files\CWUtils</Filter>
+		</ClInclude>
+	</ItemGroup>
+</Project>

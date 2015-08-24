@@ -1,0 +1,38 @@
+#if _MSC_VER > 1000
+    #pragma once
+#endif
+
+#ifndef RESOURCE_H
+#define RESOURCE_H
+
+#define IDC_LAB_INPUT    0x1000
+
+#define IDC_EDT_INPUT    0x2000
+#define IDC_EDT_SHOW    0x2001
+
+#define IDC_BTN_START    0x3000
+#define IDC_BTN_CLEAN    0x3001
+
+typedef enum _CTRL_MAIN
+{
+    LAB_MAIN_START = 0 ,
+    LAB_INPUT = LAB_MAIN_START ,
+    LAB_MAIN_END ,
+    LAB_MAIN_COUNT = LAB_MAIN_END - LAB_MAIN_START ,
+
+    BTN_MAIN_START = LAB_MAIN_END ,
+    BTN_START = BTN_MAIN_START ,
+    BTN_CLEAN ,
+    BTN_MAIN_END ,
+    BTN_MAIN_COUNT = BTN_MAIN_END - BTN_MAIN_START ,
+
+    EDT_MAIN_START = BTN_MAIN_END ,
+    EDT_INPUT = EDT_MAIN_START ,
+    EDT_SHOW ,
+    EDT_MAIN_END ,
+    EDT_MAIN_COUNT = EDT_MAIN_END - EDT_MAIN_START ,
+
+    CTRL_MAIN_COUNT = EDT_MAIN_END
+} CTRL_MAIN;
+
+#endif    //End of #ifndef RESOURCE_H

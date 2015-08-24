@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<Category name="Build In" xmlns:dt="urn:schemas-microsoft-com:datatypes">
+    <!--
+    Some constants are always reserved and created in the program:
+    var WshShell = WScript.CreateObject( "WScript.Shell" );
+    var WshEnv = WshShell.Environment;
+    var WshFileSystem = new ActiveXObject( "Scripting.FileSystemObject" );
+    -->
+    <Constant name="DriversDir">
+        <Value>WshEnv( "WinDir" ) + "\\System32\\Drivers\\"</Value>
+    </Constant>
+
+    <Function name="Pause">
+        <Argument name="aPauseMsg"></Argument>
+        <Comment>Stop execute until user press a key</Comment>
+        <Implementation>
+            if ( null == aPauseMsg )
+                aPauseMsg = "Press any key to continue";
+            WScript.Echo( aPauseMsg );
+            while ( ! WScript.StdIn.AtEndOfLine )
+            {
+                WScript.StdIn.Read( 1 );
+            }
+        </Implementation>
+    </Function>
+    <Function name="StopDriver">
+        <Argument name="aDriverName"></Argument>
+        <Comment>Stop a driver</Comment>        
+        <Implementation>
+            WshShell.Run( "net stop \"" + aDriverName + "\"" );
+        </Implementation>
+    </Function>
+</Category>
