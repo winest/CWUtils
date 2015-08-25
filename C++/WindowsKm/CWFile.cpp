@@ -1,4 +1,4 @@
-#include "MyFile.h"
+#include "CWFile.h"
 #include <ntstrsafe.h>
 
 
@@ -7,12 +7,12 @@
     #define MAX_PATH 260
 #endif
 
-#ifndef MY_MEM_TAG_UTILS
-    #define MY_MEM_TAG_UTILS        'litU'
+#ifndef CW_MEM_TAG_UTILS
+    #define CW_MEM_TAG_UTILS        'tUWC'
 #endif
 
 #include "_GenerateTmhKm.h"
-#include "MyFile.tmh"
+#include "CWFile.t.h"
 
 namespace KmUtils
 {
@@ -33,7 +33,7 @@ NTSTATUS DevicePathToFilePath( IN CONST PUNICODE_STRING aDevicePath , OUT PUNICO
     RtlUnicodeStringInit( &usDriveLetter , wzDriveLetter );
     usDeviceName.Length = 0;
     usDeviceName.MaximumLength = MAX_PATH * sizeof(WCHAR);
-    usDeviceName.Buffer = (WCHAR *)ExAllocatePoolWithTag( NonPagedPool , usDeviceName.MaximumLength , MY_MEM_TAG_UTILS );    
+    usDeviceName.Buffer = (WCHAR *)ExAllocatePoolWithTag( NonPagedPool , usDeviceName.MaximumLength , CW_MEM_TAG_UTILS );    
 
     for ( WCHAR wLetter = L'A'; wLetter <= L'Z'; wLetter++ ) 
     {
@@ -58,11 +58,11 @@ NTSTATUS DevicePathToFilePath( IN CONST PUNICODE_STRING aDevicePath , OUT PUNICO
         {
             if ( NULL != usDeviceName.Buffer )
             {
-                ExFreePoolWithTag( usDeviceName.Buffer , MY_MEM_TAG_UTILS );
+                ExFreePoolWithTag( usDeviceName.Buffer , CW_MEM_TAG_UTILS );
             }
             usDeviceName.Length = 0;
             usDeviceName.MaximumLength = (USHORT)ulRetSize;
-            usDeviceName.Buffer = (WCHAR *)ExAllocatePoolWithTag( NonPagedPool , usDeviceName.MaximumLength , MY_MEM_TAG_UTILS );            
+            usDeviceName.Buffer = (WCHAR *)ExAllocatePoolWithTag( NonPagedPool , usDeviceName.MaximumLength , CW_MEM_TAG_UTILS );            
             status = ZwQuerySymbolicLinkObject( hSymbolic , &usDeviceName , &ulRetSize );
             DbgOut( INFO , DBG_KM_UTILS , "usDevicePath: Length=%hu, Buffer=%wZ" , usDeviceName.Length , &usDeviceName );
         }
@@ -104,7 +104,7 @@ NTSTATUS DevicePathToFilePath( IN CONST PUNICODE_STRING aDevicePath , OUT PUNICO
 
     if ( NULL != usDeviceName.Buffer )
     {
-        ExFreePoolWithTag( usDeviceName.Buffer , MY_MEM_TAG_UTILS );
+        ExFreePoolWithTag( usDeviceName.Buffer , CW_MEM_TAG_UTILS );
     }
 
     return status;
@@ -123,7 +123,7 @@ NTSTATUS FilePathToDevicePath( IN CONST PUNICODE_STRING aFilePath , OUT PUNICODE
     UNICODE_STRING usSymbolicName = {} , usDeviceName = {};
     usSymbolicName.Length = 0;
     usSymbolicName.MaximumLength = aFilePath->MaximumLength + sizeof(L"\\??\\");
-    usSymbolicName.Buffer = (WCHAR *)ExAllocatePoolWithTag( NonPagedPool , usSymbolicName.MaximumLength , MY_MEM_TAG_UTILS );
+    usSymbolicName.Buffer = (WCHAR *)ExAllocatePoolWithTag( NonPagedPool , usSymbolicName.MaximumLength , CW_MEM_TAG_UTILS );
     if ( NULL == usSymbolicName.Buffer )
     {
         status = STATUS_INSUFFICIENT_RESOURCES;
@@ -131,7 +131,7 @@ NTSTATUS FilePathToDevicePath( IN CONST PUNICODE_STRING aFilePath , OUT PUNICODE
     }
     usDeviceName.Length = 0;
     usDeviceName.MaximumLength = MAX_PATH * sizeof(WCHAR);
-    usDeviceName.Buffer = (WCHAR *)ExAllocatePoolWithTag( NonPagedPool , usDeviceName.MaximumLength , MY_MEM_TAG_UTILS );
+    usDeviceName.Buffer = (WCHAR *)ExAllocatePoolWithTag( NonPagedPool , usDeviceName.MaximumLength , CW_MEM_TAG_UTILS );
     if ( NULL == usDeviceName.Buffer )
     {
         status = STATUS_INSUFFICIENT_RESOURCES;
@@ -171,11 +171,11 @@ NTSTATUS FilePathToDevicePath( IN CONST PUNICODE_STRING aFilePath , OUT PUNICODE
     {
         if ( NULL != usDeviceName.Buffer )
         {
-            ExFreePoolWithTag( usDeviceName.Buffer , MY_MEM_TAG_UTILS );
+            ExFreePoolWithTag( usDeviceName.Buffer , CW_MEM_TAG_UTILS );
         }
         usDeviceName.Length = 0;
         usDeviceName.MaximumLength = (USHORT)ulRetSize;
-        usDeviceName.Buffer = (WCHAR *)ExAllocatePoolWithTag( NonPagedPool , usDeviceName.MaximumLength , MY_MEM_TAG_UTILS );            
+        usDeviceName.Buffer = (WCHAR *)ExAllocatePoolWithTag( NonPagedPool , usDeviceName.MaximumLength , CW_MEM_TAG_UTILS );            
         status = ZwQuerySymbolicLinkObject( hSymbolic , &usDeviceName , &ulRetSize );
         DbgOut( INFO , DBG_KM_UTILS , "usDevicePath: Length=%hu, Buffer=%wZ" , usDeviceName.Length , &usDeviceName );
     }
@@ -208,11 +208,11 @@ NTSTATUS FilePathToDevicePath( IN CONST PUNICODE_STRING aFilePath , OUT PUNICODE
 exit :
     if ( NULL != usSymbolicName.Buffer )
     {
-        ExFreePoolWithTag( usSymbolicName.Buffer , MY_MEM_TAG_UTILS );
+        ExFreePoolWithTag( usSymbolicName.Buffer , CW_MEM_TAG_UTILS );
     }
     if ( NULL != usDeviceName.Buffer )
     {
-        ExFreePoolWithTag( usDeviceName.Buffer , MY_MEM_TAG_UTILS );
+        ExFreePoolWithTag( usDeviceName.Buffer , CW_MEM_TAG_UTILS );
     }
     if ( NULL != hSymbolic )
     {

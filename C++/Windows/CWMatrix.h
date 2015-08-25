@@ -1,6 +1,18 @@
-//¥Ø«eeigenvalue©Meigenvectorªº­pºâ¦ü¥G¦³®ÉÁÙ¬O¿ùªº
-
 #pragma once
+
+/*
+ * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * CWUtils is published under the BSD-3-Clause license.
+ *
+ * CWUtils is a set of standalone APIs for developers to speed up their 
+ * programming. It should be very easy to port them to other projects or 
+ * learn how to implement things on different languages and platforms. 
+ *
+ * The latest version can be found at https://github.com/winest/CWUtils
+ */
+
+#include <iostream>
+#include <iomanip>
 
 namespace CWUtils
 {
@@ -11,7 +23,7 @@ namespace CWUtils
 
 
 
-#define PRECISION 0.0000001    //eigenvalue©Meigenvectorªººë·Ç«×
+#define PRECISION 0.0000001    //The precision of eigenvalue and eigenvector
 
 
 
@@ -32,40 +44,42 @@ class CMatrix
 
     public :
         void Show() const;
-        void ShowRow( int aRow ) const;    //Åã¥Ü¬Y¦C¤º®e
-        void ShowColumn( int aColumn ) const;    //Åã¥Ü¬Y¦æ¤º®e
-        int RowCount() const;    //¦^¶Ç¦C¼Æ
-        int ColumnCount() const;    //¦^¶Ç¦æ¼Æ
-        int Size() const;        //¦^¶Ç¯x°}¤j¤p
+        void ShowRow( int aRow ) const;             //Show the content of a row
+        void ShowColumn( int aColumn ) const;       //Show the content of a column
+        int RowCount() const;                       //Return how many rows
+        int ColumnCount() const;                    //Return how many columns
+        int Size() const;                           //Return the size of the matrix (row count * column count)
 
         const TYPE * Content() const;
-        void GetRow( int aRow , TYPE * aRowData ) const;    //¦^¶Ç¬Y¦Cªº­Èµ¹aRowData
-        void GetColumn( int aColumn , TYPE * aColumnData ) const;    //¦^¶Ç¬Y¦æªº­Èµ¹aColumnData
+        void GetRow( int aRow , TYPE * aRowData ) const;            //Copy the content at aRow to aRowData
+        void GetColumn( int aColumn , TYPE * aColumnData ) const;   //Copy the content at aColumn to aColumnData
         TYPE & operator[]( const int aIndex ) const;
         TYPE & operator()( const int aIndex ) const;
         TYPE & operator()( const int aRowIndex , int aColIndex ) const;
 
-        TYPE Trace() const;    //¹ï¨¤ªº­Èªº©M
+        TYPE Trace() const;                         //Return The sum of the diagonal
         TYPE Determinant() const;
-        CMatrix<TYPE> Transpose() const;    //Âà¸m¡G¦æ¦C¤¬´«
+        CMatrix<TYPE> Transpose() const;            //Switch between rows and columns
         
-        void EigenV2x2( TYPE * aEigenvalue ) const;    //ºâeigenvalue(¯S¼x­È)¡A­­2x2 array
-        void EigenVV( TYPE * Eigenvalue , CMatrix<TYPE> & aEigenvector ) const;    //­pºânxn arrayªºeigenvalue©Meigenvector¡A§Q¥Î¨ì¤U­±¨â­Ó¨ç¦¡
+        //My old comment said somethings the output of eigenvalue and eigenvector is incorrect
+        //Please report the data if you find the case
+        void EigenV2x2( TYPE * aEigenvalue ) const;                                 //Calculate the eigenvalue for 2*2 array
+        void EigenVV( TYPE * Eigenvalue , CMatrix<TYPE> & aEigenvector ) const;     //Calculate the eigenvalue and eigenvector for N*N array
     private :
-        void EigenVVMax( int & aMaxI , int & aMaxJ , TYPE & aMax ) const;    //EigenVVªº¤l¨ç¦¡
-        CMatrix<TYPE> EigenVVNew( int aMaxI , int aMaxJ , double aPhi ) const;    //EigenVVªº¤l¨ç¦¡
+        void EigenVVMax( int & aMaxI , int & aMaxJ , TYPE & aMax ) const;           //Used by EigenVV
+        CMatrix<TYPE> EigenVVNew( int aMaxI , int aMaxJ , double aPhi ) const;      //Used by EigenVV
 
-    public :    //Methods that will change the content itself
-        void Set( const TYPE * aAry );    //¶ñ¤Jmatrix¤ºªº¸ê®Æ
-        void Clone( const CMatrix & aSrcMatrix );    //½Æ»s        
+    public :    //Methods that will change the content of this matrix
+        void Set( const TYPE * aAry );
+        void Clone( const CMatrix & aSrcMatrix );
         
 
     public :    //Some basic operations, won't change the content itself
-        CMatrix<TYPE> Add( const CMatrix & aMatrix ) const;        //¥[
-        CMatrix<TYPE> Subtract( const CMatrix & aMatrix ) const;    //´î
-        CMatrix<TYPE> Multiply( const CMatrix & aMatrix ) const;    //­¼¥t¤@­Ómatrix
-        CMatrix<TYPE> Multiply( const TYPE aScalar ) const;        //­¼¾ã¼Æ
-        CMatrix<TYPE> ScalarDivide( const TYPE aScalar ) const;        //°£¾ã¼Æ
+        CMatrix<TYPE> Add( const CMatrix & aMatrix ) const;
+        CMatrix<TYPE> Subtract( const CMatrix & aMatrix ) const;
+        CMatrix<TYPE> Multiply( const CMatrix & aMatrix ) const;
+        CMatrix<TYPE> Multiply( const TYPE aScalar ) const;
+        CMatrix<TYPE> ScalarDivide( const TYPE aScalar ) const;
 
         CMatrix<TYPE> operator+( const CMatrix & aMatrix ) const;
         CMatrix<TYPE> & operator=( const CMatrix & aMatrix );
@@ -75,13 +89,12 @@ class CMatrix
         CMatrix<TYPE> operator*( const TYPE aScalar ) const;
         CMatrix<TYPE> operator/( const TYPE aScalar ) const;
 
-        CMatrix<TYPE> SwitchRow( int aRow1 , int aRow2 ) const;        //¥æ´«¨â¦Cªº¸ê®Æ(row³Ì¤p¬°0)
-        CMatrix<TYPE> SwitchColumn( int aColumn1 , int aColumn2 ) const;    //¥æ´«¨â¦æªº¸ê®Æ(column³Ì¤p¬°0)
-        CMatrix<TYPE> AddRow( int aSrcRow , int aDstRow ) const;    //aDstRow = aSrcRow + aDstRow
-        CMatrix<TYPE> SubtractRow( int aSrcRow , int aDstRow ) const;    //aDstRow = aSrcRow - aDstRow
-        CMatrix<TYPE> AddColumn( int aSrcColumn , int aDstColumn ) const;    //aDstColumn = aSrcColumn + aDstColumn
-        CMatrix<TYPE> SubtractColumn( int aSrcColumn , int aDstColumn ) const;    //aDstColumn = aSrcColumn - aDstColumn
-
+        CMatrix<TYPE> SwitchRow( int aRow1 , int aRow2 ) const;                 //Switch between two rows (rows are indexed from 0)
+        CMatrix<TYPE> SwitchColumn( int aColumn1 , int aColumn2 ) const;        //Switch between two columns (columns are indexed from 0)
+        CMatrix<TYPE> AddRow( int aSrcRow , int aDstRow ) const;                //aDstRow = aSrcRow + aDstRow
+        CMatrix<TYPE> SubtractRow( int aSrcRow , int aDstRow ) const;           //aDstRow = aSrcRow - aDstRow
+        CMatrix<TYPE> AddColumn( int aSrcColumn , int aDstColumn ) const;       //aDstColumn = aSrcColumn + aDstColumn
+        CMatrix<TYPE> SubtractColumn( int aSrcColumn , int aDstColumn ) const;  //aDstColumn = aSrcColumn - aDstColumn
 
     private :
         int m_nRow , m_nCol , m_nSize;    //m_nSize = m_nRow * m_nCol
@@ -139,9 +152,9 @@ void CMatrix<TYPE>::Show() const
     {
         for ( j = 0 ; j < m_nCol ; j++ )
         {
-            cout << setw( 10 ) << m_content[i*m_nCol + j];
+            std::cout << std::setw( 10 ) << m_content[i*m_nCol + j];
         }
-        cout << endl;
+        std::cout << std::endl;
     }
 }
 template <class TYPE>
@@ -150,9 +163,9 @@ void CMatrix<TYPE>::ShowRow( int aRow ) const
     int j;
     for ( j = 0 ; j < m_nCol ; j++ )
     {
-        cout << setw( 10 ) << m_content[aRow*m_nCol + j];    //³oÃäªºaRow¬O¨Ï¥ÎªÌ¿é¤Jªº
+        std::cout << std::setw( 10 ) << m_content[aRow*m_nCol + j];
     }
-    cout << endl;
+    std::cout << std::endl;
 }
 template <class TYPE>
 void CMatrix<TYPE>::ShowColumn( int aColumn ) const
@@ -160,7 +173,7 @@ void CMatrix<TYPE>::ShowColumn( int aColumn ) const
     int i;
     for ( i = 0 ; i < m_nRow ; i++ )
     {
-        cout << setw( 10 ) << m_content[i*m_nCol + aColumn] << endl;    //³oÃäªºaColumn¬O¨Ï¥ÎªÌ¿é¤Jªº
+        std::cout << std::setw( 10 ) << m_content[i*m_nCol + aColumn] << std::endl;
     }
 }
 
@@ -187,14 +200,14 @@ const TYPE * CMatrix<TYPE>::Content() const
     return (const TYPE *)m_content;
 }
 template <class TYPE>
-void CMatrix<TYPE>::GetRow( int aRow , TYPE * aRowData ) const    //¦^¶Ç¬Y¦Cªº­Èµ¹aRowData
+void CMatrix<TYPE>::GetRow( int aRow , TYPE * aRowData ) const
 {
     int i;
     for ( i = 0 ; i < m_nCol ; i++ )
         aRowData[i] = m_content[aRow*m_nCol + i];
 }
 template <class TYPE>
-void CMatrix<TYPE>::GetColumn( int aColumn , TYPE * aColumnData ) const    //¦^¶Ç¬Y¦æªº­Èµ¹aColumnData
+void CMatrix<TYPE>::GetColumn( int aColumn , TYPE * aColumnData ) const
 {
     int i;
     for ( i = 0 ; i < m_nRow ; i++ )
@@ -239,7 +252,7 @@ TYPE CMatrix<TYPE>::Trace() const
 template <class TYPE>
 TYPE CMatrix<TYPE>::Determinant() const
 {
-    if ( m_nRow != m_nCol )    //´ú¸Õ¬O§_¬°square matrix
+    if ( m_nRow != m_nCol )    //Check whether it's a square matrix
     {
         cout << "Determinant failed: not square matrix" << endl;
         exit( 1 );
@@ -249,20 +262,17 @@ TYPE CMatrix<TYPE>::Determinant() const
     int i , j , iTemp , jTemp;
     TYPE result = 0;
 
-    //recursiveªº°±¤î§PÂ_¦¡
+    //Recursive until m_nRow is 2
     if ( m_nRow == 2 )
     {
         return ( m_content[0] * m_content[3] ) - ( m_content[1] * m_content[2] );
     }
     else
     {
-        CMatrix temp( m_nRow - 1 , m_nCol - 1 );    //temp¬°¥h±¼²Äi¦C²Äj¦æªº¯x°}¡A§Y¤U­±ªºAij
-
-        int k = 0;
-        
-        for ( k = 0 ; k < m_nRow ; k++ )
+        CMatrix temp( m_nRow - 1 , m_nCol - 1 );    //temp will be the matrix without the original ith row and j column, represented as means Aij
+        for ( int k = 0 ; k < m_nRow ; k++ )
         {
-            //©T©w²Ä¤@column©¹¤U°µDeterminant¡Gsigma( (-1)^(i+j) * (aij) * det(Aij) )
+            //Fix the first column, calculate Determinant downward by sigma( (-1)^(i+j) * (aij) * det(Aij) )
             for ( i = 0 , iTemp = 0 ; i < m_nRow ; i++ , iTemp++ )
             {
                 for ( j = 1 , jTemp = 0 ; j < m_nCol ; j++ , jTemp++ )
@@ -310,8 +320,8 @@ void CMatrix<TYPE>::EigenV2x2( TYPE * aEigenvalue ) const
     }
     else{}
 
-    //¤Gºûªº¡G£f^2 - Trace(A)£f + det(A) = 0    µM«á¥Î¤½¦¡¸Ñ¥h¨D£f§Y¬O
-    double a , b , c;    //ax^2 + bx + c = 0 ¡A§Y¤@¤¸¤G¦¸¤èµ{¦¡ªº«Y¼Æ
+    //Two dimention: lambda^2 - Trace(A)lambda + det(A) = 0, and solve the equation to get lambda
+    double a , b , c;    //Corresponding to the coefficient of the quadratic equation ax^2 + bx + c = 0
     a = 1;
     b = ( -1 ) * this->Trace();
     c = this->Determinant();
@@ -327,8 +337,8 @@ void CMatrix<TYPE>::EigenV2x2( TYPE * aEigenvalue ) const
 
     key = sqrt( key );    
 
-    aEigenvalue[0] = (TYPE) ( ( -1 ) * b - key ) / 2;    //( (-b) - (®Ú¸¹b^2-4ac) ) / (2a)
-    aEigenvalue[1] = (TYPE) ( ( -1 ) * b + key ) / 2;    //( (-b) + (®Ú¸¹b^2-4ac) ) / (2a)
+    aEigenvalue[0] = (TYPE) ( ( -1 ) * b - key ) / 2;    //( (-b) - sqrt(b^2-4ac) ) / (2a)
+    aEigenvalue[1] = (TYPE) ( ( -1 ) * b + key ) / 2;    //( (-b) + sqrt(b^2-4ac) ) / (2a)
 }
 
 /*
@@ -370,11 +380,11 @@ void CMatrix<TYPE>::EigenVV( TYPE * aEigenvalue , CMatrix<TYPE> & aEigenvector )
  
     //Calculating
     double theta;
-    CMatrix tempVectors( m_nRow , m_nCol );    //§Yeigenvector¡A¥ý¦b³oÃäºâ§¹³Ì«á¦A¦s¨ì¶Ç¤Jªºeigenvector¤¤
-    CMatrix cmat( m_nRow , m_nCol );    //±ÛÂà¥Îªºmatrix
+    CMatrix tempVectors( m_nRow , m_nCol );     //Eigenvector, calculate in this variable and save to aEigenvector later
+    CMatrix cmat( m_nRow , m_nCol );            //Matrix used for rotation
 
 
-    //ªì©l¤Æ¬°Identity matrix: main diagonal = 1 , others are 0
+    //Initialize to an identity matrix (main diagonal = 1 , others are 0)
     for( i = 0 ; i < m_nRow ; i++ )
     {
         for ( j = 0 ; j < m_nCol ; j++ )
@@ -390,11 +400,11 @@ void CMatrix<TYPE>::EigenVV( TYPE * aEigenvalue , CMatrix<TYPE> & aEigenvector )
         }
     }
 
-    // step 4
+    //Step 4
     while( true )
     {             
-        result.EigenVVMax( maxI , maxJ , max ); //step 1
-        if ( max < PRECISION )    // if the maximum value of the matrix LE(Less than or Equal to) the limit, break
+        result.EigenVVMax( maxI , maxJ , max ); //Step 1
+        if ( max < PRECISION )    //If the maximum value of the matrix LE(Less than or Equal to) the limit, break
         {
             break;
         }
@@ -403,11 +413,11 @@ void CMatrix<TYPE>::EigenVV( TYPE * aEigenvalue , CMatrix<TYPE> & aEigenvector )
         double y = 2 * result.m_content[maxI*m_nCol + maxJ];
         double x = result.m_content[maxI*m_nCol + maxI] - result.m_content[maxJ*m_nCol + maxJ];
         
-        theta = atan2( y , x ) / 2; // step 2
+        theta = atan2( y , x ) / 2; //Step 2
 
         result = result.EigenVVNew( maxI , maxJ , theta );
 
-        //ªì©l¤Æ¬°Identity matrix: main diagonal = 1 , others are 0
+        //Initialize to an identity matrix (main diagonal = 1 , others are 0)
         for ( i = 0 ; i < m_nRow ; i++ )
         {
             for ( j = 0 ; j < m_nCol ; j++ )
@@ -430,7 +440,7 @@ void CMatrix<TYPE>::EigenVV( TYPE * aEigenvalue , CMatrix<TYPE> & aEigenvector )
         cmat.m_content[maxI*m_nCol + maxJ] = ( -1 ) * sin( theta );
         cmat.m_content[maxJ*m_nCol + maxI] = sin( theta );    
 /*
-        //´ú¸Õ¥Î
+        //For testing
         int count;
         if( count++ %101 == 100)
         {
@@ -440,32 +450,31 @@ void CMatrix<TYPE>::EigenVV( TYPE * aEigenvalue , CMatrix<TYPE> & aEigenvector )
             system("pause");
         }
 */        
-        //±N­ì¥»ªºmatrix±ÛÂà¥H¹Gªñeigenvector
+        //Rotate the original matrix to approach the eigenvector
         tempVectors = tempVectors.Multiply( cmat );        
     }
 
 
-    // the digonal elements are the eigenvalues
-    for( i = 0 ; i < m_nRow ; i++ )
+    //The digonal elements are the eigenvalues
+    for ( i = 0 ; i < m_nRow ; i++ )
     {
         aEigenvalue[i] = result.m_content[i*m_nCol + i];
     }
 
-    // ¨C­Óeigenvalue¹ïÀ³¨ì¤@­Ón x 1ªºarray
+    //Each eigenvalue is corresponding to a N*1 array
     aEigenvector.Clone( tempVectors );
 }
 
 template <class TYPE>
 void CMatrix<TYPE>::EigenVVMax( int & aMaxI , int & aMaxJ , TYPE & aMax ) const
 {
-    int i , j;
-    //§ämain diagonal¤W¤èµ´¹ï­È³Ì¤jªº­È
+    //Find the maximal value on the main diagonal
     aMax = fabs( m_content[1] );
     aMaxI = 0;
     aMaxJ = 1;
-    for ( i = 0 ; i < m_nRow ; i++ )
+    for ( int i = 0 ; i < m_nRow ; i++ )
     {
-        for ( j = i ; j < m_nCol ; j++ )
+        for ( int j = i ; j < m_nCol ; j++ )
         {
             if ( i != j )
             {
@@ -485,7 +494,7 @@ void CMatrix<TYPE>::EigenVVMax( int & aMaxI , int & aMaxJ , TYPE & aMax ) const
 template <class TYPE>
 CMatrix<TYPE> CMatrix<TYPE>::EigenVVNew( int aMaxI , int aMaxJ , double aTheta ) const
 {
-    //step 3, get a new matrix by a give aTheta value
+    //Step 3, get a new matrix by a given aTheta value
     int i , j;
     double sp = sin( aTheta );
     double cp = cos( aTheta );
@@ -578,9 +587,8 @@ void CMatrix<TYPE>::Clone( const CMatrix<TYPE> & aSrcMatrix )
     }
     else{}
 
-    int i;    
-    //½Æ»s¤@¥÷
-    for ( i = 0 ; i < m_nSize ; i++ )
+    //Clone
+    for ( int i = 0 ; i < m_nSize ; i++ )
     {
         m_content[i] = aSrcMatrix.m_content[i];
     }
@@ -739,9 +747,9 @@ CMatrix<TYPE> CMatrix<TYPE>::operator/( const TYPE aScalar ) const
 
 
 template <class TYPE>
-CMatrix<TYPE> CMatrix<TYPE>::SwitchRow( int aRow1 , int aRow2 ) const    //³Ì¤p¬°0
+CMatrix<TYPE> CMatrix<TYPE>::SwitchRow( int aRow1 , int aRow2 ) const    //Rows are indexed from 0
 {
-    if ( aRow1 > m_nRow - 1 || aRow2 > m_nRow - 1 )    //§PÂ_¬O§_¶W¹LCWMatrix¤j¤p
+    if ( aRow1 > m_nRow - 1 || aRow2 > m_nRow - 1 )    //Check whether the row is in the matrix
     {
         cout << "Swich m_nRow failed: m_nRow is not in matrix" << endl;
         exit( 1 );
@@ -751,7 +759,7 @@ CMatrix<TYPE> CMatrix<TYPE>::SwitchRow( int aRow1 , int aRow2 ) const    //³Ì¤p¬
     int j;
     CMatrix<TYPE> result( *this );
 
-    //±q­ì¥»ªºCWMatrix¨ú­È´À¥N
+    //Take row values from the original matrix
     for ( j = 0 ; j < m_nCol ; j++ )
     {
         result.m_content[aRow1 * m_nCol + j] = m_content[aRow2 * m_nCol + j];
@@ -761,9 +769,9 @@ CMatrix<TYPE> CMatrix<TYPE>::SwitchRow( int aRow1 , int aRow2 ) const    //³Ì¤p¬
 }
 
 template <class TYPE>
-CMatrix<TYPE> CMatrix<TYPE>::SwitchColumn( int aColumn1 , int aColumn2 ) const    //³Ì¤p¬°0
+CMatrix<TYPE> CMatrix<TYPE>::SwitchColumn( int aColumn1 , int aColumn2 ) const    //Columns are indexed from 0
 {
-    if ( aColumn1 > m_nCol - 1 || aColumn2 > m_nCol - 1 )    //§PÂ_¬O§_¶W¹LCWMatrix¤j¤p
+    if ( aColumn1 > m_nCol - 1 || aColumn2 > m_nCol - 1 )    //Check whether the column is in the matrix
     {
         cout << "Swich m_nCol failed: m_nCol is not in matrix" << endl;
         exit( 1 );
@@ -773,7 +781,7 @@ CMatrix<TYPE> CMatrix<TYPE>::SwitchColumn( int aColumn1 , int aColumn2 ) const  
     int i;
     CMatrix<TYPE> result( *this );
 
-    //±q­ì¥»ªºCWMatrix¨ú­È´À¥N
+    //Take column values from the original matrix
     for ( i = 0 ; i < m_nCol ; i++ )
     {
         result.m_content[i * m_nCol + aColumn1] = m_content[i * m_nCol + aColumn2];
@@ -790,7 +798,7 @@ CMatrix<TYPE> CMatrix<TYPE>::AddRow( int aSrcRow , int aDstRow ) const
     int j;
     CMatrix<TYPE> result( *this );
 
-    //¦A¥[¤@¦¸aSrcRow¤W¥h
+    //aDstRow = aSrcRow + aDstRow
     for ( j = 0 ; j < m_nCol ; j++ )
     {
         result.m_content[aDstRow * m_nCol + j] += m_content[aSrcRow * m_nCol + j];
@@ -804,7 +812,7 @@ CMatrix<TYPE> CMatrix<TYPE>::SubtractRow( int aSrcRow , int aDstRow ) const
     int j;
     CMatrix<TYPE> result( *this );
 
-    //¦A´î¤@¦¸aSrcRow¤W¥h
+    //aDstRow = aSrcRow - aDstRow
     for ( j = 0 ; j < m_nCol ; j++ )
     {
         result.m_content[aDstRow * m_nCol + j] -= m_content[aSrcRow * m_nCol + j];
@@ -818,7 +826,7 @@ CMatrix<TYPE> CMatrix<TYPE>::AddColumn( int aSrcColumn , int aDstColumn ) const
     int i;
     CMatrix<TYPE> result( *this );
 
-    //¦A¥[¤@¦¸aSrcColumn¤W¥h
+    //aDstColumn = aSrcColumn + aDstColumn
     for ( i = 0 ; i < m_nRow ; i++ )
     {
         result.m_content[i * m_nCol + aDstColumn] += m_content[i * m_nCol + aSrcColumn];
@@ -832,7 +840,7 @@ CMatrix<TYPE> CMatrix<TYPE>::SubtractColumn( int aSrcColumn , int aDstColumn ) c
     int i;
     CMatrix<TYPE> result( *this );
 
-    //¦A´î¤@¦¸aSrcColumn¤W¥h
+    //aDstColumn = aSrcColumn - aDstColumn
     for ( i = 0 ; i < m_nRow ; i++ )
     {
         result.m_content[i * m_nCol + aDstColumn] -= m_content[i * m_nCol + aSrcColumn];

@@ -33,6 +33,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCWVolume", "UnitTest\Te
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCWXml", "UnitTest\TestCWXml\TestCWXml.vcxproj", "{872FBD69-9EFE-464D-BB84-74D68C5DFE8A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCWMatrix", "UnitTest\TestCWMatrix\TestCWMatrix.vcxproj", "{D8BE6E39-1441-437D-9452-C9CD85784BDA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCWQueue", "UnitTest\TestCWQueue\TestCWQueue.vcxproj", "{A54B2B7A-6431-4B01-9911-09FE0DBD434B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -129,6 +133,18 @@ Global
 		{872FBD69-9EFE-464D-BB84-74D68C5DFE8A}.Release|Win32.ActiveCfg = Release|Win32
 		{872FBD69-9EFE-464D-BB84-74D68C5DFE8A}.Release|Win32.Build.0 = Release|Win32
 		{872FBD69-9EFE-464D-BB84-74D68C5DFE8A}.Release|Win32.Deploy.0 = Release|Win32
+		{D8BE6E39-1441-437D-9452-C9CD85784BDA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D8BE6E39-1441-437D-9452-C9CD85784BDA}.Debug|Win32.Build.0 = Debug|Win32
+		{D8BE6E39-1441-437D-9452-C9CD85784BDA}.Debug|Win32.Deploy.0 = Debug|Win32
+		{D8BE6E39-1441-437D-9452-C9CD85784BDA}.Release|Win32.ActiveCfg = Release|Win32
+		{D8BE6E39-1441-437D-9452-C9CD85784BDA}.Release|Win32.Build.0 = Release|Win32
+		{D8BE6E39-1441-437D-9452-C9CD85784BDA}.Release|Win32.Deploy.0 = Release|Win32
+		{A54B2B7A-6431-4B01-9911-09FE0DBD434B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A54B2B7A-6431-4B01-9911-09FE0DBD434B}.Debug|Win32.Build.0 = Debug|Win32
+		{A54B2B7A-6431-4B01-9911-09FE0DBD434B}.Debug|Win32.Deploy.0 = Debug|Win32
+		{A54B2B7A-6431-4B01-9911-09FE0DBD434B}.Release|Win32.ActiveCfg = Release|Win32
+		{A54B2B7A-6431-4B01-9911-09FE0DBD434B}.Release|Win32.Build.0 = Release|Win32
+		{A54B2B7A-6431-4B01-9911-09FE0DBD434B}.Release|Win32.Deploy.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

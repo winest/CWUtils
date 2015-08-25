@@ -1,4 +1,4 @@
-#include "MyAutoRWLock.h"
+#include "CWLock.h"
 
 namespace KmUtils
 {

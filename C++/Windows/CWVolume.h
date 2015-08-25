@@ -1,27 +1,37 @@
-/*
-    Author: winest
-
-    Hard disk can be divided in to several partitions.
-
-    Volume is a single accessible storage area with a single file system, typically(not necessarily) resident
-on a single partition of a hard disk. OS can recognize a partition without recognizing any volume associated 
-with it, as when the OS cannot interpret the filesystem stored there. For example, a partition with ext3
-filesystem on Windows.
-
-    Drive is a general term, but logical drive usually synonymous with volume.
-
-    I make some naming convention in CWVolume:
-        VolumePath is regard as a drive letter end with backslash, for example, "C:\"
-        VolumeName is regard as a logical drive's label, for example, "C:\" may have the label "SYSTEM"
-        GUID stands for Global Unique Identifier, and GuidPath here looks like "\\?\Volume{183263e9-5394-11df-a364-806d6172696f}\"
-        MountPath can be drive letter, GUID path, or mounted folder path, all of them must end with backslash.
-
-    To determine whether it's a USB device, refer to SetupDiGetDeviceRegistryProperty().
-    
-    Some other functions not implemented are: SetVolumeMountPoint() and Win32_PhysicalMedia().
-*/
-
 #pragma once
+
+/*
+ * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * CWUtils is published under the BSD-3-Clause license.
+ *
+ * CWUtils is a set of standalone APIs for developers to speed up their 
+ * programming. It should be very easy to port them to other projects or 
+ * learn how to implement things on different languages and platforms. 
+ *
+ * The latest version can be found at https://github.com/winest/CWUtils
+ */
+
+/*
+ * Hard disk can be divided in to several partitions.
+ *
+ * Volume is a single accessible storage area with a single file system, typically(not necessarily) resident
+ * on a single partition of a hard disk. OS can recognize a partition without recognizing any volume associated 
+ * with it, as when the OS cannot interpret the filesystem stored there. For example, a partition with ext3
+ * filesystem on Windows.
+ *
+ * Drive is a general term, but logical drive usually synonymous with volume.
+ *
+ * I make some naming convention in CWVolume:
+ *     VolumePath is regard as a drive letter end with backslash, for example, "C:\"
+ *     VolumeName is regard as a logical drive's label, for example, "C:\" may have the label "SYSTEM"
+ *     GUID stands for Global Unique Identifier, and GuidPath here looks like "\\?\Volume{183263e9-5394-11df-a364-806d6172696f}\"
+ *     MountPath can be drive letter, GUID path, or mounted folder path, all of them must end with backslash.
+ *
+ * To determine whether it's a USB device, refer to SetupDiGetDeviceRegistryProperty().
+ *
+ * Some other functions not implemented are: SetVolumeMountPoint() and Win32_PhysicalMedia().
+ */
+
 #include <Windows.h>
 #include <string>
 

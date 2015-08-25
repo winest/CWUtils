@@ -1,30 +1,41 @@
 #pragma once
 
+/*
+ * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * CWUtils is published under the BSD-3-Clause license.
+ *
+ * CWUtils is a set of standalone APIs for developers to speed up their 
+ * programming. It should be very easy to port them to other projects or 
+ * learn how to implement things on different languages and platforms. 
+ *
+ * The latest version can be found at https://github.com/winest/CWUtils
+ */
+
 #include <ntifs.h>
 
 #ifndef INFINITE
     #define INFINITE        0xFFFFFFFF
 #endif
 
-#ifndef MY_MEM_TAG_UTILS
-    #define MY_MEM_TAG_UTILS        'litU'
+#ifndef CW_MEM_TAG_UTILS
+    #define CW_MEM_TAG_UTILS        'tUWC'
 #endif
 
 namespace KmUtils
 {
 
 template <class TYPE>
-class CMyListMRMW
+class CListMRMW   //Multiple-Reader-Multiple-Writer
 {
-    typedef struct _MyListEntryMRMW
+    typedef struct _ListMRMW
     {
         LIST_ENTRY lsNext;
         TYPE pEntry;
-    } MyListEntryMRMW;
+    } ListMRMW;
 
     public :
-        CMyListMRMW() { ExInitializeResourceLite( &m_res ); InitializeListHead( &m_lsHead ); }
-        ~CMyListMRMW() { RemoveAllEntries(); ExDeleteResourceLite( &m_res ); }
+        CListMRMW() { ExInitializeResourceLite( &m_res ); InitializeListHead( &m_lsHead ); }
+        ~CListMRMW() { RemoveAllEntries(); ExDeleteResourceLite( &m_res ); }
 
     public :
         BOOLEAN IsEmpty()
@@ -41,7 +52,7 @@ class CMyListMRMW
             this->AcquireReaderLock();
             for ( PLIST_ENTRY pEntry = m_lsHead.Flink ; pEntry != &m_lsHead ; pEntry = pEntry->Flink )
             {
-                MyListEntryMRMW * pMyListEntry = (MyListEntryMRMW *)CONTAINING_RECORD( pEntry , MyListEntryMRMW , lsNext );
+                ListMRMW * pMyListEntry = (ListMRMW *)CONTAINING_RECORD( pEntry , ListMRMW , lsNext );
                 if ( aEntry == pMyListEntry->pEntry )
                 {
                     bRet = TRUE;
@@ -54,7 +65,7 @@ class CMyListMRMW
 
         NTSTATUS InsertToHead( TYPE aEntry )
         {
-            MyListEntryMRMW * pEntry = (MyListEntryMRMW *)ExAllocatePoolWithTag( NonPagedPool , sizeof(MyListEntryMRMW) , MY_MEM_TAG_UTILS );
+            ListMRMW * pEntry = (ListMRMW *)ExAllocatePoolWithTag( NonPagedPool , sizeof(ListMRMW) , CW_MEM_TAG_UTILS );
             if ( NULL == pEntry )
             {
                 return STATUS_INSUFFICIENT_RESOURCES;
@@ -69,7 +80,7 @@ class CMyListMRMW
 
         NTSTATUS InsertToTail( TYPE aEntry )
         {
-            MyListEntryMRMW * pEntry = (MyListEntryMRMW *)ExAllocatePoolWithTag( NonPagedPool , sizeof(MyListEntryMRMW) , MY_MEM_TAG_UTILS );
+            ListMRMW * pEntry = (ListMRMW *)ExAllocatePoolWithTag( NonPagedPool , sizeof(ListMRMW) , CW_MEM_TAG_UTILS );
             if ( NULL == pEntry )
             {
                 return STATUS_INSUFFICIENT_RESOURCES;
@@ -86,8 +97,8 @@ class CMyListMRMW
         {
             this->AcquireWriterLock();
             PLIST_ENTRY pEntry = RemoveHeadList( &m_lsHead );
-            MyListEntryMRMW * pMyListEntry = (MyListEntryMRMW *)CONTAINING_RECORD( pEntry , MyListEntryMRMW , lsNext );
-            ExFreePoolWithTag( pMyListEntry , MY_MEM_TAG_UTILS );
+            ListMRMW * pMyListEntry = (ListMRMW *)CONTAINING_RECORD( pEntry , ListMRMW , lsNext );
+            ExFreePoolWithTag( pMyListEntry , CW_MEM_TAG_UTILS );
             this->ReleaseWriterLock();
         }
 
@@ -95,8 +106,8 @@ class CMyListMRMW
         {
             this->AcquireWriterLock();
             PLIST_ENTRY pEntry = RemoveTailList( &m_lsHead );
-            MyListEntryMRMW * pMyListEntry = (MyListEntryMRMW *)CONTAINING_RECORD( pEntry , MyListEntryMRMW , lsNext );
-            ExFreePoolWithTag( pMyListEntry , MY_MEM_TAG_UTILS );
+            ListMRMW * pMyListEntry = (ListMRMW *)CONTAINING_RECORD( pEntry , ListMRMW , lsNext );
+            ExFreePoolWithTag( pMyListEntry , CW_MEM_TAG_UTILS );
             this->ReleaseWriterLock();
         }
 
@@ -105,11 +116,11 @@ class CMyListMRMW
             this->AcquireWriterLock();
             for ( PLIST_ENTRY pEntry = m_lsHead.Flink ; pEntry != &m_lsHead ; pEntry = pEntry->Flink )
             {
-                MyListEntryMRMW * pMyListEntry = (MyListEntryMRMW *)CONTAINING_RECORD( pEntry , MyListEntryMRMW , lsNext );
+                ListMRMW * pMyListEntry = (ListMRMW *)CONTAINING_RECORD( pEntry , ListMRMW , lsNext );
                 if ( aEntry == pMyListEntry->pEntry )
                 {
                     RemoveEntryList( pEntry );
-                    ExFreePoolWithTag( pMyListEntry , MY_MEM_TAG_UTILS );
+                    ExFreePoolWithTag( pMyListEntry , CW_MEM_TAG_UTILS );
                     break;
                 }
             }
@@ -122,8 +133,8 @@ class CMyListMRMW
             while ( ! IsListEmpty( &m_lsHead ) )
             {
                 PLIST_ENTRY pEntry = RemoveTailList( &m_lsHead );
-                MyListEntryMRMW * pMyListEntry = CONTAINING_RECORD( pEntry , MyListEntryMRMW , lsNext );
-                ExFreePoolWithTag( pMyListEntry , MY_MEM_TAG_UTILS );
+                ListMRMW * pMyListEntry = CONTAINING_RECORD( pEntry , ListMRMW , lsNext );
+                ExFreePoolWithTag( pMyListEntry , CW_MEM_TAG_UTILS );
             }
             this->ReleaseWriterLock();
         }

@@ -1,4 +1,4 @@
-#include "MyString.h"
+#include "CWString.h"
 
 namespace KmUtils
 {

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "CWThreadPool.h"
-#include <process.h>
-#include <crtdbg.h>
+
 
 namespace CWUtils
 {

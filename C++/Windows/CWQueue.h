@@ -1,7 +1,18 @@
 #pragma once
+
+/*
+ * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * CWUtils is published under the BSD-3-Clause license.
+ *
+ * CWUtils is a set of standalone APIs for developers to speed up their 
+ * programming. It should be very easy to port them to other projects or 
+ * learn how to implement things on different languages and platforms. 
+ *
+ * The latest version can be found at https://github.com/winest/CWUtils
+ */
+
 #include <Windows.h>
 #include <queue>
-using std::queue;
 
 namespace CWUtils
 {
@@ -16,15 +27,15 @@ extern "C" {
 
 
 template <class Type>
-class CQueue
+class CQueueMRMW
 {
     public:
-        CQueue()
+        CQueueMRMW()
         {
             InitializeCriticalSection( &m_csData );
             m_hEvent = CreateEvent( NULL , TRUE , FALSE , NULL ); //This event will remain signaled until the queue is empty
         }
-        ~CQueue()
+        ~CQueueMRMW()
         {
             DeleteCriticalSection( &m_csData );
             CloseHandle( m_hEvent );
@@ -59,7 +70,7 @@ class CQueue
         }
 
     private:
-        queue<Type> m_oQueue;    //Contains the actual data
+        std::queue<Type> m_oQueue;    //Contains the actual data
         CRITICAL_SECTION m_csData;  //To synchronize access to m_csData among multiple threads
         HANDLE m_hEvent;            //For signal presence of absence of data
 };

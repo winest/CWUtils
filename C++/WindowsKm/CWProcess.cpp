@@ -1,14 +1,14 @@
-#include "MyProcess.h"
+#include "CWProcess.h"
 #include <ntstrsafe.h>
 
 
 
 
 #include "_GenerateTmhKm.h"
-#include "MyProcess.tmh"
+#include "CWProcess.t.h"
 
-#ifndef MY_MEM_TAG_UTILS
-    #define MY_MEM_TAG_UTILS        'litU'
+#ifndef CW_MEM_TAG_UTILS
+    #define CW_MEM_TAG_UTILS        'tUWC'
 #endif
 
 namespace KmUtils
@@ -141,7 +141,7 @@ NTSTATUS GetProcessPathByHandle( HANDLE aProcessHandle , PUNICODE_STRING aProces
         goto exit;
     }
 
-    pusPath = ExAllocatePoolWithTag( PagedPool , ulSizeNeeded , MY_MEM_TAG_UTILS );
+    pusPath = ExAllocatePoolWithTag( PagedPool , ulSizeNeeded , CW_MEM_TAG_UTILS );
     if ( NULL == pusPath )
     {
         status = STATUS_INSUFFICIENT_RESOURCES;
@@ -157,7 +157,7 @@ NTSTATUS GetProcessPathByHandle( HANDLE aProcessHandle , PUNICODE_STRING aProces
 exit :
     if ( NULL != pusPath )
     {
-        ExFreePoolWithTag( pusPath , MY_MEM_TAG_UTILS );
+        ExFreePoolWithTag( pusPath , CW_MEM_TAG_UTILS );
     }    
     return status;
 }
@@ -188,7 +188,7 @@ NTSTATUS GetPidByProcessName( IN CONST PUNICODE_STRING aImagePath , IN OUT PHAND
     for ( ULONG ulRetry = 0 ; ulRetry < 10 ; ulRetry++ )
     {
         DbgOut( INFO , DBG_KM_UTILS , "ulByteNeed=%lu" , ulByteNeed );
-        pInfo = (SYSTEM_PROCESS_INFORMATION *)ExAllocatePoolWithTag( NonPagedPool , ulByteNeed , MY_MEM_TAG_UTILS );
+        pInfo = (SYSTEM_PROCESS_INFORMATION *)ExAllocatePoolWithTag( NonPagedPool , ulByteNeed , CW_MEM_TAG_UTILS );
 
         status = ZwQuerySystemInformation( SystemProcessInformation , pInfo , ulByteNeed , &ulByteNeed );
         if ( NT_SUCCESS(status) )
@@ -197,8 +197,8 @@ NTSTATUS GetPidByProcessName( IN CONST PUNICODE_STRING aImagePath , IN OUT PHAND
         }
         else
         {
-            ExFreePoolWithTag( pInfo , MY_MEM_TAG_UTILS );
-            pInfo = (SYSTEM_PROCESS_INFORMATION *)ExAllocatePoolWithTag( NonPagedPool , ulByteNeed , MY_MEM_TAG_UTILS );
+            ExFreePoolWithTag( pInfo , CW_MEM_TAG_UTILS );
+            pInfo = (SYSTEM_PROCESS_INFORMATION *)ExAllocatePoolWithTag( NonPagedPool , ulByteNeed , CW_MEM_TAG_UTILS );
         }
     }
     if ( ! NT_SUCCESS(status) )
@@ -222,7 +222,7 @@ NTSTATUS GetPidByProcessName( IN CONST PUNICODE_STRING aImagePath , IN OUT PHAND
 exit :
     if ( NULL != pInfo )
     {
-        ExFreePoolWithTag( pInfo , MY_MEM_TAG_UTILS );
+        ExFreePoolWithTag( pInfo , CW_MEM_TAG_UTILS );
     }    
     return status;
 }
@@ -256,7 +256,7 @@ NTSTATUS GetPidAryByProcessName( IN CONST PUNICODE_STRING aImagePath , IN OUT PH
     for ( ULONG ulRetry = 0 ; ulRetry < 10 ; ulRetry++ )
     {
         DbgOut( INFO , DBG_KM_UTILS , "Allocate buffer for SystemProcessInformation. ulByteNeed=%lu" , ulByteNeed );
-        pInfo = (SYSTEM_PROCESS_INFORMATION *)ExAllocatePoolWithTag( NonPagedPool , ulByteNeed , MY_MEM_TAG_UTILS );
+        pInfo = (SYSTEM_PROCESS_INFORMATION *)ExAllocatePoolWithTag( NonPagedPool , ulByteNeed , CW_MEM_TAG_UTILS );
 
         status = ZwQuerySystemInformation( SystemProcessInformation , pInfo , ulByteNeed , &ulByteNeed );
         if ( NT_SUCCESS(status) )
@@ -265,8 +265,8 @@ NTSTATUS GetPidAryByProcessName( IN CONST PUNICODE_STRING aImagePath , IN OUT PH
         }
         else
         {
-            ExFreePoolWithTag( pInfo , MY_MEM_TAG_UTILS );
-            pInfo = (SYSTEM_PROCESS_INFORMATION *)ExAllocatePoolWithTag( NonPagedPool , ulByteNeed , MY_MEM_TAG_UTILS );
+            ExFreePoolWithTag( pInfo , CW_MEM_TAG_UTILS );
+            pInfo = (SYSTEM_PROCESS_INFORMATION *)ExAllocatePoolWithTag( NonPagedPool , ulByteNeed , CW_MEM_TAG_UTILS );
         }
     }
     if ( ! NT_SUCCESS(status) )
@@ -300,7 +300,7 @@ NTSTATUS GetPidAryByProcessName( IN CONST PUNICODE_STRING aImagePath , IN OUT PH
 exit :
     if ( NULL != pInfo )
     {
-        ExFreePoolWithTag( pInfo , MY_MEM_TAG_UTILS );
+        ExFreePoolWithTag( pInfo , CW_MEM_TAG_UTILS );
     }
     return status;
 }

@@ -1,10 +1,20 @@
-/*
-Author: winest 
- 
-Use CDllInjectClient at client side to communicate with the CDllInjectServer which locates in your program.
-*/
-
 #pragma once
+
+/*
+ * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * CWUtils is published under the BSD-3-Clause license.
+ *
+ * CWUtils is a set of standalone APIs for developers to speed up their 
+ * programming. It should be very easy to port them to other projects or 
+ * learn how to implement things on different languages and platforms. 
+ *
+ * The latest version can be found at https://github.com/winest/CWUtils
+ */
+
+/*
+ * Use CDllInjectClient at client side to communicate with the CDllInjectServer which locates in your program.
+ */
+
 
 #include "DllInjectCommonDef.h"
 #include <Windows.h>

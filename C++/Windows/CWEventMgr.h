@@ -1,11 +1,20 @@
 #pragma once
 
+/*
+ * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * CWUtils is published under the BSD-3-Clause license.
+ *
+ * CWUtils is a set of standalone APIs for developers to speed up their 
+ * programming. It should be very easy to port them to other projects or 
+ * learn how to implement things on different languages and platforms. 
+ *
+ * The latest version can be found at https://github.com/winest/CWUtils
+ */
+
 #include <Windows.h>
 #include <process.h>
 #include <map>
 #include <list>
-using std::map;
-using std::list;
 
 namespace CWUtils
 {
@@ -25,7 +34,7 @@ class CEventMgr
             HANDLE hThread;
             HANDLE hEvent;
             ULONG ulEventId;
-            list<EventCallback> lsCallback;
+            std::list<EventCallback> lsCallback;
         } MapValue;
         typedef struct _EventThreadArgs
         {
@@ -51,7 +60,7 @@ class CEventMgr
             if ( m_mapEvent.size() > 0 )
             {
                 EnterCriticalSection( &m_cs );
-                map<ULONG , MapValue>::iterator itEvent;
+                std::map<ULONG , MapValue>::iterator itEvent;
                 for ( itEvent = m_mapEvent.begin() ; itEvent != m_mapEvent.end() ; itEvent++ )
                 {
                     itEvent->second.bStopThread = TRUE;
@@ -86,7 +95,7 @@ class CEventMgr
         BOOL FreeEventThread( ULONG aEventId , EventThreadArgs * aArgs );
         
     private :        
-        map<ULONG , MapValue> m_mapEvent;
+        std::map<ULONG , MapValue> m_mapEvent;
         CRITICAL_SECTION m_cs;        
         HANDLE m_hChkStop;
         UINT m_nTotalThreads;    //Count of EventThread

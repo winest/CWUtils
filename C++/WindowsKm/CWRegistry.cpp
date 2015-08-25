@@ -1,4 +1,4 @@
-#include "MyRegistry.h"
+#include "CWRegistry.h"
 #include <ntstrsafe.h>
 
 
@@ -10,15 +10,15 @@
     #define _countof( aArray ) ( sizeof(aArray) / sizeof(aArray[0]) )
 #endif
 
-#ifndef MY_MEM_TAG_UTILS
-    #define MY_MEM_TAG_UTILS        'litU'
+#ifndef CW_MEM_TAG_UTILS
+    #define CW_MEM_TAG_UTILS        'tUWC'
 #endif
 
 #define HKEY_LOCAL_MACHINE                  ((VOID *) (ULONG_PTR)((LONG)0x80000002) )
 #define HKEY_USERS                          ((VOID *) (ULONG_PTR)((LONG)0x80000002) )
 
 #include "_GenerateTmhKm.h"
-#include "MyRegistry.tmh"
+#include "CWRegistry.t.h"
 
 namespace KmUtils
 {
@@ -109,7 +109,7 @@ NTSTATUS GetRegFlag( IN CONST VOID * aRoot , IN CONST WCHAR * aKeyPath , IN CONS
             {
                 UNICODE_STRING usFullKeyPath = {};
                 usFullKeyPath.MaximumLength = (USHORT)(( wcslen(rootMap[i].wzRootReg) + wcslen(aKeyPath) + 1 ) * sizeof(WCHAR));
-                usFullKeyPath.Buffer = (WCHAR *)ExAllocatePoolWithTag( NonPagedPool , usFullKeyPath.MaximumLength , MY_MEM_TAG_UTILS );
+                usFullKeyPath.Buffer = (WCHAR *)ExAllocatePoolWithTag( NonPagedPool , usFullKeyPath.MaximumLength , CW_MEM_TAG_UTILS );
                 if ( NULL == usFullKeyPath.Buffer )
                 {
                     DbgOut( ERRO , DBG_KM_UTILS , "ExAllocatePoolWithTag() failed. usFullKeyPath.MaximumLength=%hu" , usFullKeyPath.MaximumLength );
@@ -122,7 +122,7 @@ NTSTATUS GetRegFlag( IN CONST VOID * aRoot , IN CONST WCHAR * aKeyPath , IN CONS
                         usFullKeyPath.MaximumLength , &usFullKeyPath , aKeyPath );
 
                 status = _GetRegRaw( usFullKeyPath.Buffer , aFlagName , REG_DWORD , &u32Flag , &ulFlagSize );
-                ExFreePoolWithTag( usFullKeyPath.Buffer , MY_MEM_TAG_UTILS );
+                ExFreePoolWithTag( usFullKeyPath.Buffer , CW_MEM_TAG_UTILS );
                 break;
             }
         }        

@@ -1,8 +1,8 @@
-#include "MyPlatform.h"
+#include "CWPlatform.h"
 #include <ntstrsafe.h>
 
-#ifndef MY_MEM_TAG_UTILS
-    #define MY_MEM_TAG_UTILS        'litU'
+#ifndef CW_MEM_TAG_UTILS
+    #define CW_MEM_TAG_UTILS        'tUWC'
 #endif
 
 namespace KmUtils

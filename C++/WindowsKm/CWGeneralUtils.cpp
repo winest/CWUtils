@@ -1,13 +1,13 @@
-#include "MyGeneralUtils.h"
+#include "CWGeneralUtils.h"
 
 
 VOID * __cdecl operator new( size_t aSize )
 {
-    return ExAllocatePoolWithTag( NonPagedPool , aSize , MY_MEM_TAG_UTILS );
+    return ExAllocatePoolWithTag( NonPagedPool , aSize , CW_MEM_TAG_UTILS );
 }
 VOID __cdecl operator delete( VOID * aVoid )
 {
-    ExFreePoolWithTag( aVoid , MY_MEM_TAG_UTILS );
+    ExFreePoolWithTag( aVoid , CW_MEM_TAG_UTILS );
 }
 
 namespace KmUtils

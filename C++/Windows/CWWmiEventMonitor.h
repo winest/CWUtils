@@ -1,18 +1,26 @@
-/*
-Author: winest
-
-This utility provides a user mode space process creation/termination event monitor through WMI.
-It will query process events from WMI every second and those events will be sent to the callback asynchronously.
-
-All classes who inherit IWbemObjectSink will follow the COM rule to delete itself when calling Release().
-You must new this kind of objects at runtime instead of using it as a global instance.
-
-Remember to add the following code for each thread that use this utility
-    CoInitializeEx( 0 , COINIT_MULTITHREADED );
-*/
-
-
 #pragma once
+
+/*
+ * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * CWUtils is published under the BSD-3-Clause license.
+ *
+ * CWUtils is a set of standalone APIs for developers to speed up their 
+ * programming. It should be very easy to port them to other projects or 
+ * learn how to implement things on different languages and platforms. 
+ *
+ * The latest version can be found at https://github.com/winest/CWUtils
+ */
+
+/*
+ * This utility provides a user mode space process creation/termination event monitor through WMI.
+ * It will query process events from WMI every second and those events will be sent to the callback asynchronously.
+ *
+ * All classes who inherit IWbemObjectSink will follow the COM rule to delete itself when calling Release().
+ * You must new this kind of objects at runtime instead of using it as a global instance.
+ *
+ * Remember to add the following code for each thread that use this utility
+ *     CoInitializeEx( 0 , COINIT_MULTITHREADED );
+*/
 
 #define _WIN32_DCOM
 #include <Windows.h>
