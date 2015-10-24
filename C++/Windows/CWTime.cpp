@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CWTime.h"
+using namespace std;
 
 namespace CWUtils
 {

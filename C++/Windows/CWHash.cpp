@@ -38,7 +38,7 @@ BOOL GetFileMd5( CONST WCHAR * aFilePath , std::string & aMd5 )
     BOOL bRet = FALSE;
     HCRYPTPROV hProv = NULL;
     HCRYPTHASH hHash = NULL;
-    HANDLE hFile = CreateFile( aFilePath , GENERIC_READ , FILE_SHARE_READ , NULL , OPEN_EXISTING , FILE_FLAG_SEQUENTIAL_SCAN , NULL );
+    HANDLE hFile = CreateFileW( aFilePath , GENERIC_READ , FILE_SHARE_READ , NULL , OPEN_EXISTING , FILE_FLAG_SEQUENTIAL_SCAN , NULL );
     if ( INVALID_HANDLE_VALUE == hFile )
     {
         goto exit;
