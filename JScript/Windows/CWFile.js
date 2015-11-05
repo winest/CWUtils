@@ -67,10 +67,25 @@ CWUtils.CreateFolderIfNeed = CWUtils.CreateFolderIfNeed || function( aFolderPath
     {
         return true;
     }
-    else
+
+    var strPaths = aFolderPath.split( "\\" );
+    var strPath = "";
+    for ( var uName in strPaths )
     {
-        return ( null != CWUtils.WshFileSystem.CreateFolder( aFolderPath ) );
+        if ( 0 < strPath.length )
+        {
+            strPath += "\\";
+        }
+        strPath += strPaths[uName];
+
+        if ( false == CWUtils.WshFileSystem.FolderExists( strPath ) &&
+             null == CWUtils.WshFileSystem.CreateFolder( strPath ) )
+        {
+            return false;
+        }
     }
+
+    return true;
 };
 
 CWUtils.ForceDeleteFile = CWUtils.ForceDeleteFile || function( aFilePath )
