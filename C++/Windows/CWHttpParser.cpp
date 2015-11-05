@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "HttpParser.h"
+#include "CWHttpParser.h"
 
 #include <algorithm>
 #include <string>
@@ -481,7 +481,7 @@ VOID CHttpRspFieldMgr::Reset()
     CHttpFieldMgr::Reset();
     m_uContentLength = INFINITE;    //To compatible with HTTP 1.0 
     m_bIsChunked = FALSE;
-    m_uStatusCode = HTTP_STATUS_UNKNOWN;
+    m_uStatusCode = HTTP_STATUS_CODE_UNKNOWN;
 }
 
 HttpParserErr CHttpRspFieldMgr::SetField( HttpFieldId aFieldId , std::string & aData , UINT aDataSize , BOOL aAppend , BOOL aComplete )
@@ -524,7 +524,7 @@ HttpParserErr CHttpRspFieldMgr::SetField( HttpFieldId aFieldId , std::string & a
                 }
                 case HTTP_FIELD_CONTENT_LENGTH :
                 {
-                    if ( (HTTP_STATUS_OK > m_uStatusCode) || (HTTP_STATUS_NO_CONTENT == m_uStatusCode) || (HTTP_STATUS_NOT_MODIFIED == m_uStatusCode) )
+                    if ( (HTTP_STATUS_CODE_OK > m_uStatusCode) || (HTTP_STATUS_CODE_NO_CONTENT == m_uStatusCode) || (HTTP_STATUS_CODE_NOT_MODIFIED == m_uStatusCode) )
                     {
                         m_uContentLength = 0;
                     }
@@ -593,7 +593,7 @@ HttpParserErr CHttpRspFieldMgr::ParseResponseVersionAndCode()
             DbgOut( INFO , DBG_PROTOHANDLER , "m_uStatusCode=%u" , m_uStatusCode );
             
             //All 1xx, 204, and 304 responses must not include a body
-            if ( (HTTP_STATUS_OK > m_uStatusCode) || (HTTP_STATUS_NO_CONTENT == m_uStatusCode) || (HTTP_STATUS_NOT_MODIFIED == m_uStatusCode) )
+            if ( (HTTP_STATUS_CODE_OK > m_uStatusCode) || (HTTP_STATUS_CODE_NO_CONTENT == m_uStatusCode) || (HTTP_STATUS_CODE_NOT_MODIFIED == m_uStatusCode) )
             {
                 m_uContentLength = 0;
             }
@@ -970,8 +970,8 @@ HttpParserErr CHttpParser::ParseBody( ParseParam * aParam )
         {
             HttpFieldId uMethod = m_ReqFieldMgr.GetMethodId();
             HttpStatusCode uStatus = m_RspFieldMgr.GetStatusCode();
-            if ( HTTP_FIELD_METHOD_HEAD == uMethod || HTTP_STATUS_OK > uStatus ||
-                 HTTP_STATUS_NO_CONTENT == uStatus || HTTP_STATUS_NOT_MODIFIED == uStatus )
+            if ( HTTP_FIELD_METHOD_HEAD == uMethod || HTTP_STATUS_CODE_OK > uStatus ||
+                 HTTP_STATUS_CODE_NO_CONTENT == uStatus || HTTP_STATUS_CODE_NOT_MODIFIED == uStatus )
             {
                 DbgOut( INFO , DBG_PROTOHANDLER , "Skip body because of header value. Method=%u, Status=%u" , uMethod , uStatus );
                 uParserRet = HTTP_PARSER_SUCCESS;
