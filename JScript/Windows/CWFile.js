@@ -14,6 +14,7 @@
  *
  * For complete documents, please refer to http://msdn.microsoft.com/en-us/library/hww8txat(v=vs.84).aspx
  * Some frequently used functions:
+ * CWUtils.WshFileSystem.CreateFolder( foldername )
  * CWUtils.WshFileSystem.CopyFile/CopyFolder( source , destination [, overwrite=true] )
  * CWUtils.WshFileSystem.MoveFile/MoveFolder( source , destination )
  * CWUtils.WshFileSystem.DeleteFile/DeleteFolder( path [, force=false] )
@@ -57,6 +58,26 @@ CWUtils.DbgMsg = CWUtils.DbgMsg || function( aLevel , aTag , aMsg , aLogFolder )
     if ( CWUtils.WshFileSystem.FolderExists(aLogFolder) )
     {
         CWUtils.SaveToFile( aLogFolder + "\\" + aTag + ".txt" , strMsg + "\n" , true , true );
+    }
+};
+
+CWUtils.CreateFolderIfNeed = CWUtils.CreateFolderIfNeed || function( aFolderPath )
+{
+    if ( CWUtils.WshFileSystem.FolderExists(aFolderPath) )
+    {
+        return true;
+    }
+    else
+    {
+        return ( null != CWUtils.WshFileSystem.CreateFolder( aFolderPath ) );
+    }
+};
+
+CWUtils.ForceDeleteFile = CWUtils.ForceDeleteFile || function( aFilePath )
+{
+    if ( CWUtils.WshFileSystem.FileExists(aFilePath) )
+    {
+        CWUtils.WshFileSystem.DeleteFile( aFilePath , true );
     }
 };
 
