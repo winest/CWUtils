@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 using CWUtils;
 
@@ -40,6 +40,7 @@ namespace TestCWFile
             CLogFile.GetInstance().LogInfo( "TestLog" , "LogInfo" );
             CLogFile.GetInstance().LogVerb( "TestLog" , "LogVerb" );
             CLogFile.GetInstance().LogNosy( "TestLog" , "LogNosy" );
+            Thread.Sleep( 10 * 1000 );
             CLogFile.GetInstance().LogEpilogue( "TestLog" );
         }
 

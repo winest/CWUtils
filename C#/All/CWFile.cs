@@ -114,7 +114,7 @@ namespace CWUtils
                 {
                     this.m_hFlushThread.Join();
                 }
-                this.m_hEvtStop.Dispose();
+                this.m_hEvtStop.Close();
                 this.m_hEvtStop = null;
             }
 
