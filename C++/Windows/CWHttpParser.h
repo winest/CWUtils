@@ -81,7 +81,7 @@ typedef enum _HttpFieldId
     HTTP_FIELD_X_CACHE_LOOKUP ,
     HTTP_FIELD_INCOMPLETE ,             //for the case when buf is ending while doing Field keyword matching.
     HTTP_FIELD_UNKNOWN ,                //for a Field which is not included in table
-    HTTP_FIELD_END                     //for the end of header
+    HTTP_FIELD_END                      //for the end of header
 } HttpFieldId; 
 
 typedef enum _HttpTransferEncodingType
@@ -90,6 +90,15 @@ typedef enum _HttpTransferEncodingType
     HTTP_TRANSFER_ENCODING_CONTENT_LENGTH ,
     HTTP_TRANSFER_ENCODING_CHUNKED
 } HttpTransferEncodingType;
+
+typedef enum _HttpContentEncodingType
+{
+    HTTP_CONTENT_ENCODING_IDENTITY = 0 ,    //No compress, should only specified in Accept-Encoding header rather than Content-Encoding
+    HTTP_CONTENT_ENCODING_GZIP ,            //LZ77
+    HTTP_CONTENT_ENCODING_COMPRESS ,        //Adaptive LZW
+    HTTP_CONTENT_ENCODING_DEFLATE ,         //Zlib deflate
+    HTTP_CONTENT_ENCODING_UNKNOWN_NEW
+} HttpContentEncodingType;
 
 typedef enum _HttpStatusCode
 {
@@ -160,6 +169,7 @@ class CHttpFieldMgr
         BOOL IsBodyEnd();
         VOID SetBodyEnd( BOOL aEnd );
         HttpTransferEncodingType GetTransferEncodingType();
+        HttpContentEncodingType GetContentEncodingType();
         virtual UINT GetContentLength();
         VOID ReserveBodySize( SIZE_T aSize );
         UINT GetCurrentBodyLength();
@@ -170,6 +180,7 @@ class CHttpFieldMgr
         HttpParserErr ParseHttpVersion( const std::string & aVersion );
         HttpParserErr ParseContentLength();
         BOOL IsChunkedTransferEncoding();
+        VOID UpdateContentEncodingType();
         VOID StringTrim( std::string & aStr );
 
     protected :
@@ -183,6 +194,7 @@ class CHttpFieldMgr
 
         BOOL m_bBodyEnd;
         HttpTransferEncodingType m_uTransferEncodingType;
+        HttpContentEncodingType m_uContentEncodingType;
         UINT m_uContentLength;
         vector<UCHAR> m_vecBody;
 };

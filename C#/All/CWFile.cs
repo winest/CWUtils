@@ -186,8 +186,12 @@ namespace CWUtils
         {
             if ( LogLevel.LOG_LV_MUST <= this.m_nLogLv && null != this.m_twFile )
             {
-                lock( this.m_twFile )
+                if ( null == aBuf )
                 {
+                    aBuf = "<NULL>";
+                }
+                lock( this.m_twFile )
+                {                    
                     this.m_twFile.WriteLine( "[MUST][" + aFuncName + "] " + aBuf );
                     if ( 0 == this.m_nFlushTime )
                     {
@@ -201,6 +205,10 @@ namespace CWUtils
         {
             if ( LogLevel.LOG_LV_ERRO <= this.m_nLogLv && null != this.m_twFile )
             {
+                if ( null == aBuf )
+                {
+                    aBuf = "<NULL>";
+                }
                 lock( this.m_twFile )
                 {
                     this.m_twFile.WriteLine( "[ERRO][" + aFuncName + "] " + aBuf );
@@ -216,6 +224,10 @@ namespace CWUtils
         {
             if ( LogLevel.LOG_LV_WARN <= this.m_nLogLv && null != this.m_twFile )
             {
+                if ( null == aBuf )
+                {
+                    aBuf = "<NULL>";
+                }
                 lock( this.m_twFile )
                 {
                     this.m_twFile.WriteLine( "[WARN][" + aFuncName + "] " + aBuf );
@@ -231,6 +243,10 @@ namespace CWUtils
         {
             if ( LogLevel.LOG_LV_INFO <= this.m_nLogLv && null != this.m_twFile )
             {
+                if ( null == aBuf )
+                {
+                    aBuf = "<NULL>";
+                }
                 lock( this.m_twFile )
                 {
                     this.m_twFile.WriteLine( "[INFO][" + aFuncName + "] " + aBuf );
@@ -246,6 +262,10 @@ namespace CWUtils
         {
             if ( LogLevel.LOG_LV_VERB <= this.m_nLogLv && null != this.m_twFile )
             {
+                if ( null == aBuf )
+                {
+                    aBuf = "<NULL>";
+                }
                 lock( this.m_twFile )
                 {
                     this.m_twFile.WriteLine( "[VERB][" + aFuncName + "] " + aBuf );
@@ -261,6 +281,10 @@ namespace CWUtils
         {
             if ( LogLevel.LOG_LV_NOSY <= this.m_nLogLv && null != this.m_twFile )
             {
+                if ( null == aBuf )
+                {
+                    aBuf = "<NULL>";
+                }
                 lock( this.m_twFile )
                 {
                     this.m_twFile.WriteLine( "[NOSY][" + aFuncName + "] " + aBuf );

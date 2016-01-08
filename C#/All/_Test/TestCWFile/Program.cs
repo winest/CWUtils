@@ -40,8 +40,10 @@ namespace TestCWFile
             CLogFile.GetInstance().LogInfo( "TestLog" , "LogInfo" );
             CLogFile.GetInstance().LogVerb( "TestLog" , "LogVerb" );
             CLogFile.GetInstance().LogNosy( "TestLog" , "LogNosy" );
+            Console.WriteLine( "Sleep 10 seconds to test flush functionality" );
             Thread.Sleep( 10 * 1000 );
-            CLogFile.GetInstance().LogEpilogue( "TestLog" );
+            CLogFile.GetInstance().LogVerb( "TestLog" , null );
+            CLogFile.GetInstance().LogEpilogue("TestLog");
         }
 
 

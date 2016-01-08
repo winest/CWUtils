@@ -85,6 +85,7 @@ VOID CHttpFieldMgr::Reset()
     m_mapUnknownFields.clear();
     m_bBodyEnd = FALSE;
     m_uTransferEncodingType = HTTP_TRANSFER_ENCODING_UNKNOWN;
+    m_uContentEncodingType = HTTP_CONTENT_ENCODING_IDENTITY;
     m_uContentLength = 0;
     m_vecBody.clear();
 }
@@ -206,6 +207,12 @@ HttpTransferEncodingType CHttpFieldMgr::GetTransferEncodingType()
     return m_uTransferEncodingType;
 }
 
+HttpContentEncodingType CHttpFieldMgr::GetContentEncodingType()
+{
+    return m_uContentEncodingType;
+}
+
+
 UINT CHttpFieldMgr::GetContentLength()
 {
     //We do not use length in field map.
@@ -287,6 +294,39 @@ BOOL CHttpFieldMgr::IsChunkedTransferEncoding()
     }
 }
 
+VOID CHttpFieldMgr::UpdateContentEncodingType()
+{
+    std::string data;
+    if ( HTTP_PARSER_SUCCESS == GetFieldValue( HTTP_FIELD_CONTENT_ENCODING , data ) )
+    {
+        if ( data == "gzip" )
+        {
+            m_uContentEncodingType = HTTP_CONTENT_ENCODING_GZIP;
+        }
+        else if ( data == "deflate" )
+        {
+            m_uContentEncodingType = HTTP_CONTENT_ENCODING_DEFLATE;
+        }
+        else if ( data == "compress" )
+        {
+            m_uContentEncodingType = HTTP_CONTENT_ENCODING_COMPRESS;
+        }
+        else if ( data == "identity" )
+        {
+            m_uContentEncodingType = HTTP_CONTENT_ENCODING_IDENTITY;
+        }
+        else if ( data.length() > 0 )
+        {
+            m_uContentEncodingType = HTTP_CONTENT_ENCODING_UNKNOWN_NEW;
+        }
+        else
+        {
+            m_uContentEncodingType = HTTP_CONTENT_ENCODING_IDENTITY;
+        }
+    }
+}
+
+
 
 
 
@@ -348,6 +388,11 @@ HttpParserErr CHttpReqFieldMgr::SetField( HttpFieldId aFieldId , std::string & a
                     }
                     break;
                 }
+                case HTTP_FIELD_CONTENT_ENCODING :
+                {
+                    UpdateContentEncodingType();
+                    break;
+                }
                 case HTTP_FIELD_CONTENT_LENGTH :
                 {
                     if ( HTTP_FIELD_METHOD_HEAD == m_uMethodId ) //When method is HEAD, content length always equals 0
@@ -360,6 +405,7 @@ HttpParserErr CHttpReqFieldMgr::SetField( HttpFieldId aFieldId , std::string & a
                     }
 
                     //According to RFC 2616 section 4.4, chunked encoding has higher priority than content-length
+                    //So we only change it if the transfer encoding type is still unknown
                     if ( HTTP_TRANSFER_ENCODING_UNKNOWN == m_uTransferEncodingType )
                     {
                         m_uTransferEncodingType = HTTP_TRANSFER_ENCODING_CONTENT_LENGTH;
@@ -516,6 +562,11 @@ HttpParserErr CHttpRspFieldMgr::SetField( HttpFieldId aFieldId , std::string & a
                     }
                     break;
                 }
+                case HTTP_FIELD_CONTENT_ENCODING :
+                {
+                    UpdateContentEncodingType();
+                    break;
+                }
                 case HTTP_FIELD_HTTP_RESPONSE :
                 {
                     m_strStatusLine = strFieldName + aData;
@@ -534,6 +585,7 @@ HttpParserErr CHttpRspFieldMgr::SetField( HttpFieldId aFieldId , std::string & a
                     }
 
                     //According to RFC 2616 section 4.4, chunked encoding has higher priority than content-length
+                    //So we only change it if the transfer encoding type is still unknown
                     if ( HTTP_TRANSFER_ENCODING_UNKNOWN == m_uTransferEncodingType )
                     {
                         m_uTransferEncodingType = HTTP_TRANSFER_ENCODING_CONTENT_LENGTH;
