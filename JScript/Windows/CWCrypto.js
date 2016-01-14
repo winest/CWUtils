@@ -119,7 +119,7 @@ CWUtils.CaesarDecrypt = CWUtils.CaesarDecrypt || function( aSmallAlpha , aBigAlp
 CWUtils.Base64Encode = CWUtils.Base64Encode || function( aString , aEncodeTable , aEscape )
 {
     aEncodeTable = aEncodeTable || "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-    aEscape = aEscape || false;
+    aEscape = ( aEscape ) ? true : false;
     if ( 65 != aEncodeTable.length )
     {
         WScript.Echo( "Table length should be 65" );
@@ -159,7 +159,7 @@ CWUtils.Base64Encode = CWUtils.Base64Encode || function( aString , aEncodeTable 
 CWUtils.Base64Decode = CWUtils.Base64Decode || function( aString , aDecodeTable , aUnescape )
 {
     aDecodeTable = aDecodeTable || "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-    aUnescape = aUnescape || false;
+    aUnescape = ( aUnescape ) ? true : false;
     if ( 65 != aDecodeTable.length )
     {
         WScript.Echo( "Table length should be 65" );
