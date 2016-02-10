@@ -524,7 +524,7 @@ CWUtils.CBinaryFile = CWUtils.CBinaryFile || function()
         var AdoStream = null;
         try
         {
-            WScript.CreateObject( "ADODB.Stream" );
+            AdoStream = WScript.CreateObject( "ADODB.Stream" );
             AdoStream.Type = adTypeText;    //Specify stream type - we cheat and get string but 'like' binary
             AdoStream.CharSet = codePage;
             AdoStream.Open();
@@ -543,7 +543,7 @@ CWUtils.CBinaryFile = CWUtils.CBinaryFile || function()
         var AdoStream = null;
         try
         {
-            WScript.CreateObject( "ADODB.Stream" );
+            AdoStream = WScript.CreateObject( "ADODB.Stream" );
             AdoStream.Type = adTypeText;     //Specify stream type - we cheat and get string but 'like' binary
             AdoStream.CharSet = codePage;
             AdoStream.Open();

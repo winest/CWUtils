@@ -17,6 +17,8 @@ function LoadJs( aJsPath )
     file.Close();
     return strContent;
 }
+eval( LoadJs( "..\\CWGeneralUtils.js" ) );
+eval( LoadJs( "..\\CWString.js" ) );
 eval( LoadJs( "..\\CWFile.js" ) );
 
 //Test functions
@@ -80,6 +82,23 @@ if ( false == fileAdo.Open( WshShell.CurrentDirectory + "\\123.txt" , "_autodete
 var strContent = fileAdo.ReadAll();
 fileAdo.Close();
 WScript.Echo( "Content=" + strContent );
+
+
+
+
+
+
+//Test CBinaryFile
+var fileBin = new CWUtils.CBinaryFile();   //Remember to new CBinaryFile so that all constants are initialized
+var strBin = fileBin.ReadAll( WshShell.CurrentDirectory + "\\Samples\\Icon.ico" );
+WScript.Echo( "strBin.length=" + strBin.length + " (0x" + strBin.length.toString(16) + ")" );
+WScript.Echo( "typeof(strBin)=" + typeof(strBin) );
+WScript.Echo( CWUtils.StringToHexDump( strBin ) );
+
+
+
+
+
 
 WScript.Echo( "\nSuccessfully End" );
 WScript.Quit( 0 );
