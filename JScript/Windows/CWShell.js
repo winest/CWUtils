@@ -32,9 +32,15 @@ CWUtils.IsX86 = CWUtils.IsX86 || function()
     }
 };
 
-CWUtils.Exec = CWUtils.Exec || function( aCmd , aWaitEnd , aWaitEndOutput )
+CWUtils.Exec = CWUtils.Exec || function( aCmd , aWaitEnd , aWaitEndOutput , aPrintWhileWaitEnd )
 {
-    aWaitEnd = aWaitEnd || true;
+    aWaitEnd = ( aWaitEnd ) ? true : false;
+    if ( aWaitEndOutput 
+         //&& Object.prototype.toString.call( aWaitEndOutput ) === "[object Array]"         //Don't check it so programmer can find bug when developing
+       )
+    {
+        aWaitEndOutput.length = 0;
+    }
     
     //Return a WshScriptExec object, refer to http://msdn.microsoft.com/en-us/library/2f38xsxe(v=vs.84).aspx
     var execObj = CWUtils.WshShell.Exec( aCmd );
@@ -44,15 +50,32 @@ CWUtils.Exec = CWUtils.Exec || function( aCmd , aWaitEnd , aWaitEndOutput )
         while ( 0 == execObj.Status )   //0 for running, 1 for completed
         {
             WScript.Sleep( 100 );
-            //Sometimes it will loop infinitely here, it means that you need to clean StdOut at first
-            strOutput += execObj.StdOut.ReadAll();
+
+            //It's needed to clean StdOut anyway or the execObj.Status will not changed to completed forever
+            while ( false == execObj.StdOut.AtEndOfStream )
+            {
+                strOutput = execObj.StdOut.ReadLine();
+                if ( aPrintWhileWaitEnd )
+                {
+                    WScript.Echo( strOutput );
+                }
+                if ( aWaitEndOutput )
+                {
+                    aWaitEndOutput.push( strOutput );
+                }
+            }
         }
-        strOutput += execObj.StdOut.ReadAll();
-        if ( aWaitEndOutput 
-             //&& Object.prototype.toString.call( aWaitEndOutput ) === "[object Array]"         //Don't check it so programmer can find bug when developing
-           )
+        while ( false == execObj.StdOut.AtEndOfStream )
         {
-            aWaitEndOutput.push( strOutput );
+            strOutput = execObj.StdOut.ReadLine();
+            if ( aPrintWhileWaitEnd )
+            {
+                WScript.Echo( strOutput );
+            }
+            if ( aWaitEndOutput )
+            {
+                aWaitEndOutput.push( strOutput );
+            }
         }
     }
     return execObj;

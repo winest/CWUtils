@@ -35,7 +35,7 @@ CWUtils.DecToHexStr = CWUtils.DecToHexStr || function( aDecimal )
 CWUtils.Dump = CWUtils.Dump || function( aElement , aDepth , aDumpFunction )    //aDumpFunction means dump the function implementation
 {
     aDepth = aDepth || 0;
-    aDumpFunction = aDumpFunction || false;
+    aDumpFunction = ( aDumpFunction ) ? true : false;
     var dumpMsg = "\n" + aElement + "(" + typeof(aElement) + ")" + Object.prototype.toString.call( aElement );
     if ( 0 == aDepth )
     {

@@ -23,7 +23,7 @@ WScript.Echo( "CWUtils.RunCmd( \"calc.exe\" ) return " + CWUtils.RunCmd( "calc.e
 
 
 
-var execObj = CWUtils.Exec( "notepad.exe" );
+var execObj = CWUtils.Exec( "notepad.exe" , false , null , false );
 WScript.Echo( "CWUtils.Exec( \"notepad.exe\" ) return " + execObj );
 WScript.Sleep( 1000 );
 WScript.Echo( "CWUtils.SendKeys() return " + CWUtils.SendKeys( execObj.ProcessID , "123" ) );
@@ -31,6 +31,13 @@ WScript.Sleep( 2000 );
 execObj.Terminate();
 WScript.Sleep( 1000 );
 WScript.Echo( "CWUtils.SendKeys() return " + CWUtils.SendKeys( execObj.ProcessID , "N" ) );
+
+
+
+var lsOutput = []
+execObj = CWUtils.Exec( "cmd.exe /c echo 123 & timeout /t 3 & echo 456 & timeout /t 3 & echo 789" , true , lsOutput , true );
+WScript.Echo( "CWUtils.Exec( \"cmd.exe /c echo 123; echo 456; echo 789\" ) return " + execObj );
+WScript.Echo( "lsOutput=" + lsOutput );
 
 
 

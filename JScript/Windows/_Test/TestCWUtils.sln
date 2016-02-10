@@ -6,7 +6,11 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "TestCWCrypto", "TestCWCrypt
 		PortSupplier = 00000000-0000-0000-0000-000000000000
 		Executable = C:\Windows\System32\cscript.exe
 		RemoteMachine = localhost
+<<<<<<< HEAD
 		StartingDirectory = D:\Code\_Include\CWUtils\JScript\Windows\_Test
+=======
+		StartingDirectory = F:\Code\_Include\CWUtils\JScript\Windows\_Test
+>>>>>>> 0d7ec60fc5eb2db788f264d1e2a6ba78d9483ffc
 		Arguments = "TestCWCrypto.bat" //D //Nologo //E:JScript
 		Environment = Default
 		LaunchingEngine = f200a7e7-dea5-11d0-b854-00a0244a1de2
@@ -19,7 +23,11 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "TestCWFile", "TestCWFile.ex
 		PortSupplier = 00000000-0000-0000-0000-000000000000
 		Executable = C:\Windows\System32\cscript.exe
 		RemoteMachine = localhost
+<<<<<<< HEAD
 		StartingDirectory = D:\Code\_Include\CWUtils\JScript\Windows\_Test
+=======
+		StartingDirectory = F:\Code\_Include\CWUtils\JScript\Windows\_Test
+>>>>>>> 0d7ec60fc5eb2db788f264d1e2a6ba78d9483ffc
 		Arguments = "TestCWFile.bat" //D //Nologo //E:JScript
 		Environment = Default
 		LaunchingEngine = f200a7e7-dea5-11d0-b854-00a0244a1de2
@@ -32,7 +40,11 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "TestCWGeneralUtils", "TestC
 		PortSupplier = 00000000-0000-0000-0000-000000000000
 		Executable = C:\Windows\System32\cscript.exe
 		RemoteMachine = localhost
+<<<<<<< HEAD
 		StartingDirectory = D:\Code\_Include\CWUtils\JScript\Windows\_Test
+=======
+		StartingDirectory = F:\Code\_Include\CWUtils\JScript\Windows\_Test
+>>>>>>> 0d7ec60fc5eb2db788f264d1e2a6ba78d9483ffc
 		Arguments = "TestCWGeneralUtils.bat" //D //Nologo //E:JScript
 		Environment = Default
 		LaunchingEngine = f200a7e7-dea5-11d0-b854-00a0244a1de2
@@ -45,7 +57,11 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "TestCWHash", "TestCWHash.ex
 		PortSupplier = 00000000-0000-0000-0000-000000000000
 		Executable = C:\Windows\System32\cscript.exe
 		RemoteMachine = localhost
+<<<<<<< HEAD
 		StartingDirectory = D:\Code\_Include\CWUtils\JScript\Windows\_Test
+=======
+		StartingDirectory = F:\Code\_Include\CWUtils\JScript\Windows\_Test
+>>>>>>> 0d7ec60fc5eb2db788f264d1e2a6ba78d9483ffc
 		Arguments = "TestCWHash.bat" //D //Nologo //E:JScript
 		Environment = Default
 		LaunchingEngine = f200a7e7-dea5-11d0-b854-00a0244a1de2
@@ -58,7 +74,11 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "TestCWMath", "TestCWMath.ex
 		PortSupplier = 00000000-0000-0000-0000-000000000000
 		Executable = C:\Windows\System32\cscript.exe
 		RemoteMachine = localhost
+<<<<<<< HEAD
 		StartingDirectory = D:\Code\_Include\CWUtils\JScript\Windows\_Test
+=======
+		StartingDirectory = F:\Code\_Include\CWUtils\JScript\Windows\_Test
+>>>>>>> 0d7ec60fc5eb2db788f264d1e2a6ba78d9483ffc
 		Arguments = "TestCWMath.bat" //D //Nologo //E:JScript
 		Environment = Default
 		LaunchingEngine = f200a7e7-dea5-11d0-b854-00a0244a1de2
@@ -71,7 +91,11 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "TestCWShell", "TestCWShell.
 		PortSupplier = 00000000-0000-0000-0000-000000000000
 		Executable = C:\Windows\System32\cscript.exe
 		RemoteMachine = localhost
+<<<<<<< HEAD
 		StartingDirectory = D:\Code\_Include\CWUtils\JScript\Windows\_Test
+=======
+		StartingDirectory = F:\Code\_Include\CWUtils\JScript\Windows\_Test
+>>>>>>> 0d7ec60fc5eb2db788f264d1e2a6ba78d9483ffc
 		Arguments = "TestCWShell.bat" //D //Nologo //E:JScript
 		Environment = Default
 		LaunchingEngine = f200a7e7-dea5-11d0-b854-00a0244a1de2
@@ -84,7 +108,11 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "TestCWStd", "TestCWStd.exe"
 		PortSupplier = 00000000-0000-0000-0000-000000000000
 		Executable = C:\Windows\System32\cscript.exe
 		RemoteMachine = localhost
+<<<<<<< HEAD
 		StartingDirectory = D:\Code\_Include\CWUtils\JScript\Windows\_Test
+=======
+		StartingDirectory = F:\Code\_Include\CWUtils\JScript\Windows\_Test
+>>>>>>> 0d7ec60fc5eb2db788f264d1e2a6ba78d9483ffc
 		Arguments = "TestCWStd.bat" //D //Nologo //E:JScript
 		Environment = Default
 		LaunchingEngine = f200a7e7-dea5-11d0-b854-00a0244a1de2
@@ -110,7 +138,11 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "TestCWXmlHttp", "TestCWXmlH
 		PortSupplier = 00000000-0000-0000-0000-000000000000
 		Executable = C:\Windows\System32\cscript.exe
 		RemoteMachine = localhost
+<<<<<<< HEAD
 		StartingDirectory = D:\Code\_Include\CWUtils\JScript\Windows\_Test
+=======
+		StartingDirectory = F:\Code\_Include\CWUtils\JScript\Windows\_Test
+>>>>>>> 0d7ec60fc5eb2db788f264d1e2a6ba78d9483ffc
 		Arguments = "TestCWXmlHttp.bat" //D //Nologo //E:JScript
 		Environment = Default
 		LaunchingEngine = f200a7e7-dea5-11d0-b854-00a0244a1de2
@@ -166,10 +198,13 @@ Global
 		{CEBD0EC6-4933-409C-9FA7-0717A12A0391}.Debug|x64.ActiveCfg = Debug
 		{CEBD0EC6-4933-409C-9FA7-0717A12A0391}.Release|Mixed Platforms.ActiveCfg = Debug
 		{CEBD0EC6-4933-409C-9FA7-0717A12A0391}.Release|x64.ActiveCfg = Debug
+<<<<<<< HEAD
 		{3DDC8F4B-8303-4046-ADF8-08974B736699}.Debug|Mixed Platforms.ActiveCfg = Debug
 		{3DDC8F4B-8303-4046-ADF8-08974B736699}.Debug|x64.ActiveCfg = Debug
 		{3DDC8F4B-8303-4046-ADF8-08974B736699}.Release|Mixed Platforms.ActiveCfg = Debug
 		{3DDC8F4B-8303-4046-ADF8-08974B736699}.Release|x64.ActiveCfg = Debug
+=======
+>>>>>>> 0d7ec60fc5eb2db788f264d1e2a6ba78d9483ffc
 		{8847AB4B-005C-4C0D-94FB-02ABD68D2F2C}.Debug|Mixed Platforms.ActiveCfg = Debug
 		{8847AB4B-005C-4C0D-94FB-02ABD68D2F2C}.Debug|x64.ActiveCfg = Debug
 		{8847AB4B-005C-4C0D-94FB-02ABD68D2F2C}.Release|Mixed Platforms.ActiveCfg = Debug
