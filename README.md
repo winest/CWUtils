@@ -1,6 +1,6 @@
 ## About CWUtils
 
-CWUtils is a set of standalone APIs for developers to speed up their programming.
+CWUtils is a set of standalone APIs for developers to speed up their programming.<br />
 The word "standalone" means almost all necessary functions are wrapped in a single file,
 so it should be very easy to port them to other projects or learn how to implement things
 on different languages and platforms.

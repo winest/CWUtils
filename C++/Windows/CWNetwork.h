@@ -56,12 +56,45 @@ typedef union _MacAddress
 #ifndef ETHERNET_TYPE_WOL
     #define ETHERNET_TYPE_WOL     0x0842
 #endif
+#ifndef ETHERNET_TYPE_PPPOE_SESSION
+    #define ETHERNET_TYPE_PPPOE_SESSION  0x8864
+#endif
 typedef struct _EthernetHdr     //Ethernet Header ( 14 bytes )
 {
     MacAddress DstMacAddr;
     MacAddress SrcMacAddr;
     uint16_t   EtherType;
 } EthernetHdr;
+
+
+typedef struct _PppoeSessionHdr     //PPPoE Session Header ( 2 bytes )
+{
+#ifdef BIG_ENDIAN
+    uint8_t Ver : 4;
+    uint8_t Type : 4;
+#else
+    uint8_t Type : 4;
+    uint8_t Ver : 4;
+#endif
+    uint8_t Code;
+    uint16_t SessionId;
+    uint16_t Length;
+} PppoeSessionHdr;
+
+#ifndef PPP_TYPE_IPV4
+    #define PPP_TYPE_IPV4  0x0021
+#endif
+#ifndef PPP_TYPE_IPV6
+    #define PPP_TYPE_IPV6  0x0057
+#endif
+#ifndef PPP_TYPE_ICMP
+    #define PPP_TYPE_ICMP  0x8021
+#endif
+
+typedef struct _PppHdr     //PPPoE Session Header ( 2 bytes )
+{
+    uint16_t   PppType;
+} PppHdr;
 
 
 #ifndef IPV4_ADDR_SIZE
