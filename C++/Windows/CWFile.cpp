@@ -863,7 +863,7 @@ BOOL CFile::Open( CONST WCHAR * aPath , CFileOpenAttr aOpenAttr , BOOL aMoveToEn
 
 BOOL CFile::Write( CONST UCHAR * aData , SIZE_T aDataSize )
 {
-    BOOL bRet;
+    BOOL bRet = FALSE;
     DWORD dwWritten;
 
     do 

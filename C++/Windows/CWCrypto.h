@@ -13,6 +13,7 @@
 
 #include <Windows.h>
 #include <Wincrypt.h>
+#include <string>
 
 namespace CWUtils
 {
