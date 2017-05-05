@@ -27,6 +27,8 @@ extern "C" {
 //#define __VA_ARGS_NUM__ (...)       ( ( sizeof((size_t[]){__VA_ARGS__}) / sizeof(size_t) ) - 1 )
 #define NUM_TO_TEXTA( aNum )        ( #aNum )
 #define NUM_TO_TEXTW( aNum )        ( L#aNum )
+#define NUM_TEXT_PAIRA( aNum )      { aNum , #aNum }
+#define NUM_TEXT_PAIRW( aNum )      { aNum , L#aNum }
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 __inline HINSTANCE GetModuleHInstance() { return (HINSTANCE)&__ImageBase; }

@@ -12,6 +12,8 @@ namespace CWUtils
 BOOL StringToWString( IN CONST std::string & aString , OUT std::wstring & aWString , DWORD aCodePage )
 {
     BOOL bRet = FALSE;
+    aWString.clear();
+
     DWORD dwFlag = ( CP_UTF8 == aCodePage ) ? MB_ERR_INVALID_CHARS : 0;
     WCHAR wzBuf[4096];
     INT nBuf = _countof( wzBuf );
@@ -43,6 +45,8 @@ BOOL StringToWString( IN CONST std::string & aString , OUT std::wstring & aWStri
 BOOL WStringToString( IN CONST std::wstring & aWString , OUT std::string & aString , DWORD aCodePage )
 {    
     BOOL bRet = FALSE;
+    aString.clear();
+
     #if ( _WIN32_WINNT_VISTA <= _WIN32_WINNT )
         DWORD dwFlag = ( CP_UTF8 == aCodePage ) ? WC_ERR_INVALID_CHARS : 0;
     #else
@@ -77,6 +81,7 @@ BOOL WStringToString( IN CONST std::wstring & aWString , OUT std::string & aStri
 
 VOID SplitStringA( CONST string & aSrcString , vector<string> & aOutput , CONST CHAR * aDelimiter )
 {    
+    aOutput.clear();
     string::size_type lastPos = aSrcString.find_first_not_of( aDelimiter , 0 );   //Skip delimiters at beginning    
     string::size_type pos     = aSrcString.find_first_of( aDelimiter , lastPos ); //Find first "non-delimiter"
 
@@ -89,7 +94,8 @@ VOID SplitStringA( CONST string & aSrcString , vector<string> & aOutput , CONST 
 }
 
 VOID SplitStringW( CONST wstring & aSrcString , vector<wstring> & aOutput , CONST WCHAR * aDelimiter )
-{    
+{   
+    aOutput.clear();
     wstring::size_type lastPos = aSrcString.find_first_not_of( aDelimiter , 0 );   //Skip delimiters at beginning    
     wstring::size_type pos     = aSrcString.find_first_of( aDelimiter , lastPos ); //Find first "non-delimiter"
 
@@ -208,7 +214,7 @@ VOID ToHexString( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , 
     aOutput.reserve( aInputSize * (2 + uSplitterLen) );
     for ( size_t i = 0 ; i < aInputSize ; i++ )
     {
-        INT nCurr = i * ( 2 + uSplitterLen );
+        //INT nCurr = i * ( 2 + uSplitterLen );
         UINT32 uVal = aryTable[aInput[i]];
         aOutput.push_back( (CHAR)uVal );
         aOutput.push_back( (CHAR)( uVal >> 16 ) );
@@ -238,14 +244,14 @@ VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , CO
     //<8 bytes address><aSplitter><aBytesPerLine's hex with (aBytesPerLine - 1)'s space><aSplitter><aBytesPerLine's ascii><2 bytes line separator>
     size_t uOneLineSize = 8 + uSplitterLen * 2 + aBytesPerLine * 4 - 1 + strLineSep.length();
     aOutput.reserve( (size_t)ceil((double)aInputSize/(double)aBytesPerLine) * uOneLineSize );
-    for ( int i = 0 ; i < aInputSize ; i += aBytesPerLine )
+    for ( size_t i = 0 ; i < aInputSize ; i += aBytesPerLine )
     {
         CHAR szAddr[8+16];  //Assume aSplitter has at most 15 bytes
         _snprintf_s( szAddr , _TRUNCATE , "%08X%hs" , i , aSplitter );
         aOutput.append( szAddr );
-        for ( int j = 0 ; j < aBytesPerLine ; j++ )
+        for ( size_t j = 0 ; j < aBytesPerLine ; j++ )
         {
-            int nCurr = i + j;
+            size_t nCurr = i + j;
             if ( nCurr >= aInputSize )
             {
                 aOutput.append( (aBytesPerLine - j) * 3 - 1 , ' ' );
@@ -262,9 +268,9 @@ VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , CO
 
         aOutput.append( aSplitter );
 
-        for ( int j = 0 ; j < aBytesPerLine ; j++ )
+        for ( size_t j = 0 ; j < aBytesPerLine ; j++ )
         {
-            int nCurr = i + j;
+            size_t nCurr = i + j;
             if ( nCurr >= aInputSize )
             {
                 aOutput.append( aBytesPerLine - j , ' ' );
@@ -284,7 +290,9 @@ VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , CO
 VOID ReplaceStringW( IN OUT std::wstring & aString , IN CONST WCHAR * aOldString , IN CONST WCHAR * aNewString )
 {
     if ( NULL == aOldString || NULL == aNewString )
+    {
         return;
+    }
 
     std::wstring::size_type sizeOld = ::wcslen( aOldString );
     std::wstring::size_type sizeNew = ::wcslen( aNewString );
@@ -434,7 +442,7 @@ StringType GetStringTypeA( CONST CHAR * aStr , SIZE_T aStrLen )
                     {
                         type = STRING_TYPE_ALPHANUM;
                     }
-                    else if ( IsBase64SpecialCharA(c) )
+                    else if ( IsBase64SpecialCharA((CHAR)c) )
                     {
                         type = STRING_TYPE_BASE64;
                     }
@@ -462,7 +470,7 @@ StringType GetStringTypeA( CONST CHAR * aStr , SIZE_T aStrLen )
                     {
                         type = STRING_TYPE_ALPHANUM;
                     }
-                    else if ( IsBase64SpecialCharA(c) )
+                    else if ( IsBase64SpecialCharA((CHAR)c) )
                     {
                         type = STRING_TYPE_BASE64;
                     }
@@ -486,7 +494,7 @@ StringType GetStringTypeA( CONST CHAR * aStr , SIZE_T aStrLen )
             {
                 if ( false == isalnum(c) )
                 {
-                    if ( IsBase64SpecialCharA(c) )
+                    if ( IsBase64SpecialCharA((CHAR)c) )
                     {
                         type = STRING_TYPE_BASE64;
                     }
@@ -508,7 +516,7 @@ StringType GetStringTypeA( CONST CHAR * aStr , SIZE_T aStrLen )
             }
             case STRING_TYPE_BASE64 :
             {
-                if ( false == IsBase64CharA(c) )
+                if ( false == IsBase64CharA((CHAR)c) )
                 {
                     if ( isprint(c) )
                     {
@@ -561,7 +569,7 @@ StringType GetStringTypeA( CONST CHAR * aStr , SIZE_T aStrLen )
                 {
                     type = STRING_TYPE_ALPHA;
                 }
-                else if ( IsBase64SpecialCharA(c) )
+                else if ( IsBase64SpecialCharA((CHAR)c) )
                 {
                     type = STRING_TYPE_BASE64;
                 }
