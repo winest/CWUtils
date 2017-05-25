@@ -1,21 +1,11 @@
 #include "stdafx.h"
-#include "DllInjectServer.h"
+#include "CWDllInjectServer.h"
 #pragma warning( disable : 4127 )
 
-#include <winternl.h>
-#include <Strsafe.h>
-#include <Psapi.h>
 using namespace std;
 
-#include "CWGeneralUtils.h"
-#include "CWString.h"
-#include "CWFile.h"
-#include "CWRegistry.h"
-#include "CWProcess.h"
-#include "CWIni.h"
-
 #include "_GenerateTmh.h"
-#include "DllInjectServer.tmh"
+#include "CWDllInjectServer.tmh"
 
 namespace CWUtils
 {
@@ -30,11 +20,6 @@ extern "C" {
 
 #define REMOTE_THREAD_SETUP_READY_TIMEOUT    ( 30 * 1000 )
 #define REMOTE_THREAD_FREE_TIMEOUT           ( 20 * 1000 )
-
-
-
-extern HMODULE g_hModule;
-extern HANDLE  g_ActiveThread;
 
 
 
@@ -78,9 +63,8 @@ BOOL CDllInjectServer::RegisterDllInject( DllInjectServerUserCfg * aUserCfg )
     return bRet;
 }
 
-BOOL CDllInjectServer::UnregisterDllInject( DllInjectServerUserCfg * aUserCfg )
+BOOL CDllInjectServer::UnregisterDllInject()
 {
-    _ASSERT( NULL != aUserCfg );
     BOOL bRet = FALSE;
 
     do 
@@ -89,20 +73,6 @@ BOOL CDllInjectServer::UnregisterDllInject( DllInjectServerUserCfg * aUserCfg )
         {
             DbgOut( ERRO , DBG_DLL_INJECT_MGR , "Please call StopMonitor() before UnregisterDllInject()" );
             SetLastError( ERROR_ALREADY_RUNNING_LKG );
-            break;
-        }
-
-        if ( ( 0 < m_UserCfg.wstrDllPath32.length() ) && 
-             (  m_UserCfg.wstrDllPath32 != aUserCfg->wstrDllPath32 ) )
-        {
-            DbgOut( ERRO , DBG_DLL_INJECT_MGR , "DllPath32 mismatched. wstrDllPath32()=%ws, aDllPath32=%ws" , m_UserCfg.wstrDllPath32.c_str() , aUserCfg->wstrDllPath32.c_str() );
-            break;
-        }
-
-        if ( ( 0 < m_UserCfg.wstrDllPath64.length() ) && 
-             ( m_UserCfg.wstrDllPath64 != aUserCfg->wstrDllPath64 ) )
-        {
-            DbgOut( ERRO , DBG_DLL_INJECT_MGR , "DllPath64 mismatched. wstrDllPath64()=%ws, aDllPath64=%ws" , m_UserCfg.wstrDllPath64.c_str() , aUserCfg->wstrDllPath64.c_str() );
             break;
         }
 
@@ -437,7 +407,7 @@ BOOL CDllInjectServer::StartInject( DWORD aPid )
 
         //Duplicate local handles to remote handles
         DuplicateHandle( GetCurrentProcess() , hInitRspEvent , it->second.hRemoteProc , (LPHANDLE)&pSmInit->InitReq.Remote.hEvtInitRsp , 0 , FALSE , DUPLICATE_SAME_ACCESS );
-        DuplicateHandle( GetCurrentProcess() , g_ActiveThread , it->second.hRemoteProc , (LPHANDLE)&pSmInit->InitReq.Remote.hDllInjectMgrAliveThread , 0 , FALSE , DUPLICATE_SAME_ACCESS );
+        DuplicateHandle( GetCurrentProcess() , m_hActiveThread , it->second.hRemoteProc , (LPHANDLE)&pSmInit->InitReq.Remote.hDllInjectMgrAliveThread , 0 , FALSE , DUPLICATE_SAME_ACCESS );
 
         for ( size_t i = 0 ; i < _countof( pSmInit->InitReq.Remote.hPerServerSm ) ; i++ )
         {

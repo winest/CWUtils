@@ -18,8 +18,13 @@
 
 #include <Windows.h>
 #include <vector>
-#include "DllInjectCommonDef.h"
-#include "DllInjectServer.h"
+#include "CWDllInjectCommonDef.h"
+#include "CWDllInjectServer.h"
+
+#include "CWString.h"
+#include "CWFile.h"
+#include "CWProcess.h"
+#include "CWIni.h"
 
 
 
@@ -35,10 +40,7 @@ extern "C" {
 class CDllInjectMgr
 {
     public :
-        CDllInjectMgr()
-        {
-            ZeroMemory( &m_vecDllInjectServer , sizeof(m_vecDllInjectServer) );
-        }
+        CDllInjectMgr() : m_uLoadLibraryW32(NULL) , m_uFreeLibrary32(NULL) , m_uLoadLibraryW64(NULL) , m_uFreeLibrary64(NULL) {}
         virtual ~CDllInjectMgr()
         {
             this->UnInit();
@@ -48,7 +50,7 @@ class CDllInjectMgr
         BOOL Init( CONST WCHAR * aCfgPath );
         BOOL UnInit();
         BOOL RegisterDllInject( CONST WCHAR * aRuleName , DllInjectServerUserCfg * aUserCfg );
-        BOOL UnregisterDllInject( CONST WCHAR * aRuleName , DllInjectServerUserCfg * aUserCfg );
+        BOOL UnregisterDllInject( CONST WCHAR * aRuleName );
         BOOL StartMonitor( CONST WCHAR * aRuleName , BOOL aCheckExistProcs = FALSE );
         BOOL StopMonitor( CONST WCHAR * aRuleName );
 
@@ -76,6 +78,9 @@ class CDllInjectMgr
 
         UINT32 m_uLoadLibraryW32 , m_uFreeLibrary32;
         UINT64 m_uLoadLibraryW64 , m_uFreeLibrary64;
+
+        HANDLE m_hActiveThreadQuitEvent;
+        HANDLE m_hActiveThread;
 };
 
 

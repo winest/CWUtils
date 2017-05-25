@@ -1,5 +1,6 @@
 @ECHO OFF
 CD /D "%~dp0"
+
 SET "ToolDir=F:\Code\_Tools\WppLog\Windows"
 SET "LogName=TestCWUtils"
 

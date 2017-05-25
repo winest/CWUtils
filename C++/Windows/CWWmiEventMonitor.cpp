@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #pragma warning( disable : 4127 )
-#include "WmiEventMonitor.h"
+#include "CWWmiEventMonitor.h"
 #pragma comment( lib , "wbemuuid.lib" )
 
 

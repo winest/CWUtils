@@ -73,6 +73,10 @@ typedef struct _WppHexDump {
 #define WPP_CONTROL_GUIDS \
     WPP_DEFINE_CONTROL_GUID( WppLogGuid , (84B0E5DA , 6A9F , 4124 , B960 , EBC6507AFC1B) , \
     WPP_DEFINE_BIT(DBG_TEST)                            \
+    WPP_DEFINE_BIT(DBG_DLL_INJECT_MGR)                  \
+    WPP_DEFINE_BIT(DBG_DLL_INJECT_MGR_HELPER)           \
+    WPP_DEFINE_BIT(DBG_NOTEPAD_HANDLER)                 \
+    WPP_DEFINE_BIT(DBG_SKYPE_HANDLER)                   \
     WPP_DEFINE_BIT(DBG_UTILS)                           \
     )
 

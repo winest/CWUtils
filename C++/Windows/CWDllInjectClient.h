@@ -16,7 +16,7 @@
  */
 
 
-#include "DllInjectCommonDef.h"
+#include "CWDllInjectCommonDef.h"
 #include <Windows.h>
 #include <string>
 

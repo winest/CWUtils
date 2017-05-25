@@ -872,11 +872,11 @@ BOOL CFile::Write( CONST UCHAR * aData , SIZE_T aDataSize )
         {
             break;
         }
-        if ( FALSE == WriteFile( m_hFile , aData , aDataSize , &dwWritten , NULL ) )
+        if ( FALSE == WriteFile( m_hFile , aData , (DWORD)aDataSize , &dwWritten , NULL ) )
         {
             break;
         }
-        if ( dwWritten != aDataSize )
+        if ( dwWritten != (DWORD)aDataSize )
         {
             break;
         }

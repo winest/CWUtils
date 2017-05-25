@@ -19,14 +19,22 @@
  */
 
 #include <Windows.h>
+#include <winternl.h>
+#include <Strsafe.h>
+#include <Psapi.h>
+#include <process.h>
 #include <string>
 #include <map>
 #include <list>
 #include <vector>
 
+#include "CWGeneralUtils.h"
+#include "CWString.h"
 #include "CWFile.h"
+#include "CWProcess.h"
+#include "CWIni.h"
 
-#include "DllInjectCommonDef.h"
+#include "CWDllInjectCommonDef.h"
 
 
 
@@ -145,9 +153,9 @@ class CDllInjectServer
         #pragma pack( pop )
 
     public :
-        CDllInjectServer( CONST WCHAR * aCfgPath , size_t aRuleIndex , CONST WCHAR * aRuleName , 
+        CDllInjectServer( HANDLE aActiveThread , CONST WCHAR * aCfgPath , size_t aRuleIndex , CONST WCHAR * aRuleName , 
                           UINT32 aLoadLibraryW32 , UINT32 aFreeLibrary32 , UINT64 aLoadLibraryW64 , UINT64 aFreeLibrary64 ) :
-            m_wstrCfgPath(aCfgPath) , m_uRuleIndex(aRuleIndex) , m_wstrRuleName(aRuleName) ,
+            m_hActiveThread(aActiveThread) , m_wstrCfgPath(aCfgPath) , m_uRuleIndex(aRuleIndex) , m_wstrRuleName(aRuleName) ,
             m_uLoadLibraryW32(aLoadLibraryW32) , m_uFreeLibrary32(aFreeLibrary32) , m_uLoadLibraryW64(aLoadLibraryW64) , m_uFreeLibrary64(aFreeLibrary64) ,
             m_bStarted(FALSE) , m_lJobThreadCnt(0) , m_hEvtNewJob(NULL) , m_hJobCreatorThread(NULL) , m_hJobWorkerThreads(NULL) 
         {
@@ -173,7 +181,7 @@ class CDllInjectServer
         CONST WCHAR * GetRuleName() { return m_wstrRuleName.c_str(); }
 
         BOOL RegisterDllInject( DllInjectServerUserCfg * aUserCfg );
-        BOOL UnregisterDllInject( DllInjectServerUserCfg * aUserCfg );
+        BOOL UnregisterDllInject();
 
         BOOL StartMonitor( BOOL aCheckExistProcs );
         BOOL StopMonitor();
@@ -207,6 +215,7 @@ class CDllInjectServer
         BOOL StopInject( DWORD aPid );
         
     private :
+        HANDLE m_hActiveThread;
         std::wstring m_wstrModDir;                  //Current directory path
         CONST std::wstring m_wstrCfgPath;           //Ini path
         CONST size_t m_uRuleIndex;

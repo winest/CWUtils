@@ -1,16 +1,9 @@
 #include "stdafx.h"
-#include "DllInjectMgr.h"
+#include "CWDllInjectMgr.h"
 #pragma warning( disable : 4127 )
 
-#include "DllInjectServer.h"
-
-#include "CWString.h"
-#include "CWFile.h"
-#include "CWProcess.h"
-#include "CWIni.h"
-
 #include "_GenerateTmh.h"
-#include "DllInjectMgr.tmh"
+#include "CWDllInjectMgr.tmh"
 
 namespace CWUtils
 {
@@ -29,19 +22,18 @@ extern "C" {
 #define LOADLIBRARY_FUNCTION_NAMEW           L"LoadLibraryW"
 #define FREELIBRARY_FUNCTION_NAMEW           L"FreeLibrary"
 
-HANDLE g_ActiveThreadQuitEvent = NULL;
-HANDLE g_ActiveThread = NULL;
+
 
 UINT CALLBACK ActiveThread( VOID * aArg )
 {
-    UNREFERENCED_PARAMETER( aArg );
-    WaitForSingleObject( g_ActiveThreadQuitEvent , INFINITE );
+    HANDLE hActiveThreadQuitEvent = (HANDLE)aArg;
+    WaitForSingleObject( hActiveThreadQuitEvent , INFINITE );
     return 0;
 }
 
 BOOL CDllInjectMgr::Init( CONST WCHAR * aCfgPath )
 {
-    _ASSERT( NULL == g_ActiveThreadQuitEvent && NULL == g_ActiveThread );
+    _ASSERT( NULL == m_hActiveThreadQuitEvent && NULL == m_hActiveThread );
     DbgOut( VERB , DBG_DLL_INJECT_MGR , "Enter" );
 
     BOOL bRet = FALSE;
@@ -119,12 +111,12 @@ BOOL CDllInjectMgr::RegisterDllInject( CONST WCHAR * aRuleName , DllInjectServer
     return bRet;
 }
 
-BOOL CDllInjectMgr::UnregisterDllInject( CONST WCHAR * aRuleName , DllInjectServerUserCfg * aUserCfg )
+BOOL CDllInjectMgr::UnregisterDllInject( CONST WCHAR * aRuleName )
 {
     BOOL bRet = FALSE;
     do 
     {
-        if ( NULL == aRuleName || NULL == aUserCfg )
+        if ( NULL == aRuleName )
         {
             SetLastError( ERROR_INVALID_PARAMETER );
             break;
@@ -136,7 +128,7 @@ BOOL CDllInjectMgr::UnregisterDllInject( CONST WCHAR * aRuleName , DllInjectServ
             break;
         }
 
-        bRet = m_vecDllInjectServer[uIndex]->UnregisterDllInject( aUserCfg );
+        bRet = m_vecDllInjectServer[uIndex]->UnregisterDllInject();
     } while ( 0 );
     return bRet;
 }
@@ -335,32 +327,32 @@ BOOL CDllInjectMgr::GetFunctionAddresses()
 BOOL CDllInjectMgr::CreateActiveThread()
 {
     //Create thread at the beginning since Init() may call StartHook() to inject DLL to remote process
-    //Remote injected DLL will monitor g_ActiveThread to determine whether DllInjectMgr is crashed or not
+    //Remote injected DLL will monitor m_hActiveThread to determine whether DllInjectMgr is crashed or not
     BOOL bRet = FALSE;
 
     do 
     {
         UINT uActiveTid;
-        if ( NULL == g_ActiveThreadQuitEvent )
+        if ( NULL == m_hActiveThreadQuitEvent )
         {
-            g_ActiveThreadQuitEvent = CreateEventW( NULL , FALSE , FALSE , NULL );
-            if ( NULL == g_ActiveThreadQuitEvent )
+            m_hActiveThreadQuitEvent = CreateEventW( NULL , FALSE , FALSE , NULL );
+            if ( NULL == m_hActiveThreadQuitEvent )
             {
-                DbgOut( ERRO , DBG_DLL_INJECT_MGR , "Failed to create g_ActiveThreadQuitEvent. GetLastError()=%!WINERROR!" , GetLastError() );
+                DbgOut( ERRO , DBG_DLL_INJECT_MGR , "Failed to create m_hActiveThreadQuitEvent. GetLastError()=%!WINERROR!" , GetLastError() );
                 break;
             }
         }
         
-        if ( NULL == g_ActiveThread )
+        if ( NULL == m_hActiveThread )
         {
-            g_ActiveThread = (HANDLE)_beginthreadex( NULL , 0 , ActiveThread , NULL , 0 , &uActiveTid );
-            if ( NULL == g_ActiveThread )
+            m_hActiveThread = (HANDLE)_beginthreadex( NULL , 0 , ActiveThread , m_hActiveThreadQuitEvent , 0 , &uActiveTid );
+            if ( NULL == m_hActiveThread )
             {
-                DbgOut( ERRO , DBG_DLL_INJECT_MGR , "Failed to create g_ActiveThread. GetLastError()=%!WINERROR!" , GetLastError() );
+                DbgOut( ERRO , DBG_DLL_INJECT_MGR , "Failed to create m_hActiveThread. GetLastError()=%!WINERROR!" , GetLastError() );
                 break;
             }
-            DbgOut( INFO , DBG_DLL_INJECT_MGR , "Active thread is created. g_ActiveThreadQuitEvent=0x%p, g_ActiveThread=0x%p, uActiveTid=0x%04X" ,
-                                                g_ActiveThreadQuitEvent , g_ActiveThread , uActiveTid );
+            DbgOut( INFO , DBG_DLL_INJECT_MGR , "Active thread is created. m_hActiveThreadQuitEvent=0x%p, m_hActiveThread=0x%p, uActiveTid=0x%04X" ,
+                                                m_hActiveThreadQuitEvent , m_hActiveThread , uActiveTid );
         }
         
         bRet = TRUE;
@@ -371,18 +363,18 @@ BOOL CDllInjectMgr::CreateActiveThread()
 
 BOOL CDllInjectMgr::DestroyActiveThread()
 {
-    if ( g_ActiveThreadQuitEvent )
+    if ( m_hActiveThreadQuitEvent )
     {
-        SetEvent( g_ActiveThreadQuitEvent );
-        CloseHandle( g_ActiveThreadQuitEvent );
-        g_ActiveThreadQuitEvent = NULL;
+        SetEvent( m_hActiveThreadQuitEvent );
+        CloseHandle( m_hActiveThreadQuitEvent );
+        m_hActiveThreadQuitEvent = NULL;
     }
 
-    if ( g_ActiveThread )
+    if ( m_hActiveThread )
     {
-        WaitForSingleObject( g_ActiveThread , INFINITE );
-        CloseHandle( g_ActiveThread );
-        g_ActiveThread = NULL;
+        WaitForSingleObject( m_hActiveThread , INFINITE );
+        CloseHandle( m_hActiveThread );
+        m_hActiveThread = NULL;
     }
     return TRUE;
 }
@@ -406,7 +398,7 @@ BOOL CDllInjectMgr::CreateServers( CONST WCHAR * aCfgPath )
         size_t uRuleIndex = 0;
         for ( list<wstring>::iterator it = lsSections.begin() ; it != lsSections.end() ; it++ )
         {
-            CDllInjectServer * pCtrl = new (std::nothrow) CDllInjectServer( aCfgPath , uRuleIndex , it->c_str() , 
+            CDllInjectServer * pCtrl = new (std::nothrow) CDllInjectServer( m_hActiveThread , aCfgPath , uRuleIndex , it->c_str() , 
                                                                             m_uLoadLibraryW32 , m_uFreeLibrary32 , 
                                                                             m_uLoadLibraryW64 , m_uFreeLibrary64 );
             if ( NULL != pCtrl )

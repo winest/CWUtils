@@ -1,10 +1,10 @@
 #include "stdafx.h"
-#include "DllInjectClient.h"
+#include "CWDllInjectClient.h"
 
 #include "CWGeneralUtils.h"
 
 #include "_GenerateTmh.h"
-#include "DllInjectClient.tmh"
+#include "CWDllInjectClient.tmh"
 
 namespace CWUtils
 {
