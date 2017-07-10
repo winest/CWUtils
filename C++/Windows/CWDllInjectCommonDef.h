@@ -30,6 +30,8 @@ extern "C" {
 typedef enum _PER_SERVER_EVT_INDEX
 {
     PER_SERVER_EVT_INDEX_STOP = 0 , 
+    PER_SERVER_EVT_INDEX_LOCAL_REQ_OK ,
+    PER_SERVER_EVT_INDEX_LOCAL_RSP ,
     PER_SERVER_EVT_INDEX_REMOTE_REQ ,
     PER_SERVER_EVT_INDEX_REMOTE_RSP_OK ,
     PER_SERVER_EVT_COUNT
@@ -38,6 +40,8 @@ typedef enum _PER_SERVER_EVT_INDEX
 typedef enum _PER_CLIENT_EVT_INDEX
 {
     PER_CLIENT_EVT_INDEX_STOP = 0 ,
+    PER_CLIENT_EVT_INDEX_LOCAL_REQ ,
+    PER_CLIENT_EVT_INDEX_LOCAL_RSP_OK ,
     PER_CLIENT_EVT_INDEX_REMOTE_REQ_OK ,
     PER_CLIENT_EVT_INDEX_REMOTE_RSP ,
     PER_CLIENT_EVT_COUNT
@@ -116,8 +120,8 @@ typedef struct _DLL_INJECT_SERVER_SM_INIT
 
 typedef enum _DLL_INJECT_SERVER_SM_DATA_TYPE
 {
-    DLL_INJECT_SERVER_SM_DATA_TYPE_SCAN_REQ = 0 ,
-    DLL_INJECT_SERVER_SM_DATA_TYPE_SCAN_RSP
+    DLL_INJECT_SERVER_SM_DATA_TYPE_GENERAL_REQ = 0 ,
+    DLL_INJECT_SERVER_SM_DATA_TYPE_GENERAL_RSP
 } DLL_INJECT_SERVER_SM_DATA_TYPE;
 
 //This is the general structure for per-server's private share memories between local(DllInjectServer) and remote(Skype, Line...)
@@ -133,21 +137,22 @@ typedef struct _DLL_INJECT_SERVER_SM_DATA_HEADER
     UINT64                  pLocalCtx;      //Per-process context with structure InjectClientInfo
     UINT64                  pReserved[8];
     DLL_INJECT_SERVER_SM_DATA_TYPE       uDataType;
+    DWORD                   dwStatus;       //Useful if there is any error in the other side
     DWORD                   dwDataSize;     //Data size in bytes of the pData field
     CHAR                    pData[1];
 } DLL_INJECT_SERVER_SM_DATA_HEADER , *PDLL_INJECT_SERVER_SM_DATA_HEADER;
 
-typedef struct _DLL_INJECT_SERVER_SM_DATA_SCAN_REQ
+typedef struct _DLL_INJECT_SERVER_SM_DATA_GENERAL_REQ
 {
     DWORD     dwReqSize;            //Data size in bytes of the pReq field
     CHAR      pReq[1];
-} DLL_INJECT_SERVER_SM_DATA_SCAN_REQ;
+} DLL_INJECT_SERVER_SM_DATA_GENERAL_REQ;
 
-typedef struct _DLL_INJECT_SERVER_SM_DATA_SCAN_RSP
+typedef struct _DLL_INJECT_SERVER_SM_DATA_GENERAL_RSP
 {
     DWORD     dwRspSize;            //Data size in bytes of the pRsp field
     CHAR      pRsp[1];
-} DLL_INJECT_SERVER_SM_DATA_SCAN_RSP;
+} DLL_INJECT_SERVER_SM_DATA_GENERAL_RSP;
 
 #pragma pack( pop )
 

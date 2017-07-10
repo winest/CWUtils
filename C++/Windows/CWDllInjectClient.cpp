@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "CWDllInjectClient.h"
 
-#include "CWGeneralUtils.h"
 
 #include "_GenerateTmh.h"
 #include "CWDllInjectClient.tmh"
@@ -15,7 +14,7 @@ extern "C" {
 
 
 
-BOOL CDllInjectClient::Connect( CONST WCHAR * aKey , PFN_DLL_INJECT_CLIENT_INIT_CBK aInitCbk )
+BOOL CDllInjectClient::Connect( CONST WCHAR * aKey , PFN_DLL_INJECT_CLIENT_INIT_CBK aInitCbk , PFN_DLL_INJECT_CLIENT_DATA_RECV_CBK aDataCbk )
 {
     DbgOut( VERB , DBG_DLL_INJECT_MGR , "Enter. aKey=%ws" , aKey );
 
@@ -129,6 +128,23 @@ BOOL CDllInjectClient::Connect( CONST WCHAR * aKey , PFN_DLL_INJECT_CLIENT_INIT_
     DbgOut( VERB , DBG_DLL_INJECT_MGR , "Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_STOP]=0x%p, Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_REMOTE_REQ_OK]=0x%p, Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_REMOTE_RSP]=0x%p" ,
             (HANDLE)pSmInit->InitReq.Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_STOP] , (HANDLE)pSmInit->InitReq.Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_REMOTE_REQ_OK] , (HANDLE)pSmInit->InitReq.Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_REMOTE_RSP] );
 
+    //Create a thread to receive data from server
+    if ( aDataCbk )
+    {
+        UINT uDataThreadId = 0;
+        m_hDataRecvThread = (HANDLE)_beginthreadex( NULL , 0 , CDllInjectClient::DataRecvThread , this , 0 , &uDataThreadId );
+        if ( NULL == m_hDataRecvThread )
+        {
+            DbgOut( ERRO , DBG_DLL_INJECT_MGR , "_beginthreadex() with for DataRecvThread failed. GetLastError()=%!WINERROR!" , GetLastError() );
+            pSmInit->InitRsp.dwHookStatus = GetLastError();
+            goto exit;
+        }
+        m_pfnDataRecv = aDataCbk;
+    }
+    
+
+
+
     pSmInit->InitRsp.dwHookStatus = ( aInitCbk ) ? aInitCbk( pSmInit->InitReq.wzServerDirPath , pSmInit->InitReq.wzClientCfgPath ) : ERROR_SUCCESS;
     if ( ERROR_SUCCESS == pSmInit->InitRsp.dwHookStatus )
     {
@@ -166,6 +182,13 @@ BOOL CDllInjectClient::Disconnect()
     if ( m_SmInit.InitReq.Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_STOP] )
     {
         SetEvent( (HANDLE)m_SmInit.InitReq.Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_STOP] );
+    }
+
+    if ( NULL != m_hDataRecvThread )
+    {
+        WaitForSingleObject( m_hDataRecvThread , INFINITE );
+        CloseHandle( m_hDataRecvThread );
+        m_hDataRecvThread = NULL;        
     }
 
     //Close all handles on m_SmInit
@@ -288,12 +311,12 @@ BOOL CDllInjectClient::SendData( CHAR * aReqBuf , DWORD aReqBufSize , CHAR * aRs
                     DbgOut( INFO , DBG_DLL_INJECT_MGR , "Filling data to share memory for scanning" );
                     //Fill pUserData into share memory R2L
                     DLL_INJECT_SERVER_SM_DATA_HEADER * pSmR2L = m_SmData[PER_SERVER_SM_INDEX_REMOTE_TO_LOCAL];
-                    DLL_INJECT_SERVER_SM_DATA_SCAN_REQ * pReq = (DLL_INJECT_SERVER_SM_DATA_SCAN_REQ *)&pSmR2L->pData;
+                    DLL_INJECT_SERVER_SM_DATA_GENERAL_REQ * pReq = (DLL_INJECT_SERVER_SM_DATA_GENERAL_REQ *)&pSmR2L->pData;
 
                     CopyMemory( &pReq->pReq , aReqBuf , aReqBufSize );
                     pReq->dwReqSize = aReqBufSize;
-                    pSmR2L->dwDataSize = FIELD_OFFSET( DLL_INJECT_SERVER_SM_DATA_SCAN_REQ , pReq ) + pReq->dwReqSize;
-                    pSmR2L->uDataType = DLL_INJECT_SERVER_SM_DATA_TYPE_SCAN_REQ;
+                    pSmR2L->dwDataSize = FIELD_OFFSET( DLL_INJECT_SERVER_SM_DATA_GENERAL_REQ , pReq ) + pReq->dwReqSize;
+                    pSmR2L->uDataType = DLL_INJECT_SERVER_SM_DATA_TYPE_GENERAL_REQ;
                     pSmR2L->pLocalCtx = m_SmInit.InitReq.Local.pLocalCtx;
                     pSmR2L->hRemoteProc = (UINT64)m_SmInit.InitReq.Local.hRemoteProc;
                     pSmR2L->dwRemotePid = GetCurrentProcessId();
@@ -303,15 +326,19 @@ BOOL CDllInjectClient::SendData( CHAR * aReqBuf , DWORD aReqBufSize , CHAR * aRs
                     break;
                 }
                 default :
+                {
                     DbgOut( ERRO , DBG_DLL_INJECT_MGR , "WaitForMultipleObjects() return unexpected value 0x%08X. GetLastError()=%!WINERROR!" , dwWaitSmR2L , GetLastError() );
                     break;
+                }
             }
             ReleaseMutex( (HANDLE)m_SmInit.InitReq.Remote.hPerServerMutex[PER_SERVER_MUTEX_INDEX_SHAREM_MEM_R2L] );
             break;
         }
         default :
+        {
             DbgOut( ERRO , DBG_DLL_INJECT_MGR , "WaitForMultipleObjects() return unexpected value 0x%08X. GetLastError()=%!WINERROR!" , dwWaitInstance , GetLastError() );
             break;
+        }
     }
 
     DWORD dwWaitReqOk = WaitForMultipleObjects( _countof(hWaitReqOk) , hWaitReqOk , FALSE , INFINITE );
@@ -320,16 +347,21 @@ BOOL CDllInjectClient::SendData( CHAR * aReqBuf , DWORD aReqBufSize , CHAR * aRs
         case WAIT_OBJECT_0 :                //PER_SERVER_EVT_INDEX_STOP
         case WAIT_OBJECT_0 + 1 :            //PER_CLIENT_EVT_INDEX_STOP
         case WAIT_OBJECT_0 + 2 :            //hDllInjectMgrAliveThread
+        {
             DbgOut( WARN , DBG_DLL_INJECT_MGR , "Got stop event or local process left" );
             break;
-
+        }
         case WAIT_OBJECT_0 + 3 :            //PER_CLIENT_EVT_INDEX_REMOTE_REQ_OK
         case WAIT_ABANDONED_0 + 3 :
+        {
             DbgOut( INFO , DBG_DLL_INJECT_MGR , "Got scan request received event" );
-            break;   
+            break;
+        }
         default :
+        {
             DbgOut( ERRO , DBG_DLL_INJECT_MGR , "WaitForMultipleObjects() return unexpected value 0x%08X. GetLastError()=%!WINERROR!" , dwWaitReqOk , GetLastError() );
             break;
+        }
     }
     ReleaseMutex( (HANDLE)m_SmInit.InitReq.Remote.hPerServerMutex[PER_SERVER_MUTEX_INDEX_REMOTE_INSTANCE] );
 
@@ -343,9 +375,10 @@ BOOL CDllInjectClient::SendData( CHAR * aReqBuf , DWORD aReqBufSize , CHAR * aRs
         case WAIT_OBJECT_0 :                //PER_SERVER_EVT_INDEX_STOP
         case WAIT_OBJECT_0 + 1 :            //PER_CLIENT_EVT_INDEX_STOP
         case WAIT_OBJECT_0 + 2 :            //hDllInjectMgrAliveThread
+        {
             DbgOut( WARN , DBG_DLL_INJECT_MGR , "Got stop event or local process left" );
             break;
-
+        }
         case WAIT_OBJECT_0 + 3 :            //PER_CLIENT_EVT_INDEX_REMOTE_RSP
         case WAIT_ABANDONED_0 + 3 :
         {
@@ -353,9 +386,9 @@ BOOL CDllInjectClient::SendData( CHAR * aReqBuf , DWORD aReqBufSize , CHAR * aRs
             
             //Get data from share memory L2R
             DLL_INJECT_SERVER_SM_DATA_HEADER * pSmL2R = m_SmData[PER_SERVER_SM_INDEX_LOCAL_TO_REMOTE];
-            _ASSERT( DLL_INJECT_SERVER_SM_DATA_TYPE_SCAN_RSP == pSmL2R->uDataType );
+            _ASSERT( DLL_INJECT_SERVER_SM_DATA_TYPE_GENERAL_RSP == pSmL2R->uDataType );
 
-            DLL_INJECT_SERVER_SM_DATA_SCAN_RSP * pRsp = (DLL_INJECT_SERVER_SM_DATA_SCAN_RSP *)&pSmL2R->pData;
+            DLL_INJECT_SERVER_SM_DATA_GENERAL_RSP * pRsp = (DLL_INJECT_SERVER_SM_DATA_GENERAL_RSP *)&pSmL2R->pData;
             if ( aRspBufSize )
             {
                 CopyMemory( aRspBuf , &pRsp->pRsp , min(pRsp->dwRspSize , *aRspBufSize) );
@@ -373,12 +406,281 @@ BOOL CDllInjectClient::SendData( CHAR * aReqBuf , DWORD aReqBufSize , CHAR * aRs
             break;
         }
         default :
+        {
             DbgOut( ERRO , DBG_DLL_INJECT_MGR , "WaitForMultipleObjects() return unexpected value 0x%08X. GetLastError()=%!WINERROR!" , dwWaitReqOk , GetLastError() );
             break;
+        }
     }
 
     return bRet;
 }
+
+UINT CALLBACK CDllInjectClient::DataRecvThread( VOID * pThis )
+{
+    CDllInjectClient * pSelf = (CDllInjectClient *)pThis;
+    UINT uRet = pSelf->DoDataRecv();
+    if ( ERROR_SUCCESS != uRet )
+    {
+        DbgOut( ERRO , DBG_DLL_INJECT_MGR , "DataRecv exit abnormally. Try to set stop event. uRet=%!WINERROR!. GetLastError()=%!WINERROR!" , uRet , GetLastError() );
+        SetEvent( pSelf->GetClientQuitEvt() );
+    }
+    return uRet;
+}
+
+DWORD CDllInjectClient::DoDataRecv()
+{
+    _ASSERT( m_SmInit.InitReq.Remote.hDllInjectMgrAliveThread &&
+             m_SmInit.InitReq.Remote.hPerServerMutex[PER_SERVER_MUTEX_INDEX_REMOTE_INSTANCE] &&
+             m_SmInit.InitReq.Remote.hPerServerMutex[PER_SERVER_MUTEX_INDEX_SHAREM_MEM_R2L] &&
+             m_SmInit.InitReq.Remote.hPerServerSm[PER_SERVER_SM_INDEX_REMOTE_TO_LOCAL] &&
+             m_SmInit.InitReq.Remote.hPerServerSm[PER_SERVER_SM_INDEX_LOCAL_TO_REMOTE] &&
+             m_SmInit.InitReq.Remote.hPerServerEvt[PER_SERVER_EVT_INDEX_STOP] &&
+             m_SmInit.InitReq.Remote.hPerServerEvt[PER_SERVER_EVT_INDEX_LOCAL_REQ_OK] &&
+             m_SmInit.InitReq.Remote.hPerServerEvt[PER_SERVER_EVT_INDEX_LOCAL_RSP] &&
+             m_SmInit.InitReq.Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_STOP] &&
+             m_SmInit.InitReq.Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_LOCAL_REQ] &&
+             m_SmInit.InitReq.Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_LOCAL_RSP_OK] &&
+             m_SmInit.InitReq.Local.pLocalCtx &&
+             m_SmData[PER_SERVER_SM_INDEX_REMOTE_TO_LOCAL] &&
+             m_SmData[PER_SERVER_SM_INDEX_LOCAL_TO_REMOTE] &&
+             NULL != m_pfnDataRecv );
+
+    BOOL bStop = FALSE;
+    DWORD dwRet = ERROR_NOT_READY;
+    HANDLE hEvtWaitData[] = { (HANDLE)m_SmInit.InitReq.Remote.hPerServerEvt[PER_SERVER_EVT_INDEX_STOP] , 
+                              (HANDLE)m_SmInit.InitReq.Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_STOP] , 
+                              (HANDLE)m_SmInit.InitReq.Remote.hDllInjectMgrAliveThread ,
+                              (HANDLE)m_SmInit.InitReq.Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_LOCAL_REQ] };
+    HANDLE hWaitInstance[] = { (HANDLE)m_SmInit.InitReq.Remote.hPerServerEvt[PER_SERVER_EVT_INDEX_STOP] ,
+                               (HANDLE)m_SmInit.InitReq.Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_STOP] ,
+                               (HANDLE)m_SmInit.InitReq.Remote.hDllInjectMgrAliveThread ,
+                               (HANDLE)m_SmInit.InitReq.Remote.hPerServerMutex[PER_SERVER_MUTEX_INDEX_REMOTE_INSTANCE] };
+    HANDLE hWaitSmR2L[] = { (HANDLE)m_SmInit.InitReq.Remote.hPerServerEvt[PER_SERVER_EVT_INDEX_STOP] ,
+                            (HANDLE)m_SmInit.InitReq.Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_STOP] ,
+                            (HANDLE)m_SmInit.InitReq.Remote.hDllInjectMgrAliveThread ,
+                            (HANDLE)m_SmInit.InitReq.Remote.hPerServerMutex[PER_SERVER_MUTEX_INDEX_SHAREM_MEM_R2L] };
+    HANDLE hWaitRspOk[] = { (HANDLE)m_SmInit.InitReq.Remote.hPerServerEvt[PER_SERVER_EVT_INDEX_STOP] ,
+                            (HANDLE)m_SmInit.InitReq.Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_STOP] ,
+                            (HANDLE)m_SmInit.InitReq.Remote.hDllInjectMgrAliveThread ,
+                            (HANDLE)m_SmInit.InitReq.Remote.hPerClientEvt[PER_CLIENT_EVT_INDEX_LOCAL_RSP_OK] };
+
+    CHAR * pReqCopy = NULL , * pRspCopy = NULL;
+    DWORD dwReqSizeCopy = 0 , dwRspSizeCopy = 0;
+    while ( ! bStop )
+    {
+        //Listen for data event
+        DWORD dwWaitData = WaitForMultipleObjects( _countof(hEvtWaitData) , hEvtWaitData , FALSE , INFINITE );
+        switch ( dwWaitData )
+        {
+            case WAIT_OBJECT_0 :                //PER_SERVER_EVT_INDEX_STOP
+            case WAIT_ABANDONED_0 :
+            case WAIT_OBJECT_0 + 1 :            //PER_CLIENT_EVT_INDEX_STOP
+            case WAIT_ABANDONED_0 + 1 :
+            case WAIT_OBJECT_0 + 2 :            //hDllInjectMgrAliveThread
+            case WAIT_ABANDONED_0 + 2 :
+            {
+                DbgOut( WARN , DBG_DLL_INJECT_MGR , "Got stop event or local process left" );
+                dwRet = ERROR_SUCCESS;
+                bStop = TRUE;
+                break;
+            }
+            case WAIT_OBJECT_0 + 3 :        //PER_CLIENT_EVT_INDEX_LOCAL_REQ
+            {
+                DbgOut( INFO , DBG_DLL_INJECT_MGR , "Get data from share memory" );
+                DLL_INJECT_SERVER_SM_DATA_HEADER * pSmL2R = m_SmData[PER_SERVER_SM_INDEX_LOCAL_TO_REMOTE];
+                DLL_INJECT_SERVER_SM_DATA_GENERAL_REQ * pReq = (DLL_INJECT_SERVER_SM_DATA_GENERAL_REQ *)&pSmL2R->pData;
+
+                dwReqSizeCopy = pReq->dwReqSize;
+                if ( NULL != pReq->pReq && 0 < dwReqSizeCopy )
+                {
+                    pReqCopy = new (std::nothrow) CHAR[dwReqSizeCopy];
+                    if ( NULL == pReqCopy )
+                    {
+                        DbgOut( ERRO , DBG_DLL_INJECT_MGR , "Failed to allocate memory for pReqCopy. dwReqSizeCopy=%u" , dwReqSizeCopy );
+                        dwRet = ERROR_OUTOFMEMORY;
+                    }
+                    else
+                    {
+                        CopyMemory( pReqCopy , &pReq->pReq , dwReqSizeCopy );
+                        dwRet = ERROR_SUCCESS;
+                    }
+                }
+                else
+                {
+                    dwRet = ERROR_NO_DATA;
+                }
+                pSmL2R->dwStatus = dwRet;
+                SetEvent( (HANDLE)m_SmInit.InitReq.Remote.hPerServerEvt[PER_SERVER_EVT_INDEX_LOCAL_REQ_OK] );
+                break;
+            }
+            default :
+            {
+                DbgOut( ERRO , DBG_DLL_INJECT_MGR , "WaitForMultipleObjects() return unexpected value 0x%08X. GetLastError()=%!WINERROR!" , dwWaitData , GetLastError() );
+                dwRet = ERROR_INVALID_HANDLE_STATE;
+                bStop = TRUE;
+                break;
+            }
+        }
+        if ( bStop )
+        {
+            break;
+        }
+
+
+        //Call data recv callback
+        if ( ERROR_SUCCESS == dwRet )
+        {
+            dwRet = m_pfnDataRecv( pReqCopy , dwReqSizeCopy , &pRspCopy , &dwRspSizeCopy );
+            delete [] pReqCopy;
+            pReqCopy = NULL;
+            dwReqSizeCopy = 0;
+        }
+        else
+        {
+            continue;
+        }
+        
+
+
+        //Get lock and write data back to shared memory
+        DWORD dwWaitInstance = WaitForMultipleObjects( _countof(hWaitInstance) , hWaitInstance , FALSE , INFINITE );
+        switch ( dwWaitInstance )
+        {
+            case WAIT_OBJECT_0 :                //PER_SERVER_EVT_INDEX_STOP
+            case WAIT_ABANDONED_0 :
+            case WAIT_OBJECT_0 + 1 :            //PER_CLIENT_EVT_INDEX_STOP
+            case WAIT_ABANDONED_0 + 1 :
+            case WAIT_OBJECT_0 + 2 :            //hDllInjectMgrAliveThread
+            case WAIT_ABANDONED_0 + 2 :
+            {
+                DbgOut( WARN , DBG_DLL_INJECT_MGR , "Got stop event or local process left" );
+                dwRet = ERROR_SUCCESS;
+                bStop = TRUE;
+                break;
+            }
+            case WAIT_OBJECT_0 + 3 :            //PER_SERVER_MUTEX_INDEX_REMOTE_INSTANCE
+            case WAIT_ABANDONED_0 + 3 :
+            {
+                DWORD dwWaitSmR2L = WaitForMultipleObjects( _countof(hWaitSmR2L) , hWaitSmR2L , FALSE , INFINITE );
+                switch ( dwWaitSmR2L )
+                {
+                    case WAIT_OBJECT_0 :                //PER_SERVER_EVT_INDEX_STOP
+                    case WAIT_ABANDONED_0 :
+                    case WAIT_OBJECT_0 + 1 :            //PER_CLIENT_EVT_INDEX_STOP
+                    case WAIT_ABANDONED_0 + 1 :
+                    case WAIT_OBJECT_0 + 2 :            //hDllInjectMgrAliveThread
+                    case WAIT_ABANDONED_0 + 2 :
+                    {
+                        DbgOut( WARN , DBG_DLL_INJECT_MGR , "Got stop event or local process left" );
+                        dwRet = ERROR_SUCCESS;
+                        bStop = TRUE;
+                        break;
+                    }
+                    case WAIT_OBJECT_0 + 3 :        //PER_SERVER_MUTEX_INDEX_SHAREM_MEM_R2L
+                    case WAIT_ABANDONED_0 + 3 :
+                    {
+                        DbgOut( INFO , DBG_DLL_INJECT_MGR , "Filling data to share memory for scanning" );
+                        DLL_INJECT_SERVER_SM_DATA_HEADER * pSmR2L = m_SmData[PER_SERVER_SM_INDEX_REMOTE_TO_LOCAL];
+                        DLL_INJECT_SERVER_SM_DATA_GENERAL_RSP * pRsp = (DLL_INJECT_SERVER_SM_DATA_GENERAL_RSP *)&pSmR2L->pData;
+
+                        if ( NULL != pRspCopy && 0 < dwRspSizeCopy )
+                        {
+                            CopyMemory( &pRsp->pRsp , pRspCopy , dwRspSizeCopy );
+                        }
+                        pRsp->dwRspSize = dwRspSizeCopy;
+                        pSmR2L->dwDataSize = FIELD_OFFSET( DLL_INJECT_SERVER_SM_DATA_GENERAL_RSP , pRsp ) + pRsp->dwRspSize;
+                        pSmR2L->uDataType = DLL_INJECT_SERVER_SM_DATA_TYPE_GENERAL_RSP;
+                        pSmR2L->pLocalCtx = m_SmInit.InitReq.Local.pLocalCtx;
+                        pSmR2L->hRemoteProc = (UINT64)m_SmInit.InitReq.Local.hRemoteProc;
+                        pSmR2L->dwRemotePid = GetCurrentProcessId();
+                        pSmR2L->dwStatus = dwRet;
+
+                        //Signal data response event
+                        SetEvent( (HANDLE)m_SmInit.InitReq.Remote.hPerServerEvt[PER_SERVER_EVT_INDEX_LOCAL_RSP] );
+
+
+
+                        
+                        //Waiting for response ok event
+                        DWORD dwWaitRspOk = WaitForMultipleObjects( _countof(hWaitRspOk) , hWaitRspOk , FALSE , INFINITE );
+                        switch ( dwWaitRspOk )
+                        {
+                            case WAIT_OBJECT_0 :                //PER_SERVER_EVT_INDEX_STOP
+                            case WAIT_ABANDONED_0 :
+                            case WAIT_OBJECT_0 + 1 :            //PER_CLIENT_EVT_INDEX_STOP
+                            case WAIT_ABANDONED_0 + 1 :
+                            case WAIT_OBJECT_0 + 2 :            //hDllInjectMgrAliveThread
+                            case WAIT_ABANDONED_0 + 2 :
+                            {
+                                DbgOut( WARN , DBG_DLL_INJECT_MGR , "Got stop event or local process left" );
+                                dwRet = ERROR_SUCCESS;
+                                bStop = TRUE;
+                                break;
+                            }
+                            case WAIT_OBJECT_0 + 3 :            //PER_CLIENT_EVT_INDEX_LOCAL_RSP_OK
+                            case WAIT_ABANDONED_0 + 3 :
+                            {
+                                DbgOut( INFO , DBG_DLL_INJECT_MGR , "Get local rsp ok event" );
+                                dwRet = ERROR_SUCCESS;
+                                break;
+                            }
+                            default :
+                            {
+                                DbgOut( ERRO , DBG_DLL_INJECT_MGR , "WaitForMultipleObjects() return unexpected value 0x%08X. GetLastError()=%!WINERROR!" , dwWaitRspOk , GetLastError() );
+                                dwRet = ERROR_INVALID_HANDLE_STATE;
+                                bStop = TRUE;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                    default :
+                    {
+                        DbgOut( ERRO , DBG_DLL_INJECT_MGR , "WaitForMultipleObjects() return unexpected value 0x%08X. GetLastError()=%!WINERROR!" , dwWaitSmR2L , GetLastError() );
+                        dwRet = ERROR_INVALID_HANDLE_STATE;
+                        bStop = TRUE;
+                        break;
+                    }
+                }
+                ReleaseMutex( (HANDLE)m_SmInit.InitReq.Remote.hPerServerMutex[PER_SERVER_MUTEX_INDEX_SHAREM_MEM_R2L] );
+                break;
+            }
+            default :
+            {
+                DbgOut( ERRO , DBG_DLL_INJECT_MGR , "WaitForMultipleObjects() return unexpected value 0x%08X. GetLastError()=%!WINERROR!" , dwWaitInstance , GetLastError() );
+                dwRet = ERROR_INVALID_HANDLE_STATE;
+                bStop = TRUE;
+                break;
+            }
+        }
+        if ( bStop )
+        {
+            break;
+        }
+        if ( pRspCopy && dwRspSizeCopy )
+        {
+            delete [] pRspCopy;
+            pRspCopy = NULL;
+            dwRspSizeCopy = 0;
+        }
+    }
+
+    if ( pReqCopy )
+    {
+        delete [] pReqCopy;
+    }
+    if ( pRspCopy )
+    {
+        delete [] pRspCopy;
+    }
+
+    return dwRet;
+}
+
+
+
+
+
 
 #ifdef __cplusplus
 }

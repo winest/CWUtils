@@ -15,10 +15,12 @@
  * Use CDllInjectClient at client side to communicate with the CDllInjectServer which locates in your program.
  */
 
-
-#include "CWDllInjectCommonDef.h"
 #include <Windows.h>
 #include <string>
+#include <process.h>
+#include "CWDllInjectCommonDef.h"
+#include "CWGeneralUtils.h"
+
 
 namespace CWUtils
 {
@@ -31,6 +33,7 @@ extern "C" {
 
 //Return Win32 error code. Use ERROR_SUCCESS to tell DllInjectServer that we successfully do the initialization work
 typedef DWORD (CALLBACK *PFN_DLL_INJECT_CLIENT_INIT_CBK)( CONST WCHAR * aServerDirPath , CONST WCHAR * aClientCfgPath );
+typedef DWORD (CALLBACK *PFN_DLL_INJECT_CLIENT_DATA_RECV_CBK)( CHAR * aReqBuf , DWORD aReqBufSize , CHAR ** aRspBuf , DWORD * aRspBufSize );
 
 class CDllInjectClient
 {
@@ -39,7 +42,7 @@ class CDllInjectClient
         virtual ~CDllInjectClient() { this->Disconnect(); }
 
     public :
-        BOOL Connect( CONST WCHAR * aKey , PFN_DLL_INJECT_CLIENT_INIT_CBK aInitCbk = NULL );
+        BOOL Connect( CONST WCHAR * aKey , PFN_DLL_INJECT_CLIENT_INIT_CBK aInitCbk = NULL , PFN_DLL_INJECT_CLIENT_DATA_RECV_CBK aDataCbk = NULL );
         BOOL Disconnect();
         BOOL IsConnected() { return InterlockedCompareExchange( reinterpret_cast<volatile LONG*>( &m_bConnected ) , 0 , 0 ); }
 
@@ -56,12 +59,19 @@ class CDllInjectClient
         //Return the client configuration path written in the ClientCfgPath field
         CONST WCHAR * GetClientCfgPath()  { return ( this->IsConnected() ) ? m_SmInit.InitReq.wzClientCfgPath : NULL; }
 
+    protected :
+        static UINT CALLBACK DataRecvThread( VOID * pThis );    //Return Win32 error code
+        DWORD DoDataRecv();                                     //Return Win32 error code
+
     private :
         BOOL m_bConnected;
         std::wstring m_wstrKey;
 
         DLL_INJECT_SERVER_SM_INIT m_SmInit;
         DLL_INJECT_SERVER_SM_DATA_HEADER * m_SmData[PER_SERVER_SM_COUNT];
+
+        HANDLE m_hDataRecvThread;
+        PFN_DLL_INJECT_CLIENT_DATA_RECV_CBK m_pfnDataRecv;
 };
 
 #ifdef __cplusplus

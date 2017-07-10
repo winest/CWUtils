@@ -137,5 +137,13 @@ VOID WriteDebugMsg( CONST IN CHAR * aFormat , ... )
     }
 }
 
+UINT BitRange( UINT aNum , INT aIndexStart , INT aIndexEnd )
+{
+    UINT uMask = ( 1 << (aIndexEnd-aIndexStart+1) ) - 1;
+    return ( aNum >> aIndexStart ) & uMask;
+}
+
+
+
 
 }   //End of namespace CWUtils

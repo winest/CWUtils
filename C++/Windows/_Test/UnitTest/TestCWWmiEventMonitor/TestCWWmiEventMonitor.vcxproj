@@ -87,7 +87,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\CWWmiEventMonitor.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\CWWmiEventMonitor.cpp" />

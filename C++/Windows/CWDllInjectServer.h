@@ -186,6 +186,8 @@ class CDllInjectServer
         BOOL StartMonitor( BOOL aCheckExistProcs );
         BOOL StopMonitor();
         BOOL IsStarted() { return InterlockedCompareExchange( reinterpret_cast<volatile LONG*>( &m_bStarted ) , 0 , 0 ); }        
+
+        DWORD SendData( DWORD aPid , CHAR * aReqBuf , DWORD aReqBufSize , CHAR * aRspBuf , DWORD * aRspBufSize );
         
         //The following three callbacks may call StartInject() and StopInject(). Return FALSE if any error happen inside
         BOOL OnProcessCreateTerminate( BOOL aCreate , DWORD aPid , CONST WCHAR * aProcPath , CONST WCHAR * aBaseName );

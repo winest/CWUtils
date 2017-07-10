@@ -37,6 +37,9 @@ __inline HINSTANCE GetModuleHInstance() { return (HINSTANCE)&__ImageBase; }
 VOID ShowDebugMsg( CONST WCHAR * aReason = L"Reason" , BOOL aShowInRelease = FALSE );
 VOID WriteDebugMsg( CONST IN CHAR * aFormat , ... );
 
+UINT BitRange( UINT aNum , INT aIndexStart , INT aIndexEnd );
+
+
 #ifdef __cplusplus
 }
 #endif

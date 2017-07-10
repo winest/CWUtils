@@ -169,6 +169,149 @@ BOOL CDllInjectServer::StopMonitor()
     return TRUE;
 }
 
+DWORD CDllInjectServer::SendData( DWORD aPid , CHAR * aReqBuf , DWORD aReqBufSize , CHAR * aRspBuf , DWORD * aRspBufSize )
+{
+    _ASSERT( aReqBuf && 0 < aReqBufSize );
+
+    DWORD dwRet = ERROR_NOT_READY;
+    if ( FALSE == this->IsStarted() )
+    {
+        DbgOut( ERRO , DBG_DLL_INJECT_MGR , "Not started" );
+        return dwRet;
+    }
+
+
+    EnterCriticalSection( &m_csClientStateTable );
+    InjectClientInfo * pHookProcInfo = NULL;
+    map<DWORD , InjectClientInfo>::iterator it = m_mapClientStateTable.find( aPid );
+    if ( it != m_mapClientStateTable.end() )
+    {
+        pHookProcInfo = &it->second;
+    }
+    if ( WAIT_TIMEOUT == WaitForSingleObject( pHookProcInfo->hRemoteProc , 0 ) )
+    {
+        //Fill data and set data event
+        EnterCriticalSection( &m_csSmL2R );
+
+        ResetEvent( m_hPerServerEvt[PER_SERVER_EVT_INDEX_REMOTE_RSP_OK] );
+        DLL_INJECT_SERVER_SM_DATA_HEADER * pSmL2R = m_pPerServerSm[PER_SERVER_SM_INDEX_LOCAL_TO_REMOTE];
+        DLL_INJECT_SERVER_SM_DATA_GENERAL_REQ * pReq = (DLL_INJECT_SERVER_SM_DATA_GENERAL_REQ *)&pSmL2R->pData;
+        DbgOut( VERB , DBG_DLL_INJECT_MGR , "pSmL2R=0x%p, FIELD_OFFSET(DLL_INJECT_SERVER_SM_DATA_HEADER,pData)=0x%X, pRsp=0x%p" , pSmL2R , FIELD_OFFSET(DLL_INJECT_SERVER_SM_DATA_HEADER,pData) , pReq );
+        
+        pReq->dwReqSize = aReqBufSize;
+        CopyMemory( &pReq->pReq , aReqBuf , pReq->dwReqSize );
+        pSmL2R->dwDataSize = FIELD_OFFSET( DLL_INJECT_SERVER_SM_DATA_GENERAL_REQ , pReq ) + pReq->dwReqSize;
+        pSmL2R->uDataType = DLL_INJECT_SERVER_SM_DATA_TYPE_GENERAL_REQ;
+        pSmL2R->pLocalCtx = (UINT64)pHookProcInfo;
+        pSmL2R->hRemoteProc = (UINT64)pHookProcInfo->hRemoteProc; //Useless currently
+        pSmL2R->dwRemotePid = aPid;         //Useless currently
+        pSmL2R->dwStatus = ERROR_SUCCESS;   //Useless currently
+        SetEvent( pHookProcInfo->hPerClientEvt[PER_CLIENT_EVT_INDEX_LOCAL_REQ] );
+
+        HANDLE hEvtWaitReqOk[] = { m_hPerServerEvt[PER_SERVER_EVT_INDEX_STOP] , pHookProcInfo->hRemoteProc , m_hPerServerEvt[PER_SERVER_EVT_INDEX_LOCAL_REQ_OK] };
+        DWORD dwWaitReqOk = WaitForMultipleObjects( _countof(hEvtWaitReqOk) , hEvtWaitReqOk , FALSE , INFINITE );
+        switch ( dwWaitReqOk )
+        {
+            case WAIT_OBJECT_0 :            //PER_SERVER_EVT_INDEX_STOP
+            case WAIT_ABANDONED_0 :
+            case WAIT_OBJECT_0 + 1 :        //hRemoteProc
+            case WAIT_ABANDONED_0 + 1 :
+            {
+                DbgOut( WARN , DBG_DLL_INJECT_MGR , "Got stop event or remote process left. dwWaitReqOk=0x%08X" , dwWaitReqOk );
+                dwRet = ERROR_SUCCESS;
+                break;
+            }
+            case WAIT_OBJECT_0 + 2 :        //PER_SERVER_EVT_INDEX_LOCAL_REQ_OK
+            case WAIT_ABANDONED_0 + 2 :
+            {
+                DbgOut( INFO , DBG_DLL_INJECT_MGR , "Remote thread has already got the request. dwWaitReqOk=0x%08X" , dwWaitReqOk );
+                dwRet = pSmL2R->dwStatus;
+                break;
+            }
+            default :
+            {
+                DbgOut( ERRO , DBG_DLL_INJECT_MGR , "Unexpected return value 0x%08X. GetLastError()=%!WINERROR!" , dwWaitReqOk , GetLastError() );
+                dwRet = ERROR_INVALID_HANDLE_STATE;
+                break;
+            }
+        }
+
+        LeaveCriticalSection( &m_csSmL2R );
+
+        if ( ERROR_SUCCESS != dwRet )
+        {
+            return dwRet;
+        }
+
+
+
+
+        //Wait for remote rsp event
+        HANDLE hEvtWaitRsp[] = { m_hPerServerEvt[PER_SERVER_EVT_INDEX_STOP] , pHookProcInfo->hRemoteProc , m_hPerServerEvt[PER_SERVER_EVT_INDEX_LOCAL_RSP] };
+        DWORD dwWaitRsp = WaitForMultipleObjects( _countof(hEvtWaitRsp) , hEvtWaitRsp , FALSE , INFINITE );
+        switch ( dwWaitRsp )
+        {
+            case WAIT_OBJECT_0 :            //PER_SERVER_EVT_INDEX_STOP
+            case WAIT_ABANDONED_0 :
+            case WAIT_OBJECT_0 + 1 :        //hRemoteProc
+            case WAIT_ABANDONED_0 + 1 :
+            {
+                DbgOut( WARN , DBG_DLL_INJECT_MGR , "Got stop event or remote process left. dwWaitReqOk=0x%08X" , dwWaitReqOk );
+                dwRet = ERROR_SUCCESS;
+                break;
+            }
+            case WAIT_OBJECT_0 + 2 :        //PER_SERVER_EVT_INDEX_LOCAL_RSP
+            case WAIT_ABANDONED_0 + 2 :
+            {
+                DbgOut( INFO , DBG_DLL_INJECT_MGR , "Got remote thread response" );
+
+                //Get data from share memory R2L
+                DLL_INJECT_SERVER_SM_DATA_HEADER * pSmR2L = m_pPerServerSm[PER_SERVER_SM_INDEX_REMOTE_TO_LOCAL];
+                _ASSERT( DLL_INJECT_SERVER_SM_DATA_TYPE_GENERAL_RSP == pSmL2R->uDataType );
+
+                DLL_INJECT_SERVER_SM_DATA_GENERAL_RSP * pRsp = (DLL_INJECT_SERVER_SM_DATA_GENERAL_RSP *)&pSmR2L->pData;
+                if ( pRsp->pRsp && pRsp->dwRspSize && aRspBuf && aRspBufSize )
+                {
+                    if ( pRsp->dwRspSize < *aRspBufSize )
+                    {
+                        CopyMemory( aRspBuf , &pRsp->pRsp , pRsp->dwRspSize );
+                        *aRspBufSize = pRsp->dwRspSize;
+                        dwRet = ERROR_SUCCESS;
+                    }
+                    else
+                    {
+                        CopyMemory( aRspBuf , &pRsp->pRsp , *aRspBufSize );
+                        dwRet = ERROR_NOT_ENOUGH_MEMORY;
+                    }
+                    DbgOut( INFO , DBG_DLL_INJECT_MGR , "Client response is %!HEXDUMP!" , WppHexDump((CONST UCHAR *)pRsp->pRsp,(ULONG)pRsp->dwRspSize) );
+                }
+                else
+                {
+                    dwRet = ERROR_SUCCESS;
+                }            
+                pSmR2L->dwStatus = dwRet;
+
+                //Signal scan response received event to let worker thread release the share memory
+                SetEvent( (HANDLE)pHookProcInfo->hPerClientEvt[PER_CLIENT_EVT_INDEX_LOCAL_RSP_OK] );
+                break;
+            }
+            default :
+            {
+                DbgOut( ERRO , DBG_DLL_INJECT_MGR , "Unexpected return value 0x%X. GetLastError()=%!WINERROR!" , dwWaitRsp , GetLastError() );
+                dwRet = ERROR_INVALID_HANDLE_STATE;
+                break;
+            }
+        }
+    }
+    else
+    {
+        DbgOut( WARN , DBG_DLL_INJECT_MGR , "Remote process is down" );
+    }
+
+    LeaveCriticalSection( &m_csClientStateTable );
+    return dwRet;
+}
+
 BOOL CDllInjectServer::OnProcessCreateTerminate( BOOL aCreate , DWORD aPid , CONST WCHAR * aProcPath , CONST WCHAR * aBaseName )
 {
     UNREFERENCED_PARAMETER( aBaseName );
@@ -402,6 +545,8 @@ BOOL CDllInjectServer::StartInject( DWORD aPid )
         wcsncpy_s( pSmInit->InitReq.wzClientCfgPath , m_CommonCfg.wstrClientCfgPath.c_str() , _TRUNCATE );
 
         it->second.hPerClientEvt[PER_CLIENT_EVT_INDEX_STOP] = CreateEventW( NULL , FALSE , FALSE , NULL );
+        it->second.hPerClientEvt[PER_CLIENT_EVT_INDEX_LOCAL_REQ] = CreateEventW( NULL , FALSE , FALSE , NULL );
+        it->second.hPerClientEvt[PER_CLIENT_EVT_INDEX_LOCAL_RSP_OK] = CreateEventW( NULL , FALSE , FALSE , NULL );
         it->second.hPerClientEvt[PER_CLIENT_EVT_INDEX_REMOTE_REQ_OK] = CreateEventW( NULL , FALSE , FALSE , NULL );
         it->second.hPerClientEvt[PER_CLIENT_EVT_INDEX_REMOTE_RSP] = CreateEventW( NULL , FALSE , FALSE , NULL );
 
@@ -569,6 +714,7 @@ BOOL CDllInjectServer::GetConfig( DLL_INJECT_SERVER_CFG_TYPE aCfgType , IN OUT V
     switch ( aCfgType )
     {
         case DLL_INJECT_SERVER_CFG_IS_ENABLED :
+        {
             if ( sizeof(BOOL) != *pDataSize )
             {
                 DbgOut( ERRO , DBG_DLL_INJECT_MGR , "Parameter size mismatched. *pDataSize=%lu" , *pDataSize );
@@ -577,9 +723,12 @@ BOOL CDllInjectServer::GetConfig( DLL_INJECT_SERVER_CFG_TYPE aCfgType , IN OUT V
             }
             *((BOOL *)pData) = m_CommonCfg.bEnabled;
             break;
+        }
         default :
+        {
             DbgOut( ERRO , DBG_DLL_INJECT_MGR , "Unexpected aCfgType=%d" , aCfgType );
             goto exit;
+        }
     }
 
     bRet = TRUE;
@@ -787,6 +936,8 @@ BOOL CDllInjectServer::CreateCommonHandles()
     BOOL bRet = FALSE;
 
     m_hPerServerEvt[PER_SERVER_EVT_INDEX_STOP] = CreateEvent( NULL , TRUE , FALSE , NULL );
+    m_hPerServerEvt[PER_SERVER_EVT_INDEX_LOCAL_REQ_OK] = CreateEvent( NULL , TRUE , FALSE , NULL );
+    m_hPerServerEvt[PER_SERVER_EVT_INDEX_LOCAL_RSP] = CreateEvent( NULL , TRUE , FALSE , NULL );
     m_hPerServerEvt[PER_SERVER_EVT_INDEX_REMOTE_REQ] = CreateEvent( NULL , TRUE , FALSE , NULL );
     m_hPerServerEvt[PER_SERVER_EVT_INDEX_REMOTE_RSP_OK] = CreateEvent( NULL , TRUE , FALSE , NULL );
     for ( size_t i = 0 ; i < _countof(m_hPerServerEvt) ; i++ )
@@ -1057,12 +1208,12 @@ DWORD CDllInjectServer::DoJobCreator()
                         ResetEvent( m_hPerServerEvt[PER_SERVER_EVT_INDEX_REMOTE_REQ] );
 
                         DLL_INJECT_SERVER_SM_DATA_HEADER * pSmR2L = m_pPerServerSm[PER_SERVER_SM_INDEX_REMOTE_TO_LOCAL];
-                        _ASSERT( DLL_INJECT_SERVER_SM_DATA_TYPE_SCAN_REQ == pSmR2L->uDataType );
+                        _ASSERT( DLL_INJECT_SERVER_SM_DATA_TYPE_GENERAL_REQ == pSmR2L->uDataType );
 
                         InjectClientInfo * pHookProcInfo = (InjectClientInfo *)pSmR2L->pLocalCtx;
                         _ASSERT( pHookProcInfo );
 
-                        DLL_INJECT_SERVER_SM_DATA_SCAN_REQ * pReq = (DLL_INJECT_SERVER_SM_DATA_SCAN_REQ *)&pSmR2L->pData;
+                        DLL_INJECT_SERVER_SM_DATA_GENERAL_REQ * pReq = (DLL_INJECT_SERVER_SM_DATA_GENERAL_REQ *)&pSmR2L->pData;
                         DbgOut( VERB , DBG_DLL_INJECT_MGR , "pSmR2L=0x%p, FIELD_OFFSET(DLL_INJECT_SERVER_SM_DATA_HEADER,pData)=0x%X, pReq=0x%p" , pSmR2L , FIELD_OFFSET(DLL_INJECT_SERVER_SM_DATA_HEADER,pData) , pReq );
 
                         
@@ -1184,7 +1335,7 @@ DWORD CDllInjectServer::DoJobWorker()
                         }
 
                         InjectClientInfo * pHookProcInfo = (InjectClientInfo *)pJob->pOwnerCtx;
-                        DLL_INJECT_SERVER_SM_DATA_SCAN_REQ * pReq = (DLL_INJECT_SERVER_SM_DATA_SCAN_REQ *)pJob->pJobData;
+                        DLL_INJECT_SERVER_SM_DATA_GENERAL_REQ * pReq = (DLL_INJECT_SERVER_SM_DATA_GENERAL_REQ *)pJob->pJobData;
 
                         //Call registered ScanCbk
                         DbgOut( INFO , DBG_DLL_INJECT_MGR , "Ready to scan. data=%!HEXDUMP!" , WppHexDump( (CONST UCHAR *)pReq->pReq , pReq->dwReqSize ) );
@@ -1201,13 +1352,13 @@ DWORD CDllInjectServer::DoJobWorker()
                         {
                             ResetEvent( m_hPerServerEvt[PER_SERVER_EVT_INDEX_REMOTE_RSP_OK] );
                             DLL_INJECT_SERVER_SM_DATA_HEADER * pSmL2R = m_pPerServerSm[PER_SERVER_SM_INDEX_LOCAL_TO_REMOTE];
-                            DLL_INJECT_SERVER_SM_DATA_SCAN_RSP * pRsp = (DLL_INJECT_SERVER_SM_DATA_SCAN_RSP *)&pSmL2R->pData;
+                            DLL_INJECT_SERVER_SM_DATA_GENERAL_RSP * pRsp = (DLL_INJECT_SERVER_SM_DATA_GENERAL_RSP *)&pSmL2R->pData;
                             DbgOut( VERB , DBG_DLL_INJECT_MGR , "pSmL2R=0x%p, FIELD_OFFSET(DLL_INJECT_SERVER_SM_DATA_HEADER,pData)=0x%X, pRsp=0x%p" , pSmL2R , FIELD_OFFSET(DLL_INJECT_SERVER_SM_DATA_HEADER,pData) , pRsp );
                             
                             pRsp->dwRspSize = sizeof(dwScanResult);
-                            CopyMemory( &pRsp->pRsp , &dwScanResult , sizeof(dwScanResult) );
-                            pSmL2R->dwDataSize = FIELD_OFFSET( DLL_INJECT_SERVER_SM_DATA_SCAN_RSP , pRsp ) + pRsp->dwRspSize;
-                            pSmL2R->uDataType = DLL_INJECT_SERVER_SM_DATA_TYPE_SCAN_RSP;
+                            CopyMemory( &pRsp->pRsp , &dwScanResult , pRsp->dwRspSize );
+                            pSmL2R->dwDataSize = FIELD_OFFSET( DLL_INJECT_SERVER_SM_DATA_GENERAL_RSP , pRsp ) + pRsp->dwRspSize;
+                            pSmL2R->uDataType = DLL_INJECT_SERVER_SM_DATA_TYPE_GENERAL_RSP;
                             pSmL2R->pLocalCtx = (UINT64)pHookProcInfo;
                             pSmL2R->hRemoteProc = (UINT64)pJob->hOwnerProc; //Useless currently
                             pSmL2R->dwRemotePid = pJob->dwOwnerPid;         //Useless currently
