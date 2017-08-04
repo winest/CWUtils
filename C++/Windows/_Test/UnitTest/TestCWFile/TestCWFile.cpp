@@ -40,6 +40,37 @@ VOID TestFile()
     wprintf_s( L"\n========== TestFile() Leave ==========\n" );
 }
 
+VOID TestCsv()
+{
+    wprintf_s( L"\n========== TestCsv() Enter ==========\n" );
+
+    do 
+    {
+        CWUtils::CCsv file;
+        if ( FALSE == file.Open( L"123.csv" , CWUtils::CFileOpenAttr::FILE_OPEN_ATTR_CREATE_ALWAYS , TRUE , TRUE , TRUE ) )
+        {
+            wprintf_s( L"Open() failed\n" );
+            break;
+        }
+
+        vector<string> vecData;
+        CONST CHAR * pData[] = { "Col1" , "Col2" , "3" , "4.15" , "6.0" };
+        for ( size_t i = 0 ; i < _countof(pData) ; i++ )
+        {
+            vecData.push_back( pData[i] );
+        }
+        file.WriteRow( vecData , TRUE );
+        file.WriteRow( vecData , FALSE );
+
+        vecData.push_back( "Col 7!!!" );
+        file.WriteRow( vecData , TRUE );
+        file.WriteRow( vecData , FALSE );
+        file.Close();
+    } while ( 0 );
+    
+    wprintf_s( L"\n========== TestCsv() Leave ==========\n" );
+}
+
 INT wmain( INT aArgc , WCHAR * aArgv[] )
 {
     WPP_INIT_TRACING( L"TestCWFile" );
@@ -57,8 +88,7 @@ INT wmain( INT aArgc , WCHAR * aArgv[] )
     {
         TestSaveToFile();
         TestFile();
-        //TestUnEscapeString();
-        //TestUrlStringPtr();
+        TestCsv();
     } while ( 0 );
 
     stopWatch.Stop();

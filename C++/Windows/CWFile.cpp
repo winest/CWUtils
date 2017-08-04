@@ -1,17 +1,10 @@
 #include "stdafx.h"
 #pragma warning( disable : 4127 )
 #include "CWFile.h"
-#include <vector>
-#include <string>
-#include <Psapi.h>
+
 using std::vector;
 using std::string;
 using std::wstring;
-
-#pragma comment( lib , "Version.lib" )
-#if ( _WIN32_WINNT_VISTA > _WIN32_WINNT )
-    #pragma comment( lib , "Psapi.lib" )
-#endif
 
 namespace CWUtils
 {
@@ -32,6 +25,41 @@ VOID _SplitStringW( CONST wstring & aSrcString , vector<wstring> & aOutput , CON
         pos = aSrcString.find_first_of( aDelimiter , lastPos );            //Find next "non-delimiter"
     }
 }
+
+BOOL _StringToWString( IN CONST std::string & aString , OUT std::wstring & aWString , DWORD aCodePage )
+{
+    BOOL bRet = FALSE;
+    aWString.clear();
+
+    DWORD dwFlag = ( CP_UTF8 == aCodePage ) ? MB_ERR_INVALID_CHARS : 0;
+    WCHAR wzBuf[4096];
+    INT nBuf = _countof( wzBuf );
+    INT nBufCopied = MultiByteToWideChar( aCodePage , dwFlag , aString.c_str() , (INT)aString.size() , wzBuf , nBuf );
+    if ( 0 != nBufCopied )
+    {
+        aWString.assign( wzBuf , nBufCopied );
+        bRet = TRUE;
+    }
+    else if ( ERROR_INSUFFICIENT_BUFFER == GetLastError() )
+    {
+        nBuf = MultiByteToWideChar( aCodePage , dwFlag , aString.c_str() , (INT)aString.size() , NULL , 0 );
+        WCHAR * wzNewBuf = new (std::nothrow) WCHAR[nBuf];
+        if ( NULL != wzNewBuf )
+        {
+            nBufCopied = MultiByteToWideChar( aCodePage , dwFlag , aString.c_str() , (INT)aString.size() , wzNewBuf , nBuf );
+            if ( 0 != nBufCopied )
+            {
+                aWString.assign( wzNewBuf , nBufCopied );
+                bRet = TRUE;
+            }
+            delete [] wzNewBuf;
+        }
+    }
+    else{}
+    return bRet;
+}
+
+
 
 BOOL RelativeToFullPath( CONST WCHAR * aRelativePath , std::wstring & aFullPath )
 {
@@ -804,7 +832,18 @@ BOOL CreateFileDir( CONST wstring & aFileFullPath )
 
 
 
-BOOL CFile::Open( CONST WCHAR * aPath , CFileOpenAttr aOpenAttr , BOOL aMoveToEnd , BOOL aCanRead , BOOL aCanWrite )
+
+
+
+BOOL CFile::Open( CONST CHAR * aPath , DWORD aOpenAttr , CONST std::string & aLineSep )
+{
+    string strPath = aPath;
+    wstring wstrPath;
+    _StringToWString( strPath , wstrPath , CP_ACP );
+    return this->Open( wstrPath.c_str() , aOpenAttr , aLineSep );
+}
+
+BOOL CFile::Open( CONST WCHAR * aPath , DWORD aOpenAttr , CONST std::string & aLineSep )
 {
     BOOL bRet = FALSE;
 
@@ -815,46 +854,46 @@ BOOL CFile::Open( CONST WCHAR * aPath , CFileOpenAttr aOpenAttr , BOOL aMoveToEn
             break;
         }
 
+        DWORD dwCreateDisposition = 0;
+        if ( aOpenAttr & FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST )
+        {
+            dwCreateDisposition = OPEN_ALWAYS;
+        }
+        else if ( aOpenAttr & FILE_OPEN_ATTR_CREATE_ALWAYS )
+        {
+            dwCreateDisposition = CREATE_ALWAYS;
+        }
+        else if ( aOpenAttr & FILE_OPEN_ATTR_OPEN_EXISTING )
+        {
+            dwCreateDisposition = OPEN_EXISTING;
+        }
+        else
+        {
+            break;
+        }
+
         DWORD dwAccess = 0;
-        if ( aCanRead )
+        if ( aOpenAttr & FILE_OPEN_ATTR_READ )
         {
             dwAccess |= GENERIC_READ;
         }
-        if ( aCanWrite )
+        if ( aOpenAttr & FILE_OPEN_ATTR_WRITE )
         {
             dwAccess |= GENERIC_WRITE;
         }
-
-        DWORD dwCreateDisposition = 0;
-        switch ( aOpenAttr )
-        {
-            case FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST :
-            {
-                dwCreateDisposition = OPEN_ALWAYS;
-                break;
-            }
-            case FILE_OPEN_ATTR_CREATE_ALWAYS :
-            {
-                dwCreateDisposition = CREATE_ALWAYS;
-                break;
-            }
-            case FILE_OPEN_ATTR_OPEN_EXISTING :
-            {
-                dwCreateDisposition = OPEN_EXISTING;
-                break;
-            }
-        }
+        
         HANDLE hFile = CreateFileW( aPath , dwAccess , FILE_SHARE_READ , NULL , dwCreateDisposition , FILE_ATTRIBUTE_NORMAL , NULL );
         if ( INVALID_HANDLE_VALUE == hFile )
         {
             break;
         }
 
-        if ( aMoveToEnd )
+        if ( aOpenAttr & FILE_OPEN_ATTR_MOVE_TO_END )
         {
             SetFilePointer( hFile , 0 , 0 , FILE_END );
         }
         m_hFile = hFile;
+        m_strLineSep = aLineSep;
         bRet = TRUE;
     } while ( 0 );
     
@@ -886,6 +925,22 @@ BOOL CFile::Write( CONST UCHAR * aData , SIZE_T aDataSize )
     return bRet;
 }
 
+BOOL CFile::WriteLine()
+{
+    return this->Write( (CONST UCHAR *)m_strLineSep.c_str() , m_strLineSep.size() );
+}
+
+BOOL CFile::WriteLine( CONST UCHAR * aData , SIZE_T aDataSize )
+{
+    BOOL bRet = FALSE;
+    bRet = this->Write( aData , aDataSize );
+    if ( FALSE != bRet )
+    {
+        bRet = this->Write( (CONST UCHAR *)m_strLineSep.c_str() , m_strLineSep.size() );
+    }
+    return bRet;
+}
+
 VOID CFile::Flush()
 {
     if ( NULL != m_hFile )
@@ -903,6 +958,50 @@ VOID CFile::Close()
         m_hFile = NULL;
     }
 }
+
+
+
+
+
+
+
+
+
+BOOL CCsv::WriteRow( CONST std::vector<std::string> & aColData , BOOL aAddQuote )
+{
+    BOOL bRet = FALSE;
+
+    for ( UINT i = 0 ; i < aColData.size() ; i++ )
+    {
+        if ( aAddQuote )
+        {
+            this->Write( (CONST UCHAR *)"\"" , strlen("\"") );
+        }
+        this->Write( (CONST UCHAR *)aColData[i].c_str() , aColData[i].size() );
+        if ( aAddQuote )
+        {
+            this->Write( (CONST UCHAR *)"\"" , strlen("\"") );
+        }
+
+        if ( i < aColData.size() - 1 )
+        {
+            this->Write( (CONST UCHAR *)"," , strlen(",") );
+        }
+    }
+    this->WriteLine();
+
+    return bRet;
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

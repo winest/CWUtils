@@ -1,17 +1,9 @@
 #include "stdafx.h"
 
 #include "CWNetwork.h"
-#include <Process.h>
-#include <mstcpip.h>
-#include <WS2tcpip.h>
-#include <IPHlpApi.h>
 using namespace std;
 
 
-
-//Link with IPHlpApi.lib
-#pragma comment( lib , "ntdll.lib" )
-#pragma comment( lib , "IPHlpApi.lib" )
 
 namespace CWUtils
 {
@@ -25,7 +17,7 @@ namespace CWUtils
 #define MAX_RETRY 3
 
 #ifndef STATUS_SUCCESS
-    #define STATUS_SUCCESS                   ((NTSTATUS)0x00000000L)
+    #define STATUS_SUCCESS                   (0x00000000L)
 #endif
 
 

@@ -17,8 +17,14 @@
 #include <Windows.h>
 #include <string>
 #include <list>
+#include <Process.h>
 #include <WS2tcpip.h>
+#include <mstcpip.h>
 #include <IPHlpApi.h>
+
+//Link with IPHlpApi.lib
+#pragma comment( lib , "ntdll.lib" )
+#pragma comment( lib , "IPHlpApi.lib" )
 
 namespace CWUtils
 {

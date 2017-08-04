@@ -12,6 +12,7 @@
  */
 
 #include <Windows.h>
+#include <time.h>
 #include <string>
 
 namespace CWUtils
@@ -22,6 +23,10 @@ extern "C" {
 #endif
 
 VOID FormatTime( UINT64 aMilli , std::wstring & aTimeString );
+
+BOOL GetCurrTimeStringA( std::string & aTimeString , CONST CHAR * aTimeFormat = "%Y%m%d_%H%M%S" );
+BOOL GetCurrTimeStringW( std::wstring & aTimeString , CONST WCHAR * aTimeFormat = L"%Y%m%d_%H%M%S" );
+
 
 class CStopWatch
 {

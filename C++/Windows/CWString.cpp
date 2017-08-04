@@ -276,7 +276,15 @@ VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , CO
                 aOutput.append( aBytesPerLine - j , ' ' );
                 break;
             }
-            aOutput.push_back( iscntrl(aInput[nCurr]&0xFF) ? '.' : (char)aInput[nCurr] );
+
+            if ( 0x1F < (aInput[nCurr]&0xFF) && (aInput[nCurr]&0xFF) < 0x7F )
+            {
+                aOutput.push_back( (char)aInput[nCurr] );
+            }
+            else
+            {
+                aOutput.push_back( '.' );
+            }
         }
         aOutput.append( strLineSep );
     }
