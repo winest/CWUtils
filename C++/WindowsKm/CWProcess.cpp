@@ -69,7 +69,7 @@ NTSTATUS Sleep( ULONG aMilliSeconds )
 {
     LARGE_INTEGER liTime;
     liTime.QuadPart = ( -10000 ) * aMilliSeconds;
-	return KeDelayExecutionThread( KernelMode , 0 , &liTime );
+    return KeDelayExecutionThread( KernelMode , 0 , &liTime );
 }
 
 NTSTATUS GetProcessPathByPid( HANDLE aPid , PUNICODE_STRING aProcessPath )

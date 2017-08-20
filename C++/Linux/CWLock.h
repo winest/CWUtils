@@ -1,5 +1,4 @@
 #pragma once
-#include <VersionHelpers.h>
 
 /*
  * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
@@ -12,7 +11,9 @@
  * The latest version can be found at https://github.com/winest/CWUtils
  */
 
-#include <Windows.h>
+#include "WinDef.h"
+#include <pthread.h>
+#include <time.h>
 
 namespace CWUtils
 {
@@ -23,50 +24,39 @@ namespace CWUtils
 
 
 
-//On multiprocessor systems, this value define number of times that a thread tries to spin before actually performing a wait
-//operation (see InitializeCriticalSectionAndSpinCount API)
-#if ( _WIN32_WINNT_WINXP <= _WIN32_WINNT )
-    #ifndef RW_LOCK_SPIN_COUNT
-        #define RW_LOCK_SPIN_COUNT 400
-    #endif RW_LOCK_SPIN_COUNT
-#endif
-
 class CLock
 {
     public :
-        virtual BOOL Lock() = NULL;
-        virtual BOOL Unlock() = NULL;
+        virtual BOOL Lock() = 0;
+        virtual BOOL Unlock() = 0;
 };
 
 class CCriticalSection : public CLock
 {
     public :
-        inline CCriticalSection() 
+        inline CCriticalSection()
         {
-            #if ( _WIN32_WINNT_WINXP <= _WIN32_WINNT )
-                InitializeCriticalSectionAndSpinCount( &m_cs , RW_LOCK_SPIN_COUNT );
-            #else
-                InitializeCriticalSection( &m_cs );
-            #endif
+            pthread_mutexattr_t lockAttr;
+            pthread_mutexattr_settype( &lockAttr , PTHREAD_MUTEX_RECURSIVE_NP );
+            pthread_mutex_init( &m_mutex , &lockAttr );
+            pthread_mutexattr_destroy( &lockAttr );
         }
         inline virtual ~CCriticalSection()
         {
-            DeleteCriticalSection( &m_cs );
+            pthread_mutex_destroy( &m_mutex );
         }
 
         inline BOOL Lock()
         {
-            EnterCriticalSection( &m_cs );
-            return TRUE;
+            return ( 0 == pthread_mutex_lock( &m_mutex ) ) ? TRUE : FALSE;
         }
         inline BOOL Unlock()
         {
-            LeaveCriticalSection( &m_cs );
-            return TRUE;
+            return ( 0 == pthread_mutex_unlock( &m_mutex ) ) ? TRUE : FALSE;
         }
 
     private:
-        CRITICAL_SECTION m_cs;
+        pthread_mutex_t m_mutex;
 };
 
 class CAutoLock
@@ -89,31 +79,28 @@ class CAutoLock
 class CRWLock
 {
     protected :
-        CRWLock() { QueryPerformanceFrequency(&m_lnFreq); }
+        CRWLock() {}
         virtual ~CRWLock() {}
     public :
         virtual BOOL AcquireReaderLock( DWORD aTimeoutInMilli = INFINITE ) = 0;
         virtual VOID ReleaseReaderLock() = 0;
         virtual BOOL AcquireWriterLock( DWORD aTimeoutInMilli = INFINITE ) = 0;
         virtual VOID ReleaseWriterLock() = 0;
-
-    protected :
-        LARGE_INTEGER m_lnFreq;
 };
 
 
 
 //Forward reference
-class CRWLockSlim : public CRWLock
+class CRWLockPthread : public CRWLock
 {
     public :
-        CRWLockSlim() : m_bWin7AndLater(FALSE)
+        CRWLockPthread()
         {
-            InitializeSRWLock( &m_srwLock );
-            m_bWin7AndLater = IsWindows7OrGreater();
+            pthread_rwlock_init( &m_rwLock , NULL );
         }
-        virtual ~CRWLockSlim()
+        virtual ~CRWLockPthread()
         {
+            pthread_rwlock_destroy( &m_rwLock );
         }
 
         virtual BOOL AcquireReaderLock( DWORD dwTimeout = INFINITE );
@@ -122,8 +109,7 @@ class CRWLockSlim : public CRWLock
         virtual VOID ReleaseWriterLock();
 
     private :
-        BOOL m_bWin7AndLater;
-        SRWLOCK m_srwLock;
+        pthread_rwlock_t m_rwLock;
 };
 
 

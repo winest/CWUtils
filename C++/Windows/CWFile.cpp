@@ -430,25 +430,8 @@ BOOL GetFilePathFromHandle( IN HANDLE aFile , OUT wstring & aFilePath )
     for ( ;; ) 
     {
 #if ( _WIN32_WINNT_VISTA <= _WIN32_WINNT )
-        //Get OS version
-        OSVERSIONINFOEXW osvi = { 0 };
-        ZeroMemory( &osvi , sizeof(OSVERSIONINFOEXW) );
-
-        if ( ( NULL == aFile ) || ( INVALID_HANDLE_VALUE == aFile ) )
-        {
-            SetLastError( ERROR_INVALID_PARAMETER );
-            break;
-        }
-
-        osvi.dwOSVersionInfoSize = sizeof(osvi);
-        if ( FALSE == ::GetVersionExW( (OSVERSIONINFOW *)&osvi ) )
-        {
-            osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
-            GetVersionExW( (OSVERSIONINFOW *)&osvi );
-        }
-
         //Use different method since Vista
-        if ( VER_PLATFORM_WIN32_NT == osvi.dwPlatformId && 6 <= osvi.dwMajorVersion )
+        if ( IsWindowsVistaOrGreater() )
         {        
             WCHAR wzPath[MAX_PATH + 1] = { 0 };
             DWORD dwNewPathLen = GetFinalPathNameByHandleW( aFile , wzPath , _countof(wzPath) - 1 , FILE_NAME_NORMALIZED );
@@ -835,7 +818,7 @@ BOOL CreateFileDir( CONST wstring & aFileFullPath )
 
 
 
-BOOL CFile::Open( CONST CHAR * aPath , DWORD aOpenAttr , CONST std::string & aLineSep )
+BOOL CFile::Open( CONST CHAR * aPath , UINT32 aOpenAttr , CONST std::string & aLineSep )
 {
     string strPath = aPath;
     wstring wstrPath;
@@ -843,7 +826,7 @@ BOOL CFile::Open( CONST CHAR * aPath , DWORD aOpenAttr , CONST std::string & aLi
     return this->Open( wstrPath.c_str() , aOpenAttr , aLineSep );
 }
 
-BOOL CFile::Open( CONST WCHAR * aPath , DWORD aOpenAttr , CONST std::string & aLineSep )
+BOOL CFile::Open( CONST WCHAR * aPath , UINT32 aOpenAttr , CONST std::string & aLineSep )
 {
     BOOL bRet = FALSE;
 
@@ -957,11 +940,8 @@ VOID CFile::Close()
         CloseHandle( m_hFile );
         m_hFile = NULL;
     }
+    m_strLineSep.clear();
 }
-
-
-
-
 
 
 

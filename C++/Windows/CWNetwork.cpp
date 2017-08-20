@@ -128,7 +128,7 @@ typedef struct _MY_IP_ADAPTER_ADDRESS
     SOCKET_ADDRESS Address;
 } MY_IP_ADAPTER_ADDRESS, *PMY_IP_ADAPTER_ADDRESS;
 
-VOID TraverseAdapterAddr( MY_IP_ADAPTER_ADDRESS * aAdapterAddr , std::list<sockaddr_in> & aOutput4 , std::list<sockaddr_in6> & aOutput6 )
+VOID _TraverseAdapterAddr( MY_IP_ADAPTER_ADDRESS * aAdapterAddr , std::list<sockaddr_in> & aOutput4 , std::list<sockaddr_in6> & aOutput6 )
 {
     for ( INT i = 0 ; aAdapterAddr != NULL ; i++ )
     {
@@ -248,22 +248,22 @@ BOOL GetNetworkInterfaceInfo( DWORD aFamily , std::list<CW_NETWORK_INTERFACE_INF
             info.u64DownloadSpeed = pCurrAddresses->ReceiveLinkSpeed;
 
             IP_ADAPTER_UNICAST_ADDRESS * pUnicast = pCurrAddresses->FirstUnicastAddress;
-            TraverseAdapterAddr( (MY_IP_ADAPTER_ADDRESS *)pUnicast , info.lsUnicastIp4 , info.lsUnicastIp6 );
+            _TraverseAdapterAddr( (MY_IP_ADAPTER_ADDRESS *)pUnicast , info.lsUnicastIp4 , info.lsUnicastIp6 );
 
             IP_ADAPTER_ANYCAST_ADDRESS *pAnycast = pCurrAddresses->FirstAnycastAddress;
-            TraverseAdapterAddr( (MY_IP_ADAPTER_ADDRESS *)pAnycast , info.lsAnycastIp4 , info.lsAnycastIp6 );
+            _TraverseAdapterAddr( (MY_IP_ADAPTER_ADDRESS *)pAnycast , info.lsAnycastIp4 , info.lsAnycastIp6 );
 
             IP_ADAPTER_MULTICAST_ADDRESS *pMulticast = pCurrAddresses->FirstMulticastAddress;
-            TraverseAdapterAddr( (MY_IP_ADAPTER_ADDRESS *)pMulticast , info.lsMulticastIp4 , info.lsMulticastIp6 );
+            _TraverseAdapterAddr( (MY_IP_ADAPTER_ADDRESS *)pMulticast , info.lsMulticastIp4 , info.lsMulticastIp6 );
 
             IP_ADAPTER_PREFIX * pPrefix = pCurrAddresses->FirstPrefix;
             _TraversePrefixAddr( pPrefix , info.lsPrefixIp4 , info.lsPrefixIp4Bit , info.lsPrefixIp6 , info.lsPrefixIp6Bit );
 
             IP_ADAPTER_GATEWAY_ADDRESS * pGateway = pCurrAddresses->FirstGatewayAddress;
-            TraverseAdapterAddr( (MY_IP_ADAPTER_ADDRESS *)pGateway , info.lsGatewayIp4 , info.lsGatewayIp6 );
+            _TraverseAdapterAddr( (MY_IP_ADAPTER_ADDRESS *)pGateway , info.lsGatewayIp4 , info.lsGatewayIp6 );
 
             IP_ADAPTER_DNS_SERVER_ADDRESS * pDnsServer = pCurrAddresses->FirstDnsServerAddress;
-            TraverseAdapterAddr( (MY_IP_ADAPTER_ADDRESS *)pDnsServer , info.lsDnsIp4 , info.lsDnsIp6 );
+            _TraverseAdapterAddr( (MY_IP_ADAPTER_ADDRESS *)pDnsServer , info.lsDnsIp4 , info.lsDnsIp6 );
 
             aInfos.push_back( info );
             pCurrAddresses = pCurrAddresses->Next;
@@ -440,7 +440,7 @@ BOOL CServerSock::BindListen( CONST WCHAR * aIp , USHORT aPort , DWORD aFamily ,
         //Listen for incoming connection requests on the created socket
         if ( SOCKET_ERROR == listen( m_sktListen , 1 ) )
         {
-            wprintf_s( L"listen() failed. WSAGetLastError()=%d (%hs)\n" , WSAGetLastError() );
+            wprintf_s( L"listen() failed. WSAGetLastError()=%d\n" , WSAGetLastError() );
             break;
         }
         

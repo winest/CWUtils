@@ -221,7 +221,7 @@ VOID CppUnInit()
         //
         // These terminators MUST be executed in reverse order (LIFO)
         //
-    	pSListEntry = PopEntryList(&gCallOnExitListHead);
+        pSListEntry = PopEntryList(&gCallOnExitListHead);
         if(pSListEntry)
         {
             //

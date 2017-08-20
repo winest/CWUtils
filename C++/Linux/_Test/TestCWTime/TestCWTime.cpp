@@ -18,8 +18,8 @@ int main()
     
     printf( "%llu milli-seconds (%s)\n" , stopWatch.GetIntervalInMilli() , strTime.c_str() );
 
-	timespec timeInt;
-	stopWatch.GetInterval( timeInt );
-	printf( "%us %uns\n" , timeInt.tv_sec , timeInt.tv_nsec );
+    timespec timeInt;
+    stopWatch.GetInterval( timeInt );
+    printf( "%us %uns\n" , timeInt.tv_sec , timeInt.tv_nsec );
     return 0;
 }

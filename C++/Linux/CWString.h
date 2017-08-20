@@ -11,12 +11,15 @@
  * The latest version can be found at https://github.com/winest/CWUtils
  */
 
-#include <cstring>
-#include <cmath>
-#include <cstdarg>
-#include <cerrno>
+#include "WinDef.h"
+#include <ctype.h>
+#include <string.h>
+#include <math.h>
+#include <stdarg.h>
+#include <errno.h>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 namespace CWUtils
 {
@@ -40,10 +43,15 @@ typedef enum _StringType    //Lower index generally has higher restriction
     STRING_TYPE_END
 } StringType;
 
+BOOL StringToWString( IN CONST std::string & aString , OUT std::wstring & aWString , DWORD aCodePage = 0 );
+BOOL WStringToString( IN CONST std::wstring & aWString , OUT std::string & aString , DWORD aCodePage = 0 );
+
 VOID SplitStringA( CONST std::string & aSrcString , std::vector<std::string> & aOutput , CONST CHAR * aDelimiter );
 VOID SplitStringW( CONST std::wstring & aSrcString , std::vector<std::wstring> & aOutput , CONST WCHAR * aDelimiter );
 BOOL CDECL FormatStringA( OUT std::string & aOutString , IN CONST CHAR * aFormat , ... );
 BOOL CDECL FormatStringW( OUT std::wstring & aOutString , IN CONST WCHAR * aFormat , ... );
+VOID ToLower( IN OUT std::string & aString );
+VOID ToUpper( IN OUT std::string & aString );
 VOID ToHexString( CONST UCHAR * aInput , SIZE_T aInputSize , std::string & aOutput , CONST CHAR * aSplitter );
 VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , std::string & aOutput , CONST CHAR * aSplitter , size_t aBytesPerLine );
 
@@ -67,7 +75,7 @@ class CUrlStringPtr
 {
     public :
         CUrlStringPtr() { Clean(); }
-        CUrlStringPtr( CONST CHAR * pUrl ) { Clean(); this->SetUrl( pUrl , std::strlen(pUrl) ); }
+        CUrlStringPtr( CONST CHAR * pUrl ) { Clean(); this->SetUrl( pUrl , strlen(pUrl) ); }
         CUrlStringPtr( CONST CHAR * pUrl , SIZE_T uLen ) { Clean(); this->SetUrl( pUrl , uLen ); }
         virtual ~CUrlStringPtr() { Clean(); }
 

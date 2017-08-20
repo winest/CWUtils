@@ -1,3 +1,6 @@
+#ifndef __WINDEF_H__
+#define __WINDEF_H__
+
 #pragma once
 #include <stdint.h>
 
@@ -23,13 +26,14 @@ extern "C"
 #define OPTIONAL
 #define CONST               const
 #define CDECL               
-#define CALLBACK            __stdcall
-#define WINAPI              __stdcall
-#define WINAPIV             __cdecl
+#define CALLBACK            
+#define WINAPI              
+#define WINAPIV             
 #define APIENTRY            WINAPI
-#define APIPRIVATE          __stdcall
-#define PASCAL              __stdcall
-#define NTAPI               __stdcall
+#define APIPRIVATE          
+#define PASCAL              
+#define NTAPI              
+#define UNREFERENCED_PARAMETER(P) (P) 
 
 //Common types
 typedef void                VOID;
@@ -165,6 +169,7 @@ typedef LONG_PTR            LRESULT;
 #define MAXBYTE             0xff
 #define MAXWORD             0xffff
 #define MAXDWORD            0xffffffff
+#define INFINITE            0xffffffff
 
 
 
@@ -329,4 +334,6 @@ typedef struct tagPOINTS
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

@@ -32,11 +32,11 @@ extern "C"
 #define NTAPI               __stdcall
 
 //Common types
-typedef void            	VOID;
-typedef VOID            	*PVOID, *LPVOID;
-typedef CONST VOID      	*LPCVOID;
-typedef void            	*HANDLE;
-typedef HANDLE          	*PHANDLE; 
+typedef void                VOID;
+typedef VOID                *PVOID, *LPVOID;
+typedef CONST VOID          *LPCVOID;
+typedef void                *HANDLE;
+typedef HANDLE              *PHANDLE; 
 
 typedef char CHAR;
 typedef CHAR *PCHAR, *LPCH, *PCH, *PNZCH;
@@ -47,22 +47,22 @@ typedef wchar_t WCHAR;
 typedef WCHAR *PWCHAR, *LPWCH, *PWCH, *PNZWCH;
 typedef CONST WCHAR *LPCWCH, *PCWCH, *PCNZWCH, *LPCWCHAR, *PCWCHAR;
 
-typedef short           	SHORT;
-typedef unsigned short  	USHORT;
-typedef USHORT          	*PUSHORT;
-typedef long            	LONG, LONG_PTR;
-typedef LONG            	*PLONG_PTR;
-typedef LONG            	*PLONG, *LPLONG;
-typedef unsigned long   	ULONG, ULONG_PTR;
-typedef ULONG           	*PULONG, *PULONG_PTR;
-typedef int             	INT, INT_PTR;
-typedef INT             	*PINT_PTR;
-typedef INT             	*PINT, *LPINT;
-typedef unsigned int    	UINT, UINT_PTR;
-typedef UINT            	*PUINT, *PUINT_PTR;
+typedef short               SHORT;
+typedef unsigned short      USHORT;
+typedef USHORT              *PUSHORT;
+typedef long                LONG, LONG_PTR;
+typedef LONG                *PLONG_PTR;
+typedef LONG                *PLONG, *LPLONG;
+typedef unsigned long       ULONG, ULONG_PTR;
+typedef ULONG               *PULONG, *PULONG_PTR;
+typedef int                 INT, INT_PTR;
+typedef INT                 *PINT_PTR;
+typedef INT                 *PINT, *LPINT;
+typedef unsigned int        UINT, UINT_PTR;
+typedef UINT                *PUINT, *PUINT_PTR;
 
-typedef LONG_PTR 			SSIZE_T, *PSSIZE_T;
-typedef ULONG_PTR 			SIZE_T, *PSIZE_T;
+typedef LONG_PTR             SSIZE_T, *PSSIZE_T;
+typedef ULONG_PTR             SIZE_T, *PSIZE_T;
 
 typedef float               FLOAT;
 typedef FLOAT               *PFLOAT;
@@ -74,18 +74,18 @@ typedef signed char         INT8, *PINT8;
 typedef unsigned char       UINT8, *PUINT8;
 typedef signed short        INT16, *PINT16;
 typedef unsigned short      UINT16, *PUINT16;
-typedef int32_t    			INT32, *PINT32;
-typedef uint32_t    		UINT32, *PUINT32;
-typedef int64_t      		INT64, *PINT64;
-typedef uint64_t    		UINT64, *PUINT64;
-typedef int32_t      		LONG32, *PLONG32;
-typedef uint32_t    		ULONG32, *PULONG32;
-typedef uint32_t    		DWORD32, *PDWORD32;
-typedef int64_t      		LONG64, *PLONG64;
-typedef uint64_t    		ULONG64, *PULONG64;
-typedef uint64_t    		DWORD64, *PDWORD64;
-typedef int64_t      		LONGLONG;
-typedef uint64_t    		ULONGLONG;
+typedef int32_t                INT32, *PINT32;
+typedef uint32_t            UINT32, *PUINT32;
+typedef int64_t              INT64, *PINT64;
+typedef uint64_t            UINT64, *PUINT64;
+typedef int32_t              LONG32, *PLONG32;
+typedef uint32_t            ULONG32, *PULONG32;
+typedef uint32_t            DWORD32, *PDWORD32;
+typedef int64_t              LONG64, *PLONG64;
+typedef uint64_t            ULONG64, *PULONG64;
+typedef uint64_t            DWORD64, *PDWORD64;
+typedef int64_t              LONGLONG;
+typedef uint64_t            ULONGLONG;
 
 typedef unsigned char       BYTE;
 typedef BYTE                *PBYTE, *LPBYTE;

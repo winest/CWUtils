@@ -11,6 +11,7 @@
  * The latest version can be found at https://github.com/winest/CWUtils
  */
 
+#include "WinDef.h"
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -30,12 +31,19 @@ BOOL IsFileExist( CONST CHAR * aFullPath );
 
 BOOL IsDirExist( CONST CHAR * aDirPath );
 
-typedef enum _CFileOpenAttr
-{
-    FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST = 0 ,    //Open if exists, create if not exists
-    FILE_OPEN_ATTR_CREATE_ALWAYS ,              //Always create new file
-    FILE_OPEN_ATTR_OPEN_EXISTING ,              //Open if exists
-} CFileOpenAttr;
+
+
+
+
+CONST UINT32 FILE_OPEN_ATTR_NONE =                0x00000000;   //Nothing
+CONST UINT32 FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST = 0x00000001;   //Open if exists, create if not exists
+CONST UINT32 FILE_OPEN_ATTR_CREATE_ALWAYS =       0x00000002;   //Always create new file
+CONST UINT32 FILE_OPEN_ATTR_OPEN_EXISTING =       0x00000004;   //Open if exists
+
+CONST UINT32 FILE_OPEN_ATTR_BINARY =              0x00000008;   //Open the raw file directly
+CONST UINT32 FILE_OPEN_ATTR_MOVE_TO_END =         0x00000010;   //Move file pointer to the end of file
+CONST UINT32 FILE_OPEN_ATTR_READ =                0x00000020;   //Open for read
+CONST UINT32 FILE_OPEN_ATTR_WRITE =               0x00000040;   //Open for write
 
 class CFile
 {
@@ -44,16 +52,29 @@ class CFile
         virtual ~CFile() { this->Close(); }
 
     public :
-        BOOL Open( CONST CHAR * aPath , CFileOpenAttr aOpenAttr , BOOL aMoveToEnd , BOOL aCanRead , BOOL aCanWrite );
+        BOOL Open( CONST CHAR * aPath , UINT32 aOpenAttr , CONST std::string & aLineSep );
+        BOOL Open( CONST WCHAR * aPath , UINT32 aOpenAttr , CONST std::string & aLineSep );
         BOOL Write( CONST UCHAR * aData , SIZE_T aDataSize );
+        BOOL WriteLine();
         BOOL WriteLine( CONST UCHAR * aData , SIZE_T aDataSize );
         VOID Flush();
         VOID Close();
 
         FILE * GetFileHandle() { return m_hFile; }
 
-    private :
+    protected :
         FILE * m_hFile;
+        std::string m_strLineSep;
+};
+
+class CCsv : public CFile
+{
+    public :
+        CCsv() {}
+        virtual ~CCsv() { this->Close(); }
+
+    public :
+        BOOL WriteRow( CONST std::vector<std::string> & aColData , BOOL aAddQuote );
 };
 
 #ifdef __cplusplus

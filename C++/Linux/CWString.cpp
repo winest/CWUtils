@@ -9,6 +9,71 @@ namespace CWUtils
     extern "C" {
 #endif
 
+BOOL StringToWString( IN CONST std::string & aString , OUT std::wstring & aWString , DWORD aCodePage )
+{
+    UNREFERENCED_PARAMETER( aCodePage ); //Linux will use the locale in setlocale( LC_CTYPE , NULL )
+    
+    BOOL bRet = FALSE;
+    aWString.clear();
+
+    WCHAR wzBuf[4096];
+    size_t uBufSize = _countof( wzBuf );
+    size_t uBufCopied = mbstowcs( wzBuf , aString.c_str() , uBufSize );
+    if ( uBufCopied < uBufSize )
+    {
+        aWString.assign( wzBuf , uBufCopied );
+        bRet = TRUE;
+    }
+    else
+    {
+        uBufSize = aString.length() * 2;
+        WCHAR * wzNewBuf = new (std::nothrow) WCHAR[uBufSize];
+        if ( NULL != wzNewBuf )
+        {
+            uBufCopied = mbstowcs( wzNewBuf , aString.c_str() , uBufSize );
+            if ( uBufCopied < uBufSize )
+            {
+                aWString.assign( wzNewBuf , uBufCopied );
+                bRet = TRUE;
+            }
+            delete [] wzNewBuf;
+        }
+    }
+    return bRet;
+}
+
+BOOL WStringToString( IN CONST std::wstring & aWString , OUT std::string & aString , DWORD aCodePage )
+{
+    UNREFERENCED_PARAMETER( aCodePage ); //Linux will use the locale in setlocale( LC_CTYPE , NULL )
+    
+    BOOL bRet = FALSE;
+    aString.clear();
+
+    CHAR szBuf[4096];
+    size_t uBufSize = _countof( szBuf );
+    size_t uBufCopied = wcstombs( szBuf , aWString.c_str() , uBufSize );
+    if ( uBufCopied < uBufSize )
+    {
+        aString.assign( szBuf , uBufCopied );
+        bRet = TRUE;
+    }
+    else
+    {
+        uBufSize = aWString.length() * 4;
+        CHAR * szNewBuf = new (std::nothrow) CHAR[uBufSize];
+        if ( NULL != szNewBuf )
+        {
+            uBufCopied = wcstombs( szNewBuf , aWString.c_str() , uBufSize );
+            if ( uBufCopied < uBufSize )
+            {
+                aString.assign( szNewBuf , uBufCopied );
+                bRet = TRUE;
+            }            
+            delete [] szNewBuf;
+        }
+    }
+    return bRet;
+}
 
 VOID SplitStringA( CONST string & aSrcString , vector<string> & aOutput , CONST CHAR * aDelimiter )
 {    
@@ -42,29 +107,35 @@ BOOL CDECL FormatStringA( OUT string & aOutString , IN CONST CHAR * aFormat , ..
     aOutString.clear();
     CHAR szBuf[4096];
     CHAR * pBuf = szBuf;
+    SIZE_T uBufLen = _countof(szBuf);
+    INT nCopiedLen = 0;
 
     if ( NULL != aFormat )
     {
         va_list args;
         va_start( args , aFormat );
-        SIZE_T len = vsnprintf( NULL , 0 , aFormat , args ) + 1;    //Get formatted string length and adding one for null-terminator
 
-        if ( _countof(szBuf) < len )
+        do
         {
-            pBuf = new (std::nothrow) CHAR[len];
-        }
-        if ( NULL != pBuf )
-        {
-            if ( 0 < vsnprintf( pBuf , len , aFormat , args ) )
+            nCopiedLen = vsnprintf( pBuf , uBufLen , aFormat , args ) + 1;    //Get formatted string length and adding one for null-terminator
+
+            if ( 0 < nCopiedLen && nCopiedLen < uBufLen )
             {
-                aOutString = pBuf;
+                aOutString.assign( pBuf , (SIZE_T)nCopiedLen );
+                break;
             }
 
             if ( pBuf != szBuf )
             {
                 delete [] pBuf;
             }
-            bRet = TRUE;
+            uBufLen = uBufLen * 2;
+            pBuf = new (std::nothrow) CHAR[uBufLen];
+        } while ( pBuf );
+
+        if ( pBuf != szBuf )
+        {
+            delete [] pBuf;
         }
 
         va_end( args );
@@ -83,29 +154,35 @@ BOOL CDECL FormatStringW( OUT wstring & aOutString , IN CONST WCHAR * aFormat , 
     aOutString.clear();
     WCHAR wzBuf[4096];
     WCHAR * pBuf = wzBuf;
+    SIZE_T uBufLen = _countof(wzBuf);
+    INT nCopiedLen = 0;
 
     if ( NULL != aFormat )
     {
         va_list args;
         va_start( args , aFormat );
-        SIZE_T len = vswprintf( NULL , 0 , aFormat , args ) + 1;    //Get formatted string length and adding one for null-terminator
 
-        if ( _countof(wzBuf) < len )
+        do
         {
-            pBuf = new (std::nothrow) WCHAR[len];
-        }
-        if ( NULL != pBuf )
-        {
-            if ( 0 < vswprintf( pBuf , len , aFormat , args ) )
+            nCopiedLen = vswprintf( pBuf , uBufLen , aFormat , args ) + 1;    //Get formatted string length and adding one for null-terminator
+
+            if ( 0 < nCopiedLen && nCopiedLen < uBufLen )
             {
-                aOutString = pBuf;
+                aOutString.assign( pBuf , (SIZE_T)nCopiedLen );
+                break;
             }
 
             if ( pBuf != wzBuf )
             {
                 delete [] pBuf;
             }
-            bRet = TRUE;
+            uBufLen = uBufLen * 2;
+            pBuf = new (std::nothrow) WCHAR[uBufLen];
+        } while ( pBuf );
+
+        if ( pBuf != wzBuf )
+        {
+            delete [] pBuf;
         }
 
         va_end( args );
@@ -116,6 +193,16 @@ BOOL CDECL FormatStringW( OUT wstring & aOutString , IN CONST WCHAR * aFormat , 
     }
 
     return bRet; 
+}
+
+VOID ToLower( IN OUT std::string & aString )
+{
+    std::transform( aString.begin() , aString.end() , aString.begin() , (int (*)(int))std::tolower );
+}
+
+VOID ToUpper( IN OUT std::string & aString )
+{
+    std::transform( aString.begin() , aString.end() , aString.begin() , (int (*)(int))std::toupper );
 }
 
 VOID ToHexString( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , CONST CHAR * aSplitter )

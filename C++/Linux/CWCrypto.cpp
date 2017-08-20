@@ -98,9 +98,9 @@ VOID Rc4( CONST UCHAR * aInput , SIZE_T aInputSize , std::string & aOutput , CON
     size_t uKeyLen = strlen( aRc4Key );
     UCHAR S[256];
 
-	for ( int i = 0 ; i < 256 ; i++ )
+    for ( int i = 0 ; i < 256 ; i++ )
     {
-		S[i] = (UCHAR)i; 
+        S[i] = (UCHAR)i; 
     }
 
     for( int i = 0 , j = 0 ; i < 256 ; i++ )

@@ -8,12 +8,12 @@ namespace CWUtils
     extern "C" {
 #endif
 
-BOOL CRWLockSlim::AcquireReaderLock( DWORD dwTimeout )
+BOOL CRWLockSlim::AcquireReaderLock( DWORD aTimeoutInMilli )
 {
     BOOL bRet = FALSE;
 
     #if ( _WIN32_WINNT_WIN7 <= _WIN32_WINNT )
-        if ( INFINITE == dwTimeout || FALSE == m_bWin7AndLater )
+        if ( INFINITE == aTimeoutInMilli || FALSE == m_bWin7AndLater )
         {
             AcquireSRWLockShared( &m_srwLock );
             bRet = TRUE;
@@ -22,7 +22,7 @@ BOOL CRWLockSlim::AcquireReaderLock( DWORD dwTimeout )
         {
             LARGE_INTEGER lnCurr , lnEnd;
             QueryPerformanceCounter( &lnCurr );
-            lnEnd.QuadPart = lnCurr.QuadPart + dwTimeout * ( m_lnFreq.QuadPart / 1000 );
+            lnEnd.QuadPart = lnCurr.QuadPart + aTimeoutInMilli * ( m_lnFreq.QuadPart / 1000 );
             do 
             {
                 QueryPerformanceCounter( &lnCurr );
@@ -42,12 +42,12 @@ VOID CRWLockSlim::ReleaseReaderLock()
     ReleaseSRWLockShared( &m_srwLock );
 }
 
-BOOL CRWLockSlim::AcquireWriterLock( DWORD dwTimeout )
+BOOL CRWLockSlim::AcquireWriterLock( DWORD aTimeoutInMilli )
 {
     BOOL bRet = FALSE;
 
     #if ( _WIN32_WINNT_WIN7 <= _WIN32_WINNT )
-        if ( INFINITE == dwTimeout || FALSE == m_bWin7AndLater )
+        if ( INFINITE == aTimeoutInMilli || FALSE == m_bWin7AndLater )
         {
             AcquireSRWLockExclusive( &m_srwLock );
             bRet = TRUE;
@@ -56,7 +56,7 @@ BOOL CRWLockSlim::AcquireWriterLock( DWORD dwTimeout )
         {
             LARGE_INTEGER lnCurr , lnEnd;
             QueryPerformanceCounter( &lnCurr );
-            lnEnd.QuadPart = lnCurr.QuadPart + dwTimeout * ( m_lnFreq.QuadPart / 1000 );
+            lnEnd.QuadPart = lnCurr.QuadPart + aTimeoutInMilli * ( m_lnFreq.QuadPart / 1000 );
             do 
             {
                 QueryPerformanceCounter( &lnCurr );

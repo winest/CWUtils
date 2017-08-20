@@ -26,7 +26,11 @@ VOID FormatTime( UINT64 aMilli , std::wstring & aTimeString );
 
 BOOL GetCurrTimeStringA( std::string & aTimeString , CONST CHAR * aTimeFormat = "%Y%m%d_%H%M%S" );
 BOOL GetCurrTimeStringW( std::wstring & aTimeString , CONST WCHAR * aTimeFormat = L"%Y%m%d_%H%M%S" );
-
+#ifdef _WIN32
+    #define GetCurrTimeString GetCurrTimeStringW
+#else
+    #define GetCurrTimeString GetCurrTimeStringA
+#endif
 
 class CStopWatch
 {
