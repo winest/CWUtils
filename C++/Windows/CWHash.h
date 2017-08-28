@@ -22,6 +22,7 @@ namespace CWUtils
     extern "C" {
 #endif
 
+BOOL GetCrc32( CONST UCHAR * aBuf , SIZE_T aBufSize , UINT32 & aCrc32 );
 BOOL GetFileMd5( IN CONST WCHAR * aFilePath , OUT std::string & aMd5 );
 
 //Refer to https://code.google.com/p/smhasher/w/list

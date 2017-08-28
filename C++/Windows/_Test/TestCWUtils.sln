@@ -47,6 +47,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestDllInjectMgr", "UnitTes
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCWWmiEventMonitor", "UnitTest\TestCWWmiEventMonitor\TestCWWmiEventMonitor.vcxproj", "{0128C6B1-6942-4EDA-BAB3-E2284B9D650C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCWHash", "UnitTest\TestCWHash\TestCWHash.vcxproj", "{03430776-7954-4F42-881D-385A95396185}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -327,6 +329,16 @@ Global
 		{0128C6B1-6942-4EDA-BAB3-E2284B9D650C}.Release|Win32.ActiveCfg = Release|Win32
 		{0128C6B1-6942-4EDA-BAB3-E2284B9D650C}.Release|Win32.Build.0 = Release|Win32
 		{0128C6B1-6942-4EDA-BAB3-E2284B9D650C}.Release|x64.ActiveCfg = Release|Win32
+		{03430776-7954-4F42-881D-385A95396185}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{03430776-7954-4F42-881D-385A95396185}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{03430776-7954-4F42-881D-385A95396185}.Debug|Win32.ActiveCfg = Debug|Win32
+		{03430776-7954-4F42-881D-385A95396185}.Debug|Win32.Build.0 = Debug|Win32
+		{03430776-7954-4F42-881D-385A95396185}.Debug|x64.ActiveCfg = Debug|Win32
+		{03430776-7954-4F42-881D-385A95396185}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{03430776-7954-4F42-881D-385A95396185}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{03430776-7954-4F42-881D-385A95396185}.Release|Win32.ActiveCfg = Release|Win32
+		{03430776-7954-4F42-881D-385A95396185}.Release|Win32.Build.0 = Release|Win32
+		{03430776-7954-4F42-881D-385A95396185}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
