@@ -1,7 +1,7 @@
 #!/bin/sh
 
 CURR_DIR=$PWD
-BUILD_TYPE=Debug
+BUILD_TYPE=Release
 BUILD_DIR=Build$BUILD_TYPE
 SOURCE_DIR=Src
 OUTPUT_DIR=Output/$BUILD_TYPE
@@ -9,9 +9,13 @@ CMAKE_PATH=cmake
 
 
 
-#Build TestCWUtils
-echo "Building TestCWUtils"
+#Build HFT
+echo "Building TestCWEvent"
 cd "$CURR_DIR"
+if [ ! -d "UnitTest/TestCWEvent" ]; then
+    echo "Cannot find $PWD/UnitTest/TestCWEvent"
+    exit 1
+fi
 
 if [ -d "$OUTPUT_DIR" ]; then
     rm -rf "$OUTPUT_DIR";
