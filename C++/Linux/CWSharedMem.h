@@ -27,16 +27,22 @@ class CSharedMemFifo    //Named pipe on Linux
 {
     public :
         CSharedMemFifo() : m_hSm(-1) {}
-        ~CSharedMemFifo() {}
+        ~CSharedMemFifo() { this->Close(); }
 
     public :
         BOOL Create( CONST CHAR * aName , UINT32 aPermission = SHARED_MEM_PERM_READ | SHARED_MEM_PERM_WRITE );
+        BOOL Open( CONST CHAR * aName , UINT32 aPermission = SHARED_MEM_PERM_READ | SHARED_MEM_PERM_WRITE );
         BOOL Connect( UINT32 aPermission );
         VOID Close();
 
         BOOL Write( CONST UCHAR * aBuf , SIZE_T aBufSize );
         INT Read( UCHAR * aBuf , SIZE_T aBufSize );   //Doesn't handle the case aBuf is not big enough
         BOOL Read( std::string & aBuf , SIZE_T aBufSize );  //Read until reaches aBufSize
+
+        //SmartWrite() and SmartRead() should only be used as a pair
+        //The content in FIFO will be <SIZE_T bytes content size><content>
+        BOOL SmartWrite( CONST UCHAR * aBuf , SIZE_T aBufSize );
+        BOOL SmartRead( std::string & aBuf );
 
     private :
         INT m_hSm;

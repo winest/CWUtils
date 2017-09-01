@@ -38,7 +38,7 @@ BOOL CSharedMemFifo::Create( CONST CHAR * aName , UINT32 aPermission )
         {
             uCreatePerm |= ( S_IXUSR | S_IXGRP | S_IXOTH );
         }
-        if ( -1 == mkfifo( aName , uCreatePerm ) )
+        if ( -1 == mkfifo( aName , uCreatePerm ) && EEXIST != errno )
         {
             printf( "mkfifo() failed, errno=%s\n" , strerror(errno) );
             break;
@@ -47,8 +47,58 @@ BOOL CSharedMemFifo::Create( CONST CHAR * aName , UINT32 aPermission )
         bRet = TRUE;
     } while ( 0 );
 
+    if ( FALSE == bRet )
+    {
+        this->Close();
+    }
+
     return bRet;
 }
+
+
+BOOL CSharedMemFifo::Open( CONST CHAR * aName , UINT32 aPermission )
+{
+    BOOL bRet = FALSE;
+    this->Close();
+
+    do
+    {
+        if ( NULL != aName )
+        {
+            m_strName = aName;
+        }
+
+        //Open existing FIFO
+        mode_t uCreatePerm = 0;
+        if ( aPermission & SHARED_MEM_PERM_READ )
+        {
+            uCreatePerm |= ( S_IRUSR | S_IRGRP | S_IROTH );
+        }
+        if ( aPermission & SHARED_MEM_PERM_WRITE )
+        {
+            uCreatePerm |= ( S_IWUSR | S_IWGRP | S_IWOTH );
+        }
+        if ( aPermission & SHARED_MEM_PERM_EXECUTE )
+        {
+            uCreatePerm |= ( S_IXUSR | S_IXGRP | S_IXOTH );
+        }
+        if ( -1 != mkfifo( aName , uCreatePerm ) || EEXIST != errno )
+        {
+            printf( "Not created yet, errno=%s\n" , strerror(errno) );
+            break;
+        }
+
+        bRet = TRUE;
+    } while ( 0 );
+
+    if ( FALSE == bRet )
+    {
+        this->Close();
+    }
+
+    return bRet;
+}
+
 
 
 
@@ -105,6 +155,15 @@ VOID CSharedMemFifo::Close()
     {
         close( m_hSm );
         m_hSm = -1;
+
+        if ( m_strName.length() )
+        {
+            shm_unlink( m_strName.c_str() );
+        }
+        else
+        {
+            shm_unlink( NULL );
+        }
         m_strName.clear();
     }
 }
@@ -167,6 +226,54 @@ BOOL CSharedMemFifo::Read( std::string & aBuf , SIZE_T aBufSize )
     return bRet;
 }
 
+
+BOOL CSharedMemFifo::SmartWrite( CONST UCHAR * aBuf , SIZE_T aBufSize )
+{
+    BOOL bRet = FALSE;
+
+    do
+    {
+        if ( FALSE == this->Write( (CONST UCHAR *)&aBufSize , sizeof(SIZE_T) ) )
+        {
+            printf( "Write() failed for size, errno=%d\n" , errno );
+            break;
+        }
+        if ( FALSE == this->Write( aBuf , aBufSize ) )
+        {
+            printf( "Write() failed for data, errno=%d\n" , errno );
+            break;
+        }
+
+        bRet = TRUE;
+    } while ( 0 );
+
+    return bRet;
+}
+
+BOOL CSharedMemFifo::SmartRead( std::string & aBuf )
+{
+    BOOL bRet = FALSE;
+
+    do
+    {
+        if ( FALSE == this->Read( aBuf , sizeof(SIZE_T) ) )
+        {
+            printf( "Read() failed for size, errno=%d\n" , errno );
+            break;
+        }
+
+        SIZE_T uDataSize = (*(SIZE_T *)aBuf.data());
+        if ( FALSE == this->Read( aBuf , uDataSize ) )
+        {
+            printf( "Read() failed for data, errno=%d\n" , errno );
+            break;
+        }
+
+        bRet = TRUE;
+    } while ( 0 );
+
+    return bRet;
+}
 
 
 
@@ -299,7 +406,7 @@ BOOL CSharedMemSegment::Open( CONST CHAR * aName , SIZE_T aMaxSize , UINT32 aPer
         struct stat smStat;
         if ( -1 != fstat( m_hSm , &smStat) && smStat.st_size == 0 )
         {
-            if ( ftruncate( m_hSm , aMaxSize ) == -1 )
+            if ( -1 == ftruncate( m_hSm , aMaxSize ) )
             {
                 printf( "ftruncate() failed. errno=%s\n" , strerror(errno) );
                 break;

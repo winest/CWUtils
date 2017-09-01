@@ -23,6 +23,7 @@ int main( int aArgc , char * aArgv[] )
             break;
         }
 
+        printf( "Connecting\n" );
         if ( FALSE == pipeP2C.Connect( CWUtils::SHARED_MEM_PERM_WRITE ) )
         {
             printf( "pipeP2C.Connect() failed, errno=%d\n" , errno );
@@ -33,6 +34,7 @@ int main( int aArgc , char * aArgv[] )
             printf( "pipeC2P.Connect() failed, errno=%d\n" , errno );
             break;
         }
+        printf( "Connected\n" );
 
 
 
@@ -41,41 +43,26 @@ int main( int aArgc , char * aArgv[] )
             //First sizeof(SIZE_T) bytes is data size, then data
             printf( "Send data to client\n" );
             string strP2C = "Message from parent";
-            SIZE_T uP2CSize = strP2C.size();
-            if ( FALSE == pipeP2C.Write( (CONST UCHAR *)&uP2CSize , sizeof(SIZE_T) ) )
+            if ( FALSE == pipeP2C.SmartWrite( (CONST UCHAR *)strP2C.data() , strP2C.size() ) )
             {
-                printf( "pipeP2C.Write() failed, errno=%d\n" , errno );
+                printf( "pipeP2C.SmartWrite() failed, errno=%d\n" , errno );
                 bLoop = FALSE;
                 break;
             }
-            if ( FALSE == pipeP2C.Write( (CONST UCHAR *)strP2C.data() , uP2CSize ) )
-            {
-                printf( "pipeP2C.Write() failed, errno=%d\n" , errno );
-                bLoop = FALSE;
-                break;
-            }
-            printf( "pipeP2C.Write() succeed\n" );
+            printf( "pipeP2C.SmartWrite() succeed\n" );
 
 
 
             //First sizeof(SIZE_T) bytes is data size, then data
             printf( "Wait data from child\n" );
             string strC2P;
-            if ( FALSE == pipeC2P.Read( strC2P , sizeof(SIZE_T) ) )
+            if ( FALSE == pipeC2P.SmartRead( strC2P ) )
             {
-                printf( "pipeC2P.Read() failed, errno=%d\n" , errno );
+                printf( "pipeC2P.SmartRead() failed, errno=%d\n" , errno );
                 bLoop = FALSE;
                 break;
             }
-
-            SIZE_T uC2PSize = (*(SIZE_T *)strC2P.data());
-            if ( FALSE == pipeC2P.Read( strC2P , uC2PSize ) )
-            {
-                printf( "pipeC2P.Read() failed, errno=%d\n" , errno );
-                bLoop = FALSE;
-                break;
-            }
-            printf( "pipeC2P.Read() succeed\n" );
+            printf( "pipeC2P.SmartRead() succeed\n" );
             printf( "C->P: %s\n" , strC2P.c_str() );
 
 
