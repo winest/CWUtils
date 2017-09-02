@@ -19,6 +19,7 @@ BOOL CSharedMemFifo::Create( CONST CHAR * aName , UINT32 aPermission )
 
     do
     {
+        m_bOpenExisting = FALSE;
         if ( NULL != aName )
         {
             m_strName = aName;
@@ -63,6 +64,7 @@ BOOL CSharedMemFifo::Open( CONST CHAR * aName , UINT32 aPermission )
 
     do
     {
+        m_bOpenExisting = TRUE;
         if ( NULL != aName )
         {
             m_strName = aName;
@@ -149,20 +151,19 @@ BOOL CSharedMemFifo::Connect( UINT32 aPermission )
 
 
 
-VOID CSharedMemFifo::Close()
+VOID CSharedMemFifo::Close( BOOL aRemove )
 {
     if ( -1 != m_hSm )
     {
         close( m_hSm );
         m_hSm = -1;
 
-        if ( m_strName.length() )
+        if ( !m_bOpenExisting || aRemove )
         {
-            shm_unlink( m_strName.c_str() );
-        }
-        else
-        {
-            shm_unlink( NULL );
+            if ( m_strName.length() )
+            {
+                unlink( m_strName.c_str() );
+            }
         }
         m_strName.clear();
     }
@@ -256,13 +257,13 @@ BOOL CSharedMemFifo::SmartRead( std::string & aBuf )
 
     do
     {
-        if ( FALSE == this->Read( aBuf , sizeof(SIZE_T) ) )
+        SIZE_T uDataSize = 0;
+        if ( -1 == this->Read( (UCHAR *)&uDataSize , sizeof(SIZE_T) ) )
         {
             printf( "Read() failed for size, errno=%d\n" , errno );
             break;
         }
 
-        SIZE_T uDataSize = (*(SIZE_T *)aBuf.data());
         if ( FALSE == this->Read( aBuf , uDataSize ) )
         {
             printf( "Read() failed for data, errno=%d\n" , errno );

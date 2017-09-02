@@ -26,14 +26,14 @@ CONST UINT32 SHARED_MEM_PERM_ALL      = 0xFFFFFFFF;
 class CSharedMemFifo    //Named pipe on Linux
 {
     public :
-        CSharedMemFifo() : m_hSm(-1) {}
+        CSharedMemFifo() : m_hSm(-1) , m_bOpenExisting(FALSE) {}
         ~CSharedMemFifo() { this->Close(); }
 
     public :
         BOOL Create( CONST CHAR * aName , UINT32 aPermission = SHARED_MEM_PERM_READ | SHARED_MEM_PERM_WRITE );
         BOOL Open( CONST CHAR * aName , UINT32 aPermission = SHARED_MEM_PERM_READ | SHARED_MEM_PERM_WRITE );
         BOOL Connect( UINT32 aPermission );
-        VOID Close();
+        VOID Close( BOOL aRemove = FALSE );
 
         BOOL Write( CONST UCHAR * aBuf , SIZE_T aBufSize );
         INT Read( UCHAR * aBuf , SIZE_T aBufSize );   //Doesn't handle the case aBuf is not big enough
@@ -46,6 +46,7 @@ class CSharedMemFifo    //Named pipe on Linux
 
     private :
         INT m_hSm;
+        BOOL m_bOpenExisting;
         std::string m_strName;
 };
 
