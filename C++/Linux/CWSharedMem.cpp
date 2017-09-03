@@ -555,6 +555,7 @@ BOOL CSharedMemSegment::SmartWrite( CONST UCHAR * aBuf , SIZE_T aBufSize )
             break;
         }
         
+        BOOL bWriteError = FALSE;
         pData->uTotalSize = aBufSize;
         pData->uFlags = 0;
         SIZE_T uWritten = 0;
@@ -571,6 +572,7 @@ BOOL CSharedMemSegment::SmartWrite( CONST UCHAR * aBuf , SIZE_T aBufSize )
                 {
                     printf( "m_evtData.Set() failed, errno=%s\n" , strerror(errno) );
                 }
+                bWriteError = TRUE;
                 break;
             }
             if ( FALSE == m_evtDataOk.Wait() )
@@ -579,10 +581,11 @@ BOOL CSharedMemSegment::SmartWrite( CONST UCHAR * aBuf , SIZE_T aBufSize )
                 {
                     printf( "m_evtDataOk.Wait() failed, errno=%s\n" , strerror(errno) );
                 }
+                bWriteError = TRUE;
                 break;
             }
         } while ( uWritten < aBufSize );
-        if ( uWritten < aBufSize || 0 != errno )
+        if ( (uWritten < aBufSize) || bWriteError )
         {
             break;
         }
@@ -609,6 +612,7 @@ BOOL CSharedMemSegment::SmartRead( std::string & aBuf )
         
         SIZE_T uRead = 0;
         SIZE_T uTotalSize = 0;
+        BOOL bReadError = FALSE;
         do
         {
             //Wait until someone fill shared memory and set event by SmartWrite()
@@ -618,6 +622,7 @@ BOOL CSharedMemSegment::SmartRead( std::string & aBuf )
                 {
                     printf( "m_evtData.Wait() failed, errno=%s\n" , strerror(errno) );
                 }
+                bReadError = TRUE;
                 break;
             }
             aBuf.reserve( pData->uTotalSize );
@@ -633,10 +638,11 @@ BOOL CSharedMemSegment::SmartRead( std::string & aBuf )
                 {
                     printf( "m_evtDataOk.Set() failed, errno=%s\n" , strerror(errno) );
                 }
+                bReadError = TRUE;
                 break;
             }
         } while ( uRead < uTotalSize );
-        if ( uRead < uTotalSize || 0 != errno )
+        if ( (uRead < uTotalSize) || bReadError )
         {
             break;
         }
