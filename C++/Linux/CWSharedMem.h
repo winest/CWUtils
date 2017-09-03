@@ -70,7 +70,7 @@ class CSharedMemFifo    //Named pipe on Linux
 class CSharedMemSegment
 {
     public :
-        CSharedMemSegment() : m_hSm(-1) , m_uMaxDataSize(0) , m_pData(NULL) {}
+        CSharedMemSegment() : m_hSm(-1) , m_uMaxDataSize(0) , m_uMaxSmSize(0) , m_pData(NULL) {}
         ~CSharedMemSegment() { this->Close(); }
 
         BOOL Create( CONST CHAR * aName , SIZE_T aMaxDataSize , UINT32 aPermission = SHARED_MEM_PERM_READ | SHARED_MEM_PERM_WRITE );

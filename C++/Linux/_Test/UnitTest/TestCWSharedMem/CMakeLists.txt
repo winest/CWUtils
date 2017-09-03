@@ -21,7 +21,10 @@ else ()
     endforeach(flag_var)
 endif ()
 
-
+#set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fuse-ld=gold -fno-omit-frame-pointer -fsanitize=address" )
+#set( CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fuse-ld=gold -fno-omit-frame-pointer -fsanitize=address" )
+#set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fuse-ld=gold -fsanitize=thread -fPIE -pie" )
+#set( CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fuse-ld=gold -fsanitize=thread -fPIE -pie" )
 
 message( "\${CMAKE_VERSION}=${CMAKE_VERSION}" )
 message( "\${CMAKE_CXX_COMPILER_ID}=${CMAKE_CXX_COMPILER_ID}" )
@@ -50,10 +53,10 @@ set( SrcChild        "child.cpp" )
 
 if ( UNIX )
     set( DirCWUtils   "../../../../Linux" )
-    set( SrcCWUtils   "${DirCWUtils}/CWSharedMem.cpp" )
+    set( SrcCWUtils   "${DirCWUtils}/CWSharedMem.cpp" "${DirCWUtils}/CWEvent.cpp" )
 else ()
     set( DirCWUtils   "../../../../Windows" )
-    set( SrcCWUtils   "${DirCWUtils}/CWSharedMem.cpp" )
+    set( SrcCWUtils   "${DirCWUtils}/CWSharedMem.cpp" "${DirCWUtils}/CWEvent.cpp" )
 endif ()
 
 

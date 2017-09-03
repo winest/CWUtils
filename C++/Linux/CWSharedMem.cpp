@@ -504,9 +504,6 @@ BOOL CSharedMemSegment::Open( CONST CHAR * aName , SIZE_T aMaxDataSize , UINT32 
 
 VOID CSharedMemSegment::Close()
 {
-    m_evtData.Close();
-    m_evtDataOk.Close();
-    
     if ( m_pData != NULL )
     {
         munmap( m_pData , m_uMaxSmSize );
@@ -529,6 +526,9 @@ VOID CSharedMemSegment::Close()
         m_hSm = -1;
         m_strName.clear();
     }
+
+    m_evtData.Close();
+    m_evtDataOk.Close();
 }
 
 VOID * CSharedMemSegment::GetData()
@@ -571,20 +571,18 @@ BOOL CSharedMemSegment::SmartWrite( CONST UCHAR * aBuf , SIZE_T aBufSize )
                 {
                     printf( "m_evtData.Set() failed, errno=%s\n" , strerror(errno) );
                 }
-                bRet = FALSE;
                 break;
             }
             if ( FALSE == m_evtDataOk.Wait() )
             {
                 if ( EIDRM != errno )
                 {
-                    printf( "m_evtData.Wait() failed, errno=%s\n" , strerror(errno) );
+                    printf( "m_evtDataOk.Wait() failed, errno=%s\n" , strerror(errno) );
                 }
-                bRet = FALSE;
                 break;
             }
         } while ( uWritten < aBufSize );
-        if ( uWritten < aBufSize )
+        if ( uWritten < aBufSize || 0 != errno )
         {
             break;
         }
@@ -620,7 +618,6 @@ BOOL CSharedMemSegment::SmartRead( std::string & aBuf )
                 {
                     printf( "m_evtData.Wait() failed, errno=%s\n" , strerror(errno) );
                 }
-                bRet = FALSE;
                 break;
             }
             aBuf.reserve( pData->uTotalSize );
@@ -636,11 +633,10 @@ BOOL CSharedMemSegment::SmartRead( std::string & aBuf )
                 {
                     printf( "m_evtDataOk.Set() failed, errno=%s\n" , strerror(errno) );
                 }
-                bRet = FALSE;
                 break;
             }
         } while ( uRead < uTotalSize );
-        if ( uRead < uTotalSize )
+        if ( uRead < uTotalSize || 0 != errno )
         {
             break;
         }
