@@ -210,7 +210,7 @@ BOOL CSharedMemFifo::Read( std::string & aBuf , SIZE_T aBufSize )
         SIZE_T uRead = 0;
         do
         {
-            SIZE_T uRemainSize = min( sizeof(szBuf) , aBufSize-uRead );
+            SIZE_T uRemainSize = min( (SIZE_T)sizeof(szBuf) , aBufSize-uRead );
             SIZE_T uNowRead = read( m_hSm , szBuf , uRemainSize );
             if ( -1 == uNowRead )
             {
