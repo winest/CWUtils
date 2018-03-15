@@ -53,6 +53,9 @@ typedef union _MacAddress
 #ifndef ETHERNET_TYPE_IPV6
     #define ETHERNET_TYPE_IPV6    0x86DD
 #endif
+#ifndef ETHERNET_TYPE_VLAN
+    #define ETHERNET_TYPE_VLAN    0x8100
+#endif
 #ifndef ETHERNET_TYPE_ARP
     #define ETHERNET_TYPE_ARP     0x0806
 #endif
@@ -294,8 +297,49 @@ typedef struct _CW_NETWORK_INTERFACE_INFO {
 BOOL GetNetworkInterfaceInfo( DWORD aFamily , std::list<CW_NETWORK_INTERFACE_INFO> & aInfos );
 
 
+
+
+
+
+
+
+
 //Return ERROR_SUCCESS if no error happen. Other return code will cause the server to stop the connection
 typedef DWORD (CALLBACK *SocketRecvCbk)( IN DWORD aSkt , IN VOID * aUserCtx , CONST CHAR * aRecvBuf , INT aRecvSize );
+
+class CClientSock
+{
+    public :
+        CClientSock() : m_bWsaStarted(FALSE) , m_dwCodePage(CP_ACP) , m_hEvtExit(NULL) ,
+                        m_skt(INVALID_SOCKET) , m_hReceiverThread(NULL) , m_cbkRecv(NULL) , m_pUserCtx(NULL) {}
+        ~CClientSock() {}
+    public :
+        BOOL Init( SocketRecvCbk aRecvCbk , VOID * aUserCtx , DWORD aCodePage = CP_ACP );
+        BOOL CloseSockets();
+        BOOL UnInit();
+
+        BOOL Connect( CONST WCHAR * aIp , USHORT aPort , DWORD aFamily = AF_INET , DWORD aType = SOCK_STREAM , DWORD aProto = IPPROTO_TCP );
+        BOOL SendRawData( CONST CHAR * aBuf , INT aBufSize );
+        BOOL SendString( CONST WCHAR * aString , INT aStringLen , BOOL aUnEscapeChar );   //Will convert to the corresponding codepage before sent
+        SOCKET GetSocket() { return m_skt; }
+        HANDLE GetExitEvent() { return m_hEvtExit; }
+
+    protected :
+        static UINT CALLBACK ReceiverThread( VOID * aArgs );
+        UINT CALLBACK DoReceiver();
+
+    private :
+        BOOL m_bWsaStarted;
+        DWORD m_dwCodePage;
+        HANDLE m_hEvtExit;
+        SOCKET m_skt;
+        HANDLE m_hReceiverThread;
+        SocketRecvCbk m_cbkRecv;
+        VOID * m_pUserCtx;
+};
+
+
+
 class CServerSock
 {
     public :

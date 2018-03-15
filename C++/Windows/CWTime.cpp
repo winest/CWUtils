@@ -58,12 +58,12 @@ VOID FormatTime( UINT64 aMilli , wstring & aTimeString )
 BOOL GetCurrTimeStringA( std::string & aTimeString , CONST CHAR * aTimeFormat )
 {
     time_t t;
-    struct tm * pTimeInfo;
+    struct tm info;
     CHAR szBuf[4096];
 
     time( &t );
-    pTimeInfo = localtime( &t );
-    size_t uRet = strftime( szBuf , _countof(szBuf) , aTimeFormat , pTimeInfo );
+    localtime_s( &info , &t );
+    size_t uRet = strftime( szBuf , _countof(szBuf) , aTimeFormat , &info );
     if ( 0 < uRet )
     {
         aTimeString.assign( szBuf , uRet );
@@ -78,12 +78,12 @@ BOOL GetCurrTimeStringA( std::string & aTimeString , CONST CHAR * aTimeFormat )
 BOOL GetCurrTimeStringW( std::wstring & aTimeString , CONST WCHAR * aTimeFormat )
 {
     time_t t;
-    struct tm * pTimeInfo;
+    struct tm info;
     WCHAR wzBuf[4096];
 
     time( &t );
-    pTimeInfo = localtime( &t );
-    size_t uRet = wcsftime( wzBuf , _countof(wzBuf) , aTimeFormat , pTimeInfo );
+    localtime_s( &info , &t );
+    size_t uRet = wcsftime( wzBuf , _countof(wzBuf) , aTimeFormat , &info );
     if ( 0 < uRet )
     {
         aTimeString.assign( wzBuf , uRet );

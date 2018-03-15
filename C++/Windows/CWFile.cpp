@@ -152,7 +152,7 @@ BOOL GetFileContent( IN CONST WCHAR * aFullPath , IN OUT std::string & aContent 
         }
 
         BYTE byBuf[8192];
-        DWORD dwRead = 0;        
+        DWORD dwRead = 0;
         while ( FALSE != ReadFile( hFile , byBuf , sizeof(byBuf) , &dwRead , NULL ) && 0 < dwRead )
         {
             aContent.append( (CONST CHAR *)byBuf , dwRead );
@@ -923,6 +923,79 @@ BOOL CFile::WriteLine( CONST UCHAR * aData , SIZE_T aDataSize )
     }
     return bRet;
 }
+
+BOOL CFile::Read( std::string & aData , SIZE_T aDataSize , BOOL aAppend )
+{
+    if ( FALSE == aAppend )
+    {
+        aData.clear();
+    }
+    DWORD dwLeft = aDataSize;
+    
+    if ( m_strReadBuf.size() > 0 )
+    {
+        size_t uCopied = min( dwLeft , m_strReadBuf.size() );
+        aData.append( m_strReadBuf , 0 , uCopied );
+        dwLeft -= uCopied;
+        m_strReadBuf.erase( 0 , uCopied );
+    }
+
+    if ( dwLeft > 0 )
+    {
+        BYTE byBuf[8192];
+        DWORD dwRead = 0;
+        while ( FALSE != ReadFile( m_hFile , byBuf , dwLeft , &dwRead , NULL ) && 0 < dwRead )
+        {
+            aData.append( (CONST CHAR *)byBuf , dwRead );
+            dwLeft -= dwRead;
+        }
+    }
+
+    return ( dwLeft == 0 ) ? TRUE : FALSE;
+}
+
+BOOL CFile::ReadLine( std::string & aData , BOOL aAppend )
+{
+    BOOL bRet = FALSE;
+
+    if ( FALSE == aAppend )
+    {
+        aData.clear();
+    }
+
+    do 
+    {
+        if ( m_strReadBuf.size() )
+        {
+            size_t uPos = m_strReadBuf.find( m_strLineSep );
+            if ( uPos != string::npos )
+            {
+                aData = m_strReadBuf.substr( 0 , uPos );
+                m_strReadBuf.erase( 0 , uPos + m_strLineSep.size() );
+                bRet = TRUE;
+                break;
+            }
+        }
+    
+        BYTE byBuf[8192];
+        DWORD dwRead = 0;
+        while ( FALSE != ReadFile( m_hFile , byBuf , sizeof(byBuf) , &dwRead , NULL ) && 0 < dwRead )
+        {
+            m_strReadBuf.append( (CONST CHAR *)byBuf , dwRead );
+            size_t uPos = m_strReadBuf.find( m_strLineSep );
+            if ( uPos != string::npos )
+            {
+                aData = m_strReadBuf.substr( 0 , uPos );
+                m_strReadBuf.erase( 0 , uPos + m_strLineSep.size() );
+                bRet = TRUE;
+                break;
+            }
+        }
+    } while ( 0 );
+    
+    return bRet;
+}
+
 
 VOID CFile::Flush()
 {

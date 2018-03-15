@@ -291,6 +291,298 @@ BOOL GetNetworkInterfaceInfo( DWORD aFamily , std::list<CW_NETWORK_INTERFACE_INF
 
 
 
+
+
+
+
+
+BOOL CClientSock::Init( SocketRecvCbk aRecvCbk , VOID * aUserCtx , DWORD aCodePage )
+{
+    BOOL bRet = FALSE;
+    do 
+    {
+        //Initialize Winsock
+        WORD version = MAKEWORD( 2 , 2 );
+        WSADATA wsaData;
+        INT nSockRet = WSAStartup( version , &wsaData );
+        if ( NO_ERROR != nSockRet )
+        {
+            wprintf_s( L"WSAStartup() failed. nSockRet=%d\n" , nSockRet );
+            break;
+        }
+        m_bWsaStarted = TRUE;
+
+        m_hEvtExit = CreateEventW( NULL , TRUE , FALSE , NULL );
+        if ( NULL == m_hEvtExit )
+        {
+            wprintf_s( L"CreateEventW() failed. GetLastError()=%lu\n" , GetLastError() );
+            break;
+        }
+
+        m_cbkRecv = aRecvCbk;
+        m_pUserCtx = aUserCtx;
+        m_dwCodePage = aCodePage;
+
+        bRet = TRUE;
+    } while ( 0 );
+
+    if ( FALSE == bRet )
+    {
+        this->UnInit();
+    }
+    return bRet;
+}
+
+BOOL CClientSock::CloseSockets()
+{
+    if ( NULL != m_hEvtExit )
+    {
+        SetEvent( m_hEvtExit );
+        HANDLE hWait[] = { m_hReceiverThread };
+        
+        //wprintf_s( L"Waiting for all threads closed\n" );
+        WaitForMultipleObjects( _countof(hWait) , hWait , TRUE , 1 * 1000 );
+        CloseHandle( m_hEvtExit );
+    }
+
+    CloseHandle( m_hReceiverThread );
+
+    if ( INVALID_SOCKET != m_skt )
+    {
+        closesocket( m_skt );
+        m_skt = INVALID_SOCKET;
+    }
+    return TRUE;
+}
+
+
+BOOL CClientSock::UnInit()
+{
+    this->CloseSockets();
+
+    if ( m_bWsaStarted )
+    {
+        WSACleanup();
+        m_bWsaStarted = FALSE;
+    }
+
+    return TRUE;
+}
+
+
+BOOL CClientSock::Connect( CONST WCHAR * aIp , USHORT aPort , DWORD aFamily , DWORD aType , DWORD aProto )
+{
+    BOOL bRet = FALSE;
+    do 
+    {
+        m_skt = socket( aFamily , aType , aProto );
+        if ( INVALID_SOCKET == m_skt )
+        {
+            wprintf_s( L"socket() failed. WSAGetLastError()=%d\n" , WSAGetLastError() );
+            break;
+        }
+
+        //Specifies the address family, IP address, and port for the socket that is being bound
+        LONG lStatus;
+        CONST WCHAR * pTerminator = NULL;
+        if ( AF_INET == aFamily )
+        {
+            sockaddr_in setting;
+            setting.sin_family = AF_INET;
+            setting.sin_port = htons( aPort );
+            lStatus = RtlIpv4StringToAddressW( aIp , TRUE , &pTerminator , &setting.sin_addr );
+            if ( NULL != *pTerminator )
+            {
+                wprintf_s( L"Invalid IP=%ws\n" , aIp );
+                break;
+            }
+            if ( STATUS_SUCCESS != lStatus )
+            {
+                wprintf_s( L"socket() failed. lStatus=0x%08X\n" , lStatus );
+                break;
+            }
+            
+            if ( SOCKET_ERROR == connect( m_skt , (SOCKADDR *)&setting , sizeof(setting) ) ) 
+            {
+                wprintf_s( L"connect() failed. WSAGetLastError()=%d\n" , WSAGetLastError() );
+                break;
+            }
+        }
+        else if ( AF_INET6 == aFamily )
+        {
+            sockaddr_in6 setting;
+            setting.sin6_family = AF_INET6;
+            setting.sin6_port = htons( aPort );
+            lStatus = RtlIpv6StringToAddressW( aIp , &pTerminator , &setting.sin6_addr );
+            if ( NULL != *pTerminator )
+            {
+                wprintf_s( L"Invalid IP=%ws\n" , aIp );
+                break;
+            }
+            if ( STATUS_SUCCESS != lStatus )
+            {
+                wprintf_s( L"socket() failed. lStatus=0x%08X\n" , lStatus );
+                break;
+            }
+
+            if ( SOCKET_ERROR == connect( m_skt , (SOCKADDR *)&setting , sizeof(setting) ) ) 
+            {
+                wprintf_s( L"bind() failed. WSAGetLastError()=%d\n" , WSAGetLastError() );
+                break;
+            }
+        }
+        else
+        {
+            wprintf_s( L"Unknown family. aFamily=%lu\n" , aFamily );
+            break;
+        }
+                
+        m_hReceiverThread = (HANDLE)_beginthreadex( NULL , 0 , ReceiverThread , (VOID *)this , 0 , NULL );
+        if ( NULL == m_hReceiverThread )
+        {
+            wprintf_s( L"_beginthreadex() failed. m_hReceiverThread=0x%p, GetLastError()=%lu\n" ,
+                       m_hReceiverThread , GetLastError() );
+            break;
+        }
+        bRet = TRUE;
+    } while ( 0 );
+
+    if ( FALSE == bRet )
+    {
+        this->CloseSockets();
+    }
+
+    return bRet;
+}
+
+BOOL CClientSock::SendRawData( CONST CHAR * aBuf , INT aBufSize )
+{
+    BOOL bRet = FALSE;
+    INT nBySent = send( m_skt , aBuf , aBufSize , 0 );
+    if ( SOCKET_ERROR == nBySent )
+    {
+        wprintf_s( L"[%04X] send() failed. WSAGetLastError()=%lu\n" , GetCurrentThreadId() , WSAGetLastError() );
+    }
+    else if ( 0 < nBySent )
+    {
+        wprintf_s( L"[%04X] C->S (%d Bytes): %.*hs\n" , GetCurrentThreadId() , nBySent , aBufSize , aBuf );
+        bRet = TRUE;
+    }
+    else
+    {
+        wprintf_s( L"[%04X] send() failed. WSAGetLastError()=%lu\n" , GetCurrentThreadId() , WSAGetLastError() );
+    }
+    return bRet;
+}
+
+BOOL CClientSock::SendString( CONST WCHAR * aString , INT aStringLen , BOOL aUnEscapeChar )
+{
+    BOOL bRet = FALSE;
+
+    wstring wstrBuf;
+    if ( aUnEscapeChar )
+    {
+        _UnEscapeStringW( aString , aStringLen , wstrBuf );
+    }
+    else
+    {
+        wstrBuf.assign( aString , aStringLen );
+    }
+
+
+    switch ( m_dwCodePage )
+    {
+        case CP_UTF16LE :
+        {
+            bRet = this->SendRawData( (CONST CHAR *)wstrBuf.c_str() , wstrBuf.length() * sizeof(WCHAR) );
+            break;
+        }
+        default :
+        {
+            string strBuf;
+            _WStringToString( wstrBuf , strBuf , m_dwCodePage );
+            bRet = this->SendRawData( strBuf.c_str() , strBuf.length() );
+            break;
+        }
+    }
+
+    return bRet;
+}
+
+//Handle the data received from server
+UINT CALLBACK CClientSock::ReceiverThread( VOID * aArgs )
+{
+    CClientSock * pThis = (CClientSock *)aArgs;
+    UINT uRet = pThis->DoReceiver();
+    wprintf_s( L"ReceiverThread return %lu\n" , uRet );
+    return uRet;
+}
+UINT CALLBACK CClientSock::DoReceiver()
+{
+    UINT uRet = ERROR_SUCCESS;
+
+    do
+    {
+        INT nByRecv = 0;
+        SIZE_T uBufSize = DEFAULT_SOCKET_BUF_SIZE;
+        CHAR * pBuf = new (std::nothrow) CHAR[uBufSize];
+
+        nByRecv = recv( m_skt , pBuf , uBufSize , 0 );
+        if ( SOCKET_ERROR == nByRecv )
+        {
+            if ( WSAEMSGSIZE == WSAGetLastError() )
+            {
+                wprintf_s( L"[%04X] recv() with WSAEMSGSIZE\n" , GetCurrentThreadId() );
+
+                uBufSize *= 2;
+                delete [] pBuf;
+                pBuf = new (std::nothrow) CHAR[uBufSize];
+            }
+            else
+            {
+                wprintf_s( L"[%04X] recv() failed. uBufSize=%Iu, WSAGetLastError()=%lu\n" , GetCurrentThreadId() , uBufSize , WSAGetLastError() );
+                uRet = this->m_cbkRecv( m_skt , m_pUserCtx , pBuf , nByRecv );
+                break;
+            }
+        }
+        else if ( 0 < nByRecv )
+        {
+            uRet = this->m_cbkRecv( m_skt , m_pUserCtx , pBuf , nByRecv );
+        }
+        else if ( 0 == nByRecv )
+        {
+            wprintf_s( L"[%04X] Connection closed\n" , GetCurrentThreadId() );
+            uRet = this->m_cbkRecv( m_skt , m_pUserCtx , pBuf , nByRecv );
+            break;
+        }
+        else
+        {
+            wprintf_s( L"[%04X] recv() failed. WSAGetLastError()=%lu\n" , GetCurrentThreadId() , WSAGetLastError() );
+            uRet = this->m_cbkRecv( m_skt , m_pUserCtx , pBuf , nByRecv );
+            break;
+        }
+            
+    } while ( ERROR_SUCCESS == uRet && WAIT_TIMEOUT == WaitForSingleObject( m_hEvtExit , 0 ) );
+
+
+    SetEvent( m_hEvtExit );
+    return uRet;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 BOOL CServerSock::Init( SocketRecvCbk aRecvCbk , VOID * aUserCtx , DWORD aCodePage )
 {
     BOOL bRet = FALSE;

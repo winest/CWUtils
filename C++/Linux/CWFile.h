@@ -31,6 +31,7 @@ BOOL IsFileExist( CONST CHAR * aFullPath );
 
 BOOL IsDirExist( CONST CHAR * aDirPath );
 
+SIZE_T GetFileSize( CONST CHAR * aFilePath );
 
 
 
@@ -57,6 +58,8 @@ class CFile
         BOOL Write( CONST UCHAR * aData , SIZE_T aDataSize );
         BOOL WriteLine();
         BOOL WriteLine( CONST UCHAR * aData , SIZE_T aDataSize );
+        BOOL Read( std::string & aData , SIZE_T aDataSize , BOOL aAppend = FALSE );
+        BOOL ReadLine( std::string & aData , BOOL aAppend = FALSE );
         VOID Flush();
         VOID Close();
 
@@ -65,6 +68,7 @@ class CFile
     protected :
         FILE * m_hFile;
         std::string m_strLineSep;
+        std::string m_strReadBuf;
 };
 
 class CCsv : public CFile
