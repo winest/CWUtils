@@ -38,42 +38,6 @@ CWUtils.SelectYesNo = CWUtils.SelectYesNo || function( aMessage )
     }
 };
 
-CWUtils.SelectFolder = CWUtils.SelectFolder || function( aMessage )
-{
-    var strInput;
-    for ( ;; )
-    {
-        WScript.Echo( aMessage );
-        strInput = WScript.StdIn.ReadLine();
-        if ( true == CWUtils.WshFileSystem.FolderExists( strInput ) )
-        {
-            return strInput;
-        }
-        else
-        {
-            WScript.Echo( "\"" + strInput + "\" not found" );
-        }
-    }
-};
-
-CWUtils.SelectFile = CWUtils.SelectFile || function( aMessage )
-{
-    var strInput;
-    for ( ;; )
-    {
-        WScript.Echo( aMessage );
-        strInput = WScript.StdIn.ReadLine();
-        if ( true == CWUtils.WshFileSystem.FileExists( strInput ) )
-        {
-            return strInput;
-        }
-        else
-        {
-            WScript.Echo( "\"" + strInput + "\" not found" );
-        }
-    }
-};
-
 CWUtils.Pause = CWUtils.Pause || function( aPauseMsg )
 {
     if ( null == aPauseMsg )

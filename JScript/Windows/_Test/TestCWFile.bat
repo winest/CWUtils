@@ -74,7 +74,7 @@ fileWshRead.Close();
 
 //Test CAdoTextFile
 var fileAdo = new CWUtils.CAdoTextFile();   //Remember to new CAdoTextFile so that all constants are initialized
-if ( false == fileAdo.Open( WshShell.CurrentDirectory + "\\123.txt" , "_autodetect" ) )
+if ( false == fileAdo.Open( WshShell.CurrentDirectory + "\\123.txt" , CWUtils.CAdoTextFile.ConnectModeEnum.adModeRead , "_autodetect" ) )
 {
     WScript.Echo( "fileAdo.Open() failed" );
     WScript.Quit( -1 );

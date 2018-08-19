@@ -284,6 +284,27 @@ CWUtils.MoveFilesToFolder = CWUtils.MoveFilesToFolder || function( aSrcFolder , 
     return bRet;
 };
 
+
+CWUtils.RemoveFileUtf8Bom = CWUtils.RemoveFileUtf8Bom || function( aSrcPath , aDstPath )
+{
+    reBom = /^\xEF\xBB\xBF([\s\S]*)/;
+    var bin = new CWUtils.CBinaryFile();
+    var data = bin.ReadAll( aSrcPath );
+    var aryBom = reBom.exec( data );
+    if ( null != aryBom )
+    {
+        bin.WriteAll( aDstPath , aryBom[1] );
+    }
+    return true;
+}
+
+
+
+
+
+
+
+
 CWUtils.CWshTextFile = CWUtils.CWshTextFile || function()
 {
     var m_WshFileSystem = null;
@@ -335,6 +356,7 @@ CWUtils.CAdoTextFile = CWUtils.CAdoTextFile || function()
 {
     var m_AdoStream = null;
     var m_path = null;
+    var m_mode = null;
     
     CWUtils.CAdoTextFile.ConnectModeEnum = { adModeUnknown:0 , adModeRead:1 , adModeWrite:2 , adModeReadWrite:3 , adModeShareDenyRead:4 , adModeShareDenyWrite:8 , adModeShareExclusive:12 , adModeShareDenyNone:16 , adModeRecursive:4194304 };
     CWUtils.CAdoTextFile.StreamTypeEnum = { adTypeBinary:1 , adTypeText:2 };
@@ -346,8 +368,13 @@ CWUtils.CAdoTextFile = CWUtils.CAdoTextFile || function()
 
     //aEncoding could be any codepage name such as _autodetect, ASCII, ISO-8859-1, BIG5, UNICODE, UTF-8
     //List of encoding: HKEY_CLASSES_ROOT\MIME\Database\Charset
-    this.Open = function( aFilePath , aEncoding )
+    this.Open = function( aFilePath , aConnectMode , aEncoding )
     {
+        if ( ("undefined" === typeof(aConnectMode)) || (null == aConnectMode) )
+        {
+            aConnectMode = CWUtils.CAdoTextFile.ConnectModeEnum.adModeReadWrite;
+        }
+        
         var bRet = false;
         try
         {
@@ -361,25 +388,43 @@ CWUtils.CAdoTextFile = CWUtils.CAdoTextFile || function()
             }
 
             m_path = aFilePath;
+            m_mode = aConnectMode;
 
             m_AdoStream.CharSet = aEncoding;
             m_AdoStream.Type = CWUtils.CAdoTextFile.StreamTypeEnum.adTypeText;
             m_AdoStream.Open();
-            m_AdoStream.LoadFromFile( aFilePath );
+            if ( aConnectMode == CWUtils.CAdoTextFile.ConnectModeEnum.adModeRead ||
+                 aConnectMode == CWUtils.CAdoTextFile.ConnectModeEnum.adModeReadWrite ||
+                 aConnectMode == CWUtils.CAdoTextFile.ConnectModeEnum.adModeShareDenyRead )
+            {
+                m_AdoStream.LoadFromFile( aFilePath );
+            }
 
             bRet = true;
         }
-        catch ( err ) {}
+        catch ( err ) { WScript.Echo( "Err: " + err.message ); }
         return bRet;
     }
-    this.Close = function() { if ( m_AdoStream ) { m_AdoStream.Close(); } }
+    this.Close = function() 
+    {
+        if ( m_AdoStream )
+        {
+            if ( m_mode == CWUtils.CAdoTextFile.ConnectModeEnum.adModeWrite ||
+                 m_mode == CWUtils.CAdoTextFile.ConnectModeEnum.adModeReadWrite ||
+                 m_mode == CWUtils.CAdoTextFile.ConnectModeEnum.adModeShareDenyWrite )
+            {
+                //m_AdoStream.SaveToFile( m_path , CWUtils.CAdoTextFile.SaveOptionsEnum.adSaveCreateNotExist );
+                m_AdoStream.SaveToFile( m_path , CWUtils.CAdoTextFile.SaveOptionsEnum.adSaveCreateOverWrite );
+            }
+            m_AdoStream.Close(); 
+        } 
+    }
    
     this.Write = function( aBuf )
     {
         if ( m_AdoStream )
         {
             m_AdoStream.WriteText( aBuf , CWUtils.CAdoTextFile.StreamWriteEnum.adWriteChar );
-            //m_AdoStream.SaveToFile( m_path , CWUtils.CAdoTextFile.SaveOptionsEnum.adSaveCreateOverWrite );
             m_AdoStream.Flush();
         }
     }
@@ -389,7 +434,6 @@ CWUtils.CAdoTextFile = CWUtils.CAdoTextFile || function()
         {
             //m_AdoStream.LineSeparator = CWUtils.CAdoTextFile.LineSeparatorsEnum.adCRLF
             m_AdoStream.WriteText( aBuf , CWUtils.CAdoTextFile.StreamWriteEnum.adWriteLine );
-            //m_AdoStream.SaveToFile( m_path , CWUtils.CAdoTextFile.SaveOptionsEnum.adSaveCreateOverWrite );
             m_AdoStream.Flush();
         }
     }
