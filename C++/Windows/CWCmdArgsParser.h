@@ -15,7 +15,7 @@
 #include <cctype>
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <algorithm>
 
 namespace CWUtils
@@ -65,6 +65,7 @@ class CCmdArgsParser
         BOOL GetArg( CONST WCHAR * aName , UINT32 & aValue , UINT32 aDefaultVal = -1 );
         BOOL GetArg( CONST WCHAR * aName , INT64 & aValue , INT64 aDefaultVal = -1 );
         BOOL GetArg( CONST WCHAR * aName , UINT64 & aValue , UINT64 aDefaultVal = -1 );
+        BOOL GetArg( CONST WCHAR * aName , DOUBLE & aValue , DOUBLE aDefaultVal = -1.0 );
 
 
         size_t GetUnnamedArgsCount();
@@ -74,6 +75,7 @@ class CCmdArgsParser
         BOOL GetUnnamedArg( size_t aIndex , UINT32 & aValue , UINT32 aDefaultVal = -1 );
         BOOL GetUnnamedArg( size_t aIndex , INT64 & aValue , INT64 aDefaultVal = -1 );
         BOOL GetUnnamedArg( size_t aIndex , UINT64 & aValue , UINT64 aDefaultVal = -1 );
+        BOOL GetUnnamedArg( size_t aIndex , DOUBLE & aValue , DOUBLE aDefaultVal = -1.0 );
 
         
         BOOL SetUsage( CONST WCHAR * aName , BOOL aMustExists , CONST WCHAR * aUsageFormat , ... );
@@ -85,15 +87,23 @@ class CCmdArgsParser
         std::wstring AddQuoteIfHaveSpace( IN CONST std::wstring & aString );
         std::wstring RemoveQuote( IN CONST std::wstring & aString );
         BOOL SplitArgs( IN CONST std::wstring & aCmdLine , OUT std::vector<std::wstring> & aOutput );
+
         struct CaseInsensitiveCmp
         { 
+            std::size_t operator() (const std::wstring & aRhs) const
+            {
+                std::wstring rhs = aRhs;
+                std::transform( rhs.begin() , rhs.end() , rhs.begin() , std::tolower );
+
+                return std::hash<std::wstring>()(rhs);
+            }
             bool operator() (const std::wstring & aLhs , const std::wstring & aRhs ) const
             {
                 std::wstring lhs = aLhs;
                 std::transform( lhs.begin() , lhs.end() , lhs.begin() , std::tolower );
                 std::wstring rhs = aRhs;
                 std::transform( rhs.begin() , rhs.end() , rhs.begin() , std::tolower );
-                return lhs < rhs;
+                return lhs == rhs;
             }
         };
 
@@ -103,11 +113,11 @@ class CCmdArgsParser
         std::wstring m_wstrSplitter;    //A name and a value is split by this character
 
         std::wstring m_wstrBinName;
-        std::map< std::wstring , std::wstring , CaseInsensitiveCmp > m_mapNamedArgs;
+        std::unordered_map< std::wstring , std::wstring , CaseInsensitiveCmp , CaseInsensitiveCmp > m_mapNamedArgs;
         std::vector< std::wstring > m_vecUnnamedArgs;
 
         std::wstring m_wstrGeneralUsage;
-        std::map< std::wstring , CmdArgProperty , CaseInsensitiveCmp > m_mapNamedArgsProp;
+        std::unordered_map< std::wstring , CmdArgProperty , CaseInsensitiveCmp , CaseInsensitiveCmp > m_mapNamedArgsProp;
 };
 
 }    //End of namespace CWUtils

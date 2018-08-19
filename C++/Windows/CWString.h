@@ -16,6 +16,7 @@
 #include <cctype>
 #include <cmath>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <algorithm>
 #include <Wininet.h>
@@ -57,7 +58,7 @@ VOID ToUpper( IN OUT std::string & aString );
 VOID ToHexString( CONST UCHAR * aInput , SIZE_T aInputSize , std::string & aOutput , CONST CHAR * aSplitter );
 VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , std::string & aOutput , CONST CHAR * aSplitter , size_t aBytesPerLine );
 
-
+VOID JoinStringA( CONST IN std::vector<std::string> aVec , OUT std::string & aOutput , size_t aStartIndex = 0 , size_t aEndIndex = SIZE_MAX );
 VOID ReplaceStringW( IN OUT std::wstring & aString , IN CONST WCHAR * aOldString , IN CONST WCHAR * aNewString );
 BOOL UnEscapeStringW( IN CONST WCHAR * aEscapedStr , IN SIZE_T aEscapedStrLen , OUT std::wstring & aUnEscapedStr );
 VOID TrimStringA( IN OUT std::string & aString , CONST CHAR * aTrimChars );

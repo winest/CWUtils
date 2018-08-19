@@ -6,8 +6,6 @@ namespace CWUtils
 {
 
 CCmdArgsParser * CCmdArgsParser::m_self = NULL;
-typedef map< wstring , wstring >::iterator MIT;
-typedef vector< wstring >::iterator VIT;
 
 BOOL _WStringToString( IN CONST std::wstring & aWString , OUT std::string & aString , DWORD aCodePage )
 {    
@@ -218,7 +216,7 @@ BOOL CCmdArgsParser::ParseArgs( vector<wstring> & aArgs , BOOL aHasBinaryPath )
         goto exit;
     }
     //Check necessary parameters are parsed
-    for ( map< wstring , CmdArgProperty >::iterator itProp = m_mapNamedArgsProp.begin() ; itProp != m_mapNamedArgsProp.end() ; itProp++ )
+    for ( auto itProp = m_mapNamedArgsProp.begin() ; itProp != m_mapNamedArgsProp.end() ; itProp++ )
     {
         if ( TRUE == itProp->second.bMustExists && 
              m_mapNamedArgs.end() == m_mapNamedArgs.find( itProp->first ) )
@@ -247,7 +245,7 @@ size_t CCmdArgsParser::GetNamedArgsCount()
 BOOL CCmdArgsParser::HasArg( CONST WCHAR * aName )
 {
     _ASSERT( NULL != aName );
-    MIT it = m_mapNamedArgs.find( aName );
+    auto it = m_mapNamedArgs.find( aName );
     return ( it != m_mapNamedArgs.end() ) ? TRUE : FALSE;
 }
 
@@ -269,7 +267,7 @@ BOOL CCmdArgsParser::GetArg( CONST WCHAR * aName , string & aValue , CONST CHAR 
 BOOL CCmdArgsParser::GetArg( CONST WCHAR * aName , wstring & aValue , CONST WCHAR * aDefaultVal )
 {
     _ASSERT( NULL != aName );
-    MIT it = m_mapNamedArgs.find( aName );
+    auto it = m_mapNamedArgs.find( aName );
     if ( it != m_mapNamedArgs.end() )
     {
         aValue = it->second;
@@ -289,7 +287,7 @@ BOOL CCmdArgsParser::GetArg( CONST WCHAR * aName , INT32 & aValue , INT32 aDefau
     _ASSERT( NULL != aName );
     aValue = aDefaultVal;
 
-    MIT it = m_mapNamedArgs.find( aName );
+    auto it = m_mapNamedArgs.find( aName );
     if ( it != m_mapNamedArgs.end() )
     {
         UINT32 ulVal = (UINT32)wcstoul( it->second.c_str() , NULL , 10 );
@@ -312,7 +310,7 @@ BOOL CCmdArgsParser::GetArg( CONST WCHAR * aName , INT64 & aValue , INT64 aDefau
     _ASSERT( NULL != aName );
     aValue = aDefaultVal;
 
-    MIT it = m_mapNamedArgs.find( aName );
+    auto it = m_mapNamedArgs.find( aName );
     if ( it != m_mapNamedArgs.end() )
     {
         UINT64 ulVal = _wcstoui64( it->second.c_str() , NULL , 10 );
@@ -328,6 +326,25 @@ BOOL CCmdArgsParser::GetArg( CONST WCHAR * aName , INT64 & aValue , INT64 aDefau
 BOOL CCmdArgsParser::GetArg( CONST WCHAR * aName , UINT64 & aValue , UINT64 aDefaultVal )
 {
     return GetArg( aName , (INT64 &)aValue , (INT64)aDefaultVal );
+}
+
+BOOL CCmdArgsParser::GetArg( CONST WCHAR * aName , DOUBLE & aValue , DOUBLE aDefaultVal )
+{
+    _ASSERT( NULL != aName );
+    aValue = aDefaultVal;
+
+    auto it = m_mapNamedArgs.find( aName );
+    if ( it != m_mapNamedArgs.end() )
+    {
+        DOUBLE fVal = wcstod( it->second.c_str() , NULL );
+        if ( ERANGE != errno )
+        {
+            aValue = (DOUBLE)fVal;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 }
 
 
@@ -411,6 +428,23 @@ BOOL CCmdArgsParser::GetUnnamedArg( size_t aIndex , UINT64 & aValue , UINT64 aDe
     return GetUnnamedArg( aIndex , (INT64 &)aValue , (INT64)aDefaultVal );
 }
 
+BOOL CCmdArgsParser::GetUnnamedArg( size_t aIndex , DOUBLE & aValue , DOUBLE aDefaultVal )
+{
+    aValue = aDefaultVal;
+
+    if ( aIndex < m_vecUnnamedArgs.size() )
+    {
+        DOUBLE fVal = wcstod( m_vecUnnamedArgs[aIndex].c_str() , NULL );
+        if ( ERANGE != errno )
+        {
+            aValue = (DOUBLE)fVal;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 
 
 
@@ -462,7 +496,7 @@ VOID CCmdArgsParser::ShowUsage( CONST WCHAR * aName )
         if ( 0 < m_mapNamedArgsProp.size() )
         {
             wstrUsage.append( L"\n[Options]\n" );
-            for ( map< wstring , CmdArgProperty >::iterator it = m_mapNamedArgsProp.begin() ; it != m_mapNamedArgsProp.end() ; it++ )
+            for ( auto it = m_mapNamedArgsProp.begin() ; it != m_mapNamedArgsProp.end() ; it++ )
             {
                 wstrUsage.push_back( L'\n' );
                 if ( 0 < m_wstrStartter.length() )
@@ -480,7 +514,7 @@ VOID CCmdArgsParser::ShowUsage( CONST WCHAR * aName )
     }
     else
     {
-        map< wstring , CmdArgProperty >::iterator it = m_mapNamedArgsProp.find( wstring(aName) );
+        auto it = m_mapNamedArgsProp.find( wstring(aName) );
         if ( m_mapNamedArgsProp.end() != it )
         {
             wstrUsage.push_back( L'\n' );
@@ -518,11 +552,11 @@ VOID CCmdArgsParser::DumpArgs()
 
     nBufLen += _snwprintf_s( &wzBuf[nBufLen] , _countof(wzBuf)-nBufLen , _TRUNCATE , L"Binary name: %ws\n" , m_wstrBinName.c_str() );
     
-    for ( MIT itNamed = m_mapNamedArgs.begin() ; itNamed != m_mapNamedArgs.end() ; itNamed++ )
+    for ( auto itNamed = m_mapNamedArgs.begin() ; itNamed != m_mapNamedArgs.end() ; itNamed++ )
     {
         nBufLen += _snwprintf_s( &wzBuf[nBufLen] , _countof(wzBuf)-nBufLen , _TRUNCATE , L"name=%ws, value=%ws\n" , itNamed->first.c_str() , itNamed->second.c_str() );
     }
-    for ( VIT itUnnamed = m_vecUnnamedArgs.begin() ; itUnnamed != m_vecUnnamedArgs.end() ; itUnnamed++ )
+    for ( auto itUnnamed = m_vecUnnamedArgs.begin() ; itUnnamed != m_vecUnnamedArgs.end() ; itUnnamed++ )
     {
         nBufLen += _snwprintf_s( &wzBuf[nBufLen] , _countof(wzBuf)-nBufLen , _TRUNCATE , L"unamed value=%ws\n" , itUnnamed->c_str() );
     }

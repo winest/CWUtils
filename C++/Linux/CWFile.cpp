@@ -13,6 +13,7 @@ extern "C" {
 #endif
 
 
+
 BOOL _WStringToString( IN CONST std::wstring & aWString , OUT std::string & aString , DWORD aCodePage )
 {
     UNREFERENCED_PARAMETER( aCodePage ); //Linux will use the locale in setlocale( LC_CTYPE , NULL )
@@ -81,7 +82,7 @@ SIZE_T GetFileSize( CONST CHAR * aFilePath )
 
 
 
-BOOL CFile::Open( CONST CHAR * aPath , UINT32 aOpenAttr , CONST std::string & aLineSep )
+BOOL CFile::Open( CONST CHAR * aPath , UINT32 aOpenAttr , std::string aLineSep )
 {
     BOOL bRet = FALSE;
 
@@ -139,13 +140,15 @@ BOOL CFile::Open( CONST CHAR * aPath , UINT32 aOpenAttr , CONST std::string & aL
         }
         m_hFile = hFile;
         m_strLineSep = aLineSep;
+        m_strReadBuf.clear();
+        m_uReadPos = 0;
         bRet = TRUE;
     } while ( 0 );
 
     return bRet;
 }
 
-BOOL CFile::Open( CONST WCHAR * aPath , UINT32 aOpenAttr , CONST std::string & aLineSep )
+BOOL CFile::Open( CONST WCHAR * aPath , UINT32 aOpenAttr , std::string aLineSep )
 {
     wstring wstrPath = aPath;
     string strPath;
@@ -226,40 +229,48 @@ BOOL CFile::ReadLine( std::string & aData , BOOL aAppend )
 {
     BOOL bRet = FALSE;
 
-    if ( FALSE == aAppend )
-    {
-        aData.clear();
-    }
-
+    DWORD dwRead = 0;
     do 
     {
-        if ( m_strReadBuf.size() )
+        if ( m_strReadBuf.size() > 0 )
         {
-            size_t uPos = m_strReadBuf.find( m_strLineSep );
-            if ( uPos != string::npos )
+            size_t uLineEnd = m_strReadBuf.find( m_strLineSep , m_uReadPos );
+            if ( uLineEnd != string::npos )
             {
-                aData = m_strReadBuf.substr( 0 , uPos );
-                m_strReadBuf.erase( 0 , uPos + m_strLineSep.size() );
+                size_t uLineSizeWithoutEnd = (size_t)uLineEnd - m_uReadPos;
+                if ( FALSE == aAppend )
+                {
+                    aData.assign( &m_strReadBuf[m_uReadPos] , uLineSizeWithoutEnd );
+                }
+                else
+                {
+                    aData.append( &m_strReadBuf[m_uReadPos] , uLineSizeWithoutEnd );
+                }
+                if ( uLineEnd < FILE_BUF_SIZE )
+                {
+                    m_uReadPos = uLineEnd + m_strLineSep.size();
+                }
+                else
+                {
+                    m_strReadBuf.erase( 0 , uLineEnd + m_strLineSep.size() );
+                    m_uReadPos = 0;
+                }
                 bRet = TRUE;
                 break;
             }
         }
     
-        BYTE byBuf[8192];
-        DWORD dwRead = 0;
-        while ( dwRead = fread( byBuf , 1 , sizeof(byBuf) , m_hFile ) && 0 < dwRead )
+        BYTE byBuf[4096];
+        dwRead = fread( byBuf , 1 , sizeof(byBuf) , m_hFile );
+        if ( 0 < dwRead )
         {
             m_strReadBuf.append( (CONST CHAR *)byBuf , dwRead );
-            size_t uPos = m_strReadBuf.find( m_strLineSep );
-            if ( uPos != string::npos )
-            {
-                aData = m_strReadBuf.substr( 0 , uPos );
-                m_strReadBuf.erase( 0 , uPos + m_strLineSep.size() );
-                bRet = TRUE;
-                break;
-            }
         }
-    } while ( 0 );
+        else
+        {
+            break;
+        }
+    } while ( true );
     
     return bRet;
 }
@@ -280,6 +291,7 @@ VOID CFile::Close()
         fclose( m_hFile );
         m_hFile = NULL;
     }
+    m_strReadBuf.clear();
     m_strLineSep.clear();
 }
 

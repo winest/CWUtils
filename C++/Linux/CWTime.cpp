@@ -52,14 +52,14 @@ BOOL CDECL _FormatStringA( OUT string & aOutString , IN CONST CHAR * aFormat , .
 
 VOID FormatTime( UINT64 aMilli , string & aTimeString )
 {
-    UINT uMilli = (UINT)( aMilli % 1000 );
-    aMilli /= 1000;
+    UINT uMilli = (UINT)( aMilli % MS_PER_SEC );
+    aMilli /= MS_PER_SEC;
 
-    UINT uHour = (UINT)( aMilli / 60 / 60 );
-    aMilli -= uHour * ( 60 * 60 );
+    UINT uHour = (UINT)( aMilli / HOUR_PER_SEC );
+    aMilli -= uHour * ( HOUR_PER_SEC );
 
-    UINT uMin = (UINT)( aMilli / 60 );
-    aMilli -= uMin * 60;
+    UINT uMin = (UINT)( aMilli / MINUTE_PER_SEC );
+    aMilli -= uMin * MINUTE_PER_SEC;
 
     UINT uSec = (UINT)( aMilli % 60 );
     _FormatStringA( aTimeString , "%02u:%02u:%02u.%03u" , uHour , uMin , uSec , uMilli );
@@ -105,18 +105,227 @@ BOOL GetCurrTimeStringW( std::wstring & aTimeString , CONST WCHAR * aTimeFormat 
     }
 }
 
-VOID DiffTime( IN const struct timespec & aStart , IN const struct timespec & aEnd , OUT struct timespec & aDiff )
+bool operator<( const timespec & aSelf , const timespec & aOther )
 {
-    if ( (aEnd.tv_nsec - aStart.tv_nsec) < 0 )
+    if (LIKELY(aSelf.tv_sec != aOther.tv_sec))
     {
-        aDiff.tv_sec = aEnd.tv_sec - aStart.tv_sec - 1;
-        aDiff.tv_nsec = aEnd.tv_nsec - aStart.tv_nsec + 1000000000;
-    } else
+        return aSelf.tv_sec < aOther.tv_sec;
+    }
+    else
     {
-        aDiff.tv_sec = aEnd.tv_sec - aStart.tv_sec;
-        aDiff.tv_nsec = aEnd.tv_nsec - aStart.tv_nsec;
+        return aSelf.tv_nsec < aOther.tv_nsec;
     }
 }
+
+struct timespec & operator+=( const timespec & aOther )
+{
+    this->tv_sec += aDiff.tv_sec;
+    this->tv_nsec += aDiff.tv_nsec;
+    if ( this->tv_nsec >= NS_PER_SEC )
+    {
+        this->tv_sec++;
+        this->tv_nsec -= NS_PER_SEC;
+    }
+    return *this;
+}
+
+struct timespec operator+( const timespec & aSelf , const timespec & aOther )
+{
+    return struct timespec(aSelf) += aOther;
+}
+
+
+struct timespec & operator-=( const timespec & aOther )
+{
+    if ( (this->tv_nsec - aOther.tv_nsec) < 0 )
+    {
+        this->tv_sec  = this->tv_sec - aOther.tv_sec - 1;
+        this->tv_nsec = this->tv_nsec - aOther.tv_nsec + NS_PER_SEC;
+    }
+    else
+    {
+        this->tv_sec  -= aOther.tv_sec;
+        this->tv_nsec -= aOther.tv_nsec;
+    }
+    return *this;
+}
+
+struct timespec operator-( const timespec & aSelf , const timespec & aOther )
+{
+    return struct timespec(aSelf) -= aOther;
+}
+
+
+
+
+
+
+StopWatch::StopWatch()
+    : m_nState( StopWatchState::STOP_WATCH_STATE_STOP )
+{
+    memset( &m_timeStart , 0 , sizeof(m_timeStart) );
+    memset( &m_timeStop , 0 , sizeof(m_timeStop) );
+
+    memset( &m_timeLastInt, 0, sizeof(m_timeLastInt) );
+    memset( &m_timeTotalInt, 0, sizeof(m_timeTotalInt) );
+
+    m_vecAllInt.reserve( 100000 );
+}
+
+void StopWatch::Start()
+{
+    assert( m_nState == StopWatchState::STOP_WATCH_STATE_STOP );
+    memset( &m_timeLastInt , 0 , sizeof(m_timeLastInt) );
+    clock_gettime( CLOCK_PROCESS_CPUTIME_ID , &m_timeStart );
+    m_nState = StopWatchState::STOP_WATCH_STATE_START;
+}
+
+void StopWatch::Pause()
+{
+    if ( m_nState == StopWatchState::STOP_WATCH_STATE_START || m_nState == StopWatchState::STOP_WATCH_STATE_RESUME )
+    {
+        clock_gettime( CLOCK_PROCESS_CPUTIME_ID , &m_timeStop );
+        struct timespec timeDiff = m_timeStop - m_timeStart;
+        m_timeLastInt += timeDiff;
+
+        m_nState = StopWatchState::STOP_WATCH_STATE_PAUSE;
+    }
+}
+
+void StopWatch::Resume()
+{
+    if ( m_nState == StopWatchState::STOP_WATCH_STATE_PAUSE )
+    {
+        clock_gettime( CLOCK_PROCESS_CPUTIME_ID , &m_timeStart );
+        m_nState = StopWatchState::STOP_WATCH_STATE_RESUME;
+    }
+}
+
+void StopWatch::Stop()
+{
+    if ( m_nState != StopWatchState::STOP_WATCH_STATE_STOP )
+    {
+        clock_gettime( CLOCK_PROCESS_CPUTIME_ID , &m_timeStop );
+        struct timespec timeDiff = m_timeStop - m_timeStart;
+        m_timeLastInt += timeDiff;
+
+        // Update statistics
+        if ( UNLIKELY(m_vecAllInt.size() == m_vecAllInt.capacity()) )
+        {
+            m_vecAllInt.reserve( m_vecAllInt.capacity() * 2 );
+        }
+        m_vecAllInt.push_back( m_timeLastInt.tv_sec * NS_PER_SEC + m_timeLastInt.tv_nsec );
+        m_timeTotalInt += m_timeLastInt;
+
+        m_nState = StopWatchState::STOP_WATCH_STATE_STOP;
+    }
+}
+
+void StopWatch::GetLastInterval( struct timespec & aLastInt ) const
+{
+    aLastInt = m_timeLastInt;
+}
+uint64_t StopWatch::GetLastIntervalInMilli() const
+{
+    return m_timeLastInt.tv_sec * MS_PER_SEC + m_timeLastInt.tv_nsec / 1000000;
+}
+uint64_t StopWatch::GetLastIntervalInMicro() const
+{
+    return m_timeLastInt.tv_sec * US_PER_SEC + m_timeLastInt.tv_nsec / 1000;
+}
+uint64_t StopWatch::GetLastIntervalInNano() const
+{
+    return m_timeLastInt.tv_sec * NS_PER_SEC + m_timeLastInt.tv_nsec;
+}
+
+void StopWatch::GetTotalInterval( struct timespec & aTotalInt ) const
+{
+    aTotalInt = m_timeTotalInt;
+}
+uint64_t StopWatch::GetTotalIntervalInMilli() const
+{
+    return m_timeTotalInt.tv_sec * MS_PER_SEC + m_timeTotalInt.tv_nsec / 1000000;
+}
+uint64_t StopWatch::GetTotalIntervalInMicro() const
+{
+    return m_timeTotalInt.tv_sec * US_PER_SEC + m_timeTotalInt.tv_nsec / 1000;
+}
+uint64_t StopWatch::GetTotalIntervalInNano() const
+{
+    return m_timeTotalInt.tv_sec * NS_PER_SEC + m_timeTotalInt.tv_nsec;
+}
+
+double StopWatch::GetAvgIntervalInNano() const
+{
+    return (double)(m_timeTotalInt.tv_sec * NS_PER_SEC + m_timeTotalInt.tv_nsec) / m_vecAllInt.size();
+}
+
+uint64_t StopWatch::GetMinIntervalInNano()
+{
+    std::nth_element( m_vecAllInt.begin(), m_vecAllInt.begin() , m_vecAllInt.end() );
+    return m_vecAllInt.front();
+}
+
+uint64_t StopWatch::Get1QIntervalInNano()
+{
+    if ( UNLIKELY(m_vecAllInt.size() == 0) )
+    {
+        return 0;
+    }
+
+    INT nFirstQuartilePos = m_vecAllInt.size() / 4;
+    std::nth_element(m_vecAllInt.begin(),
+                     m_vecAllInt.begin() + nFirstQuartilePos,
+                     m_vecAllInt.end());
+    return m_vecAllInt[nFirstQuartilePos];
+}
+
+double StopWatch::GetMedianIntervalInNano()
+{
+    if ( UNLIKELY(m_vecAllInt.size() == 0) )
+    {
+        return 0;
+    }
+
+    std::sort( m_vecAllInt.begin() , m_vecAllInt.end() );
+    if ( m_vecAllInt.size() % 2 == 0 )
+    {
+        return static_cast<double>( m_vecAllInt[m_vecAllInt.size() / 2 - 1] + m_vecAllInt[m_vecAllInt.size() / 2] ) /  2;
+    }
+    else
+    {
+        return static_cast<double>( m_vecAllInt[m_vecAllInt.size() / 2] );
+    }
+}
+
+uint64_t StopWatch::Get3QIntervalInNano()
+{
+    if ( UNLIKELY(m_vecAllInt.size() == 0) )
+    {
+        return 0;
+    }
+
+    INT nThirdQuartilePos = m_vecAllInt.size() * 3 / 4;
+    std::nth_element(m_vecAllInt.begin(),
+                     m_vecAllInt.begin() + nThirdQuartilePos,
+                     m_vecAllInt.end());
+    return m_vecAllInt[nThirdQuartilePos];
+}
+
+uint64_t StopWatch::GetMaxIntervalInNano()
+{
+    if ( UNLIKELY(m_vecAllInt.size() == 0) )
+    {
+        return 0;
+    }
+
+    std::nth_element(m_vecAllInt.begin(),
+                     m_vecAllInt.begin() + m_vecAllInt.size() - 1,
+                     m_vecAllInt.end());
+    return m_vecAllInt.back();
+}
+
+
 
 #ifdef __cplusplus
 }

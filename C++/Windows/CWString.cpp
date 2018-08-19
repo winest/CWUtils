@@ -206,7 +206,7 @@ VOID ToHexString( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , 
     for ( size_t i = 0 ; i < 256 ; i++ )
     {
         CHAR szChar[3];
-        _snprintf_s( szChar , _TRUNCATE , "%02X" , i );
+        _snprintf_s( szChar , _TRUNCATE , "%02IX" , i );
         aryTable[i] = ( (UINT32)szChar[0] ) + ( (UINT32)szChar[1] << 16 );
     }
 
@@ -235,7 +235,7 @@ VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , CO
     for ( size_t i = 0 ; i < 256 ; i++ )
     {
         CHAR szChar[3];
-        _snprintf_s( szChar , _TRUNCATE , "%02X" , i );
+        _snprintf_s( szChar , _TRUNCATE , "%02IX" , i );
         aryTable[i] = ( (UINT32)szChar[0] ) + ( (UINT32)szChar[1] << 16 );
     }
     size_t uSplitterLen = strlen( aSplitter );
@@ -247,7 +247,7 @@ VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , CO
     for ( size_t i = 0 ; i < aInputSize ; i += aBytesPerLine )
     {
         CHAR szAddr[8+16];  //Assume aSplitter has at most 15 bytes
-        _snprintf_s( szAddr , _TRUNCATE , "%08X%hs" , i , aSplitter );
+        _snprintf_s( szAddr , _TRUNCATE , "%08IX%hs" , i , aSplitter );
         aOutput.append( szAddr );
         for ( size_t j = 0 ; j < aBytesPerLine ; j++ )
         {
@@ -293,6 +293,21 @@ VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , CO
     {
         aOutput.erase( aOutput.length() - strLineSep.length() );
     }
+}
+
+VOID JoinStringA( CONST IN std::vector<std::string> aVec , std::string & aOutput , size_t aStartIndex , size_t aEndIndex )
+{
+    size_t uEnd = min( aVec.size() - 1 , aEndIndex );
+    std::stringstream ss;
+    for( size_t i = aStartIndex ; i <= uEnd ; ++i )
+    {
+        if ( i != aStartIndex )
+        {
+            ss << ",";
+        }
+        ss << aVec[i];
+    }
+    aOutput = ss.str();
 }
 
 VOID ReplaceStringW( IN OUT std::wstring & aString , IN CONST WCHAR * aOldString , IN CONST WCHAR * aNewString )
