@@ -12,14 +12,21 @@
     #define WPP_CLEANUP( ... )
 #endif
 
+#define LIKELY(x) __builtin_expect(!!(x), 1)
+#define UNLIKELY(x) __builtin_expect(!!(x), 0)
+
+#define _CONSOLE
+
 #include "WinDef.h"
+#include <algorithm>
+#include <assert.h>
+#include <iostream>
+#include <list>
+#include <map>
+#include <queue>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <string>
 #include <vector>
-#include <map>
-#include <list>
-#include <queue>
-using namespace std;
+    using namespace std;

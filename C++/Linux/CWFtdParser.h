@@ -20,9 +20,6 @@
 #include "CWString.h"
 #include "CWNetwork.h"
 
-#include "CommonDef.h"
-
-
 typedef enum _FtdParserErr
 {
     FTD_PARSER_FAILURE = 0 ,             //General error

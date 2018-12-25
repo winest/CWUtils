@@ -355,28 +355,8 @@ FtdParserErr CFtdParser::Input( BOOL aConnOut , const UCHAR * aBuf , UINT aBufSi
         }
     } while ( 0 );
 
-    switch ( uParserRet )
-    {
-        case FTD_PARSER_SUCCESS :
-        case FTD_PARSER_ALREADY_PARSED :
-        {
-            aCallbackRet = SCAN_RET_PASS;
-            break;
-        }
-        case FTD_PARSER_NEED_MORE_DATA :
-        {
-            aCallbackRet = SCAN_RET_NEED_MORE_DATA;
-            break;
-        }
-        default :
-        {
-            aCallbackRet = SCAN_RET_PASS_ALL;
-            break;
-        }
-    }
-    
     m_uLastParserErr = uParserRet;
-    DbgOut( VERB , DBG_PROTOHANDLER , "Leave. uParserRet=%u, nCallbackRet=%d" , uParserRet , aCallbackRet );
+    DbgOut(VERB, DBG_PROTOHANDLER, "Leave. uParserRet=%u", uParserRet);
     return uParserRet;
 }
 
