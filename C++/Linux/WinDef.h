@@ -91,6 +91,9 @@ typedef uint64_t            DWORD64, *PDWORD64;
 typedef int64_t             LONGLONG;
 typedef uint64_t            ULONGLONG;
 
+typedef __int128 int128_t, INT128;
+typedef unsigned __int128 uint128_t, UINT128;
+
 typedef unsigned char       BYTE;
 typedef BYTE                *PBYTE, *LPBYTE;
 typedef unsigned short      WORD;

@@ -143,6 +143,10 @@ BOOL CFile::WriteLine() {
   return this->Write((CONST UCHAR *)m_strLineSep.c_str(), m_strLineSep.size());
 }
 
+BOOL CFile::WriteLine(CONST CHAR *aData, SIZE_T aDataSize) {
+    return this->WriteLine( reinterpret_cast<CONST UCHAR *>(aData) , aDataSize );
+}
+
 BOOL CFile::WriteLine(CONST UCHAR *aData, SIZE_T aDataSize) {
   BOOL bRet = FALSE;
   bRet = this->Write(aData, aDataSize);
@@ -263,17 +267,16 @@ BOOL CCsv::ReadRow(std::vector<string> &aColData, BOOL aAppend) {
       break;
     }
 
-    const char *pDelimiter = ",";
     string::size_type uLastPos = m_strTmp.find_first_not_of(
-        pDelimiter, 0); // Skip delimiters at beginning
+        m_strColSep, 0); // Skip delimiters at beginning
     string::size_type uPos = m_strTmp.find_first_of(
-        pDelimiter, uLastPos); // Find first "non-delimiter"
+        m_strColSep, uLastPos); // Find first "non-delimiter"
     while (string::npos != uPos || string::npos != uLastPos) {
       aColData.push_back(m_strTmp.substr(
           uLastPos, uPos - uLastPos)); // Found a token, add it to the vector
       uLastPos = m_strTmp.find_first_not_of(
-          pDelimiter, uPos); // Skip delimiters. Note the "not_of"
-      uPos = m_strTmp.find_first_of(pDelimiter,
+          m_strColSep, uPos); // Skip delimiters. Note the "not_of"
+      uPos = m_strTmp.find_first_of(m_strColSep,
                                     uLastPos); // Find next "non-delimiter"
     }
     bRet = TRUE;
@@ -293,17 +296,16 @@ BOOL CCsv::ReadRow(std::vector<int> &aColData, BOOL aAppend) {
       break;
     }
 
-    const char *pDelimiter = ",";
     string::size_type uLastPos = m_strTmp.find_first_not_of(
-        pDelimiter, 0); // Skip delimiters at beginning
+        m_strColSep, 0); // Skip delimiters at beginning
     string::size_type uPos = m_strTmp.find_first_of(
-        pDelimiter, uLastPos); // Find first "non-delimiter"
+        m_strColSep, uLastPos); // Find first "non-delimiter"
     while (string::npos != uPos || string::npos != uLastPos) {
       aColData.push_back(std::stoi(m_strTmp.substr(
           uLastPos, uPos - uLastPos))); // Found a token, add it to the vector
       uLastPos = m_strTmp.find_first_not_of(
-          pDelimiter, uPos); // Skip delimiters. Note the "not_of"
-      uPos = m_strTmp.find_first_of(pDelimiter,
+          m_strColSep, uPos); // Skip delimiters. Note the "not_of"
+      uPos = m_strTmp.find_first_of(m_strColSep,
                                     uLastPos); // Find next "non-delimiter"
     }
     bRet = TRUE;
@@ -323,17 +325,16 @@ BOOL CCsv::ReadRow(std::vector<float> &aColData, BOOL aAppend) {
       break;
     }
 
-    const char *pDelimiter = ",";
     string::size_type uLastPos = m_strTmp.find_first_not_of(
-        pDelimiter, 0); // Skip delimiters at beginning
+        m_strColSep, 0); // Skip delimiters at beginning
     string::size_type uPos = m_strTmp.find_first_of(
-        pDelimiter, uLastPos); // Find first "non-delimiter"
+        m_strColSep, uLastPos); // Find first "non-delimiter"
     while (string::npos != uPos || string::npos != uLastPos) {
       aColData.push_back(std::stof(m_strTmp.substr(
           uLastPos, uPos - uLastPos))); // Found a token, add it to the vector
       uLastPos = m_strTmp.find_first_not_of(
-          pDelimiter, uPos); // Skip delimiters. Note the "not_of"
-      uPos = m_strTmp.find_first_of(pDelimiter,
+          m_strColSep, uPos); // Skip delimiters. Note the "not_of"
+      uPos = m_strTmp.find_first_of(m_strColSep,
                                     uLastPos); // Find next "non-delimiter"
     }
     bRet = TRUE;
@@ -353,17 +354,16 @@ BOOL CCsv::ReadRow(std::vector<double> &aColData, BOOL aAppend) {
       break;
     }
 
-    const char *pDelimiter = ",";
     string::size_type uLastPos = m_strTmp.find_first_not_of(
-        pDelimiter, 0); // Skip delimiters at beginning
+        m_strColSep, 0); // Skip delimiters at beginning
     string::size_type uPos = m_strTmp.find_first_of(
-        pDelimiter, uLastPos); // Find first "non-delimiter"
+        m_strColSep, uLastPos); // Find first "non-delimiter"
     while (string::npos != uPos || string::npos != uLastPos) {
       aColData.push_back(std::stod(m_strTmp.substr(
           uLastPos, uPos - uLastPos))); // Found a token, add it to the vector
       uLastPos = m_strTmp.find_first_not_of(
-          pDelimiter, uPos); // Skip delimiters. Note the "not_of"
-      uPos = m_strTmp.find_first_of(pDelimiter,
+          m_strColSep, uPos); // Skip delimiters. Note the "not_of"
+      uPos = m_strTmp.find_first_of(m_strColSep,
                                     uLastPos); // Find next "non-delimiter"
     }
     bRet = TRUE;

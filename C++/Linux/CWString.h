@@ -55,6 +55,8 @@ VOID ToUpper( IN OUT std::string & aString );
 VOID ToHexString( CONST UCHAR * aInput , SIZE_T aInputSize , std::string & aOutput , CONST CHAR * aSplitter );
 VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , std::string & aOutput , CONST CHAR * aSplitter , size_t aBytesPerLine );
 
+INT ToInt( CONST CHAR * aStr , SIZE_T aStrLen );
+INT64 ToInt64( CONST CHAR * aStr , SIZE_T aStrLen );
 
 VOID ReplaceStringW( IN OUT std::wstring & aString , IN CONST WCHAR * aOldString , IN CONST WCHAR * aNewString );
 BOOL UnEscapeStringW( IN CONST WCHAR * aEscapedStr , IN SIZE_T aEscapedStrLen , OUT std::wstring & aUnEscapedStr );

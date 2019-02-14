@@ -293,6 +293,26 @@ VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , CO
     }
 }
 
+INT ToInt( CONST CHAR * aStr , SIZE_T aStrLen )
+{
+    INT nRet = 0;
+    for ( SIZE_T i = 0 ; i < aStrLen ; ++i )
+    {
+        nRet = ( nRet * 10 ) + ( aStr[i] - '0' );
+    }
+    return nRet;
+}
+
+INT64 ToInt64( CONST CHAR * aStr , SIZE_T aStrLen )
+{
+    INT64 nRet = 0;
+    for ( SIZE_T i = 0 ; i < aStrLen ; ++i )
+    {
+        nRet = ( nRet * 10 ) + ( aStr[i] - '0' );
+    }
+    return nRet;
+}
+
 VOID ReplaceStringW( IN OUT std::wstring & aString , IN CONST WCHAR * aOldString , IN CONST WCHAR * aNewString )
 {
     if ( NULL == aOldString || NULL == aNewString )

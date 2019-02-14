@@ -1,5 +1,5 @@
-#include "CWTime.h"
 #include "stdafx.h"
+#include "CWTime.h"
 using std::string;
 
 namespace CWUtils {
