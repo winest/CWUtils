@@ -2,15 +2,17 @@
 
 namespace KmUtils
 {
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-LONG UStringCompareUString( CONST PUNICODE_STRING aSrc , CONST PUNICODE_STRING aDst , ULONG aCompareLen , BOOLEAN aCaseSensitive )
+LONG UStringCompareUString( CONST PUNICODE_STRING aSrc,
+                            CONST PUNICODE_STRING aDst,
+                            ULONG aCompareLen,
+                            BOOLEAN aCaseSensitive )
 {
-    WCHAR wSrc , wDst;
-    for ( ULONG i = 0 ; i < aCompareLen ; i++ )
+    WCHAR wSrc, wDst;
+    for ( ULONG i = 0; i < aCompareLen; i++ )
     {
         if ( aCaseSensitive )
         {
@@ -22,7 +24,7 @@ LONG UStringCompareUString( CONST PUNICODE_STRING aSrc , CONST PUNICODE_STRING a
             wSrc = TO_LOWER( aSrc->Buffer[i] );
             wDst = TO_LOWER( aDst->Buffer[i] );
         }
-            
+
         if ( wSrc != wDst )
         {
             return ( aSrc->Buffer[i] < aDst->Buffer[i] ) ? -1 : 1;
@@ -35,4 +37,4 @@ LONG UStringCompareUString( CONST PUNICODE_STRING aSrc , CONST PUNICODE_STRING a
 }
 #endif
 
-}   //End of namespace KmUtils
+}    //End of namespace KmUtils

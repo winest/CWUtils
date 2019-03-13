@@ -2,7 +2,6 @@
 
 namespace KmUtils
 {
-
 BOOLEAN CMyEResource::AcquireReaderLock( ULONG aTimeout )
 {
     BOOLEAN bRet = FALSE;
@@ -13,26 +12,26 @@ BOOLEAN CMyEResource::AcquireReaderLock( ULONG aTimeout )
         //ExAcquireSharedWaitForExclusive: if already own read access and someone need writer lock, keep wait and let writer get the lock first
         //ExAcquireResourceSharedLite: if already own read access, keep own; if not owned, let writer get the lock first
         //ExAcquireSharedStarveExclusive: read is the most important; writer can get lock only when no reader
-        bRet = ExAcquireResourceSharedLite( &m_res , TRUE );
+        bRet = ExAcquireResourceSharedLite( &m_res, TRUE );
     }
     else
     {
-        LARGE_INTEGER liCurrTime , liEndTime;
+        LARGE_INTEGER liCurrTime, liEndTime;
         KeQuerySystemTime( &liCurrTime );
         liEndTime.QuadPart = ( liCurrTime.QuadPart ) + ( aTimeout * 10000 );
 
         do
         {
-            for ( ULONG i = 0 ; i < MY_RW_LOCK_SPIN_COUNT ; i++ )
+            for ( ULONG i = 0; i < MY_RW_LOCK_SPIN_COUNT; i++ )
             {
-                if ( TRUE == ExAcquireResourceSharedLite( &m_res , FALSE ) )
+                if ( TRUE == ExAcquireResourceSharedLite( &m_res, FALSE ) )
                 {
                     bRet = TRUE;
                     break;
                 }
             }
 
-            KeQuerySystemTime( &liCurrTime );                    
+            KeQuerySystemTime( &liCurrTime );
         } while ( FALSE == bRet && liCurrTime.QuadPart < liEndTime.QuadPart );
     }
 
@@ -57,26 +56,26 @@ BOOLEAN CMyEResource::AcquireWriterLock( ULONG aTimeout )
     KeEnterCriticalRegion();
     if ( INFINITE == aTimeout )
     {
-        bRet = ExAcquireResourceExclusiveLite( &m_res , TRUE );
+        bRet = ExAcquireResourceExclusiveLite( &m_res, TRUE );
     }
     else
     {
-        LARGE_INTEGER liCurrTime , liEndTime;
+        LARGE_INTEGER liCurrTime, liEndTime;
         KeQuerySystemTime( &liCurrTime );
         liEndTime.QuadPart = ( liCurrTime.QuadPart ) + ( aTimeout * 10000 );
 
         do
         {
-            for ( ULONG i = 0 ; i < MY_RW_LOCK_SPIN_COUNT ; i++ )
+            for ( ULONG i = 0; i < MY_RW_LOCK_SPIN_COUNT; i++ )
             {
-                if ( TRUE == ExAcquireResourceExclusiveLite( &m_res , FALSE ) )
+                if ( TRUE == ExAcquireResourceExclusiveLite( &m_res, FALSE ) )
                 {
                     bRet = TRUE;
                     break;
                 }
             }
 
-            KeQuerySystemTime( &liCurrTime );                    
+            KeQuerySystemTime( &liCurrTime );
         } while ( FALSE == bRet && liCurrTime.QuadPart < liEndTime.QuadPart );
     }
 
@@ -102,4 +101,4 @@ VOID CMyEResource::WriterLockToReaderLock()
 
 
 
-}   //End of namespace KmUtils
+}    //End of namespace KmUtils

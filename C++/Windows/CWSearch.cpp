@@ -6,15 +6,13 @@
 
 namespace CWUtils
 {
-
-
-inline VOID _ComputeSuffix( CONST UCHAR * aPattern , size_t aPatternSize , INT * aSuffix )
+inline VOID _ComputeSuffix( CONST UCHAR * aPattern, size_t aPatternSize, INT * aSuffix )
 {
     size_t j = aPatternSize - 2;
     size_t k = 0;
 
     aSuffix[aPatternSize - 1] = aPatternSize;
-    for ( size_t i = aPatternSize - 2 ; i >= 0 ; i-- ) 
+    for ( size_t i = aPatternSize - 2; i >= 0; i-- )
     {
         if ( i > j && aSuffix[aPatternSize - 1 + i - k] < i - j )
         {
@@ -38,23 +36,23 @@ inline VOID _ComputeSuffix( CONST UCHAR * aPattern , size_t aPatternSize , INT *
         }
     }
 }
- 
-inline VOID _ComputeGoodSuffixShift( CONST UCHAR * aPattern , size_t aPatternSize , INT * aGoodSuffix ) 
-{
-    INT * suffix = new (std::nothrow) INT[aPatternSize];
-    _ComputeSuffix( aPattern , aPatternSize , suffix );
 
-    for ( size_t i = 0 ; i < aPatternSize ; i++ )
+inline VOID _ComputeGoodSuffixShift( CONST UCHAR * aPattern, size_t aPatternSize, INT * aGoodSuffix )
+{
+    INT * suffix = new ( std::nothrow ) INT[aPatternSize];
+    _ComputeSuffix( aPattern, aPatternSize, suffix );
+
+    for ( size_t i = 0; i < aPatternSize; i++ )
     {
         aGoodSuffix[i] = aPatternSize;
     }
 
     INT j = 0;
-    for ( INT i = (INT)aPatternSize - 1 ; i >= 0 ; i-- )
+    for ( INT i = (INT)aPatternSize - 1; i >= 0; i-- )
     {
         if ( suffix[i] == i + 1 )
         {
-            for ( ; j < (INT)aPatternSize - 1 - i ; j++ )
+            for ( ; j < (INT)aPatternSize - 1 - i; j++ )
             {
                 if ( aGoodSuffix[j] == aPatternSize )
                 {
@@ -64,76 +62,80 @@ inline VOID _ComputeGoodSuffixShift( CONST UCHAR * aPattern , size_t aPatternSiz
         }
     }
 
-    for ( size_t i = 0 ; i <= aPatternSize - 2 ; i++ )
+    for ( size_t i = 0; i <= aPatternSize - 2; i++ )
     {
         aGoodSuffix[aPatternSize - 1 - suffix[i]] = aPatternSize - 1 - i;
     }
 
-    delete [] suffix;
+    delete[] suffix;
 }
 
 
-inline VOID _ComputeBadCharacterShift( const UCHAR * aPattern , size_t aPatternSize , size_t * aBadChar ) 
+inline VOID _ComputeBadCharacterShift( const UCHAR * aPattern, size_t aPatternSize, size_t * aBadChar )
 {
     //Initialize the table to default value: when a character is encountered that does not occur
     //in the aPattern, we can safely skip ahead for the whole length of the aPattern
     size_t last = aPatternSize - 1;
 
-    for ( size_t i = 0 ; i < 256 ; i++ )
+    for ( size_t i = 0; i < 256; i++ )
         aBadChar[i] = aPatternSize;
-    for ( size_t i = 0 ; i < aPatternSize - 1 ; i++ )
-        aBadChar[ aPattern[i] ] = last - i;
+    for ( size_t i = 0; i < aPatternSize - 1; i++ )
+        aBadChar[aPattern[i]] = last - i;
 }
 
 
 
 
-BOOL CBloomFilter::Init( DOUBLE aFalsePositiveRate , size_t aPatternCnt , BloomFilterHashFunc * aHashFuncs , size_t aHashFuncCnt )
+BOOL CBloomFilter::Init( DOUBLE aFalsePositiveRate,
+                         size_t aPatternCnt,
+                         BloomFilterHashFunc * aHashFuncs,
+                         size_t aHashFuncCnt )
 {
     //fFilterSize and fHashFuncCnt are counted according to http://en.wikipedia.org/wiki/Bloom_filter
-    CONST DOUBLE fFilterSize = -(aPatternCnt * log( aFalsePositiveRate )) / pow( log(2.0) , 2.0 );
+    CONST DOUBLE fFilterSize = -( aPatternCnt * log( aFalsePositiveRate ) ) / pow( log( 2.0 ), 2.0 );
     CONST DOUBLE fAllHashFuncCnt = log( 2.0 ) * fFilterSize / aPatternCnt;
-    CONST size_t uFilterSize = (size_t)( fFilterSize + 0.5 );
-    CONST size_t uAllHashFuncCnt = (size_t)( fAllHashFuncCnt + 0.5 );
-    CONST size_t uBitsAryLen = (uFilterSize + (CHAR_BIT * sizeof(BITS_ARY_UNIT) - 1)) / (CHAR_BIT * sizeof(BITS_ARY_UNIT));
+    CONST size_t uFilterSize = ( size_t )( fFilterSize + 0.5 );
+    CONST size_t uAllHashFuncCnt = ( size_t )( fAllHashFuncCnt + 0.5 );
+    CONST size_t uBitsAryLen =
+        ( uFilterSize + ( CHAR_BIT * sizeof( BITS_ARY_UNIT ) - 1 ) ) / ( CHAR_BIT * sizeof( BITS_ARY_UNIT ) );
 
-    m_pBitsAry = (BITS_ARY_UNIT *)malloc( uBitsAryLen * sizeof(BITS_ARY_UNIT) );
+    m_pBitsAry = (BITS_ARY_UNIT *)malloc( uBitsAryLen * sizeof( BITS_ARY_UNIT ) );
     if ( NULL == m_pBitsAry )
     {
         goto exit;
     }
 
-    m_pfHashFuncs = (BloomFilterHashFunc *)malloc( uAllHashFuncCnt * sizeof(BloomFilterHashFunc) );
+    m_pfHashFuncs = (BloomFilterHashFunc *)malloc( uAllHashFuncCnt * sizeof( BloomFilterHashFunc ) );
     if ( NULL == m_pfHashFuncs )
     {
         goto exit;
-    }    
+    }
 
-    RtlZeroMemory( m_pBitsAry , uBitsAryLen * sizeof(BITS_ARY_UNIT) );
-    RtlZeroMemory( m_pfHashFuncs , uAllHashFuncCnt * sizeof(BloomFilterHashFunc) );
-    
+    RtlZeroMemory( m_pBitsAry, uBitsAryLen * sizeof( BITS_ARY_UNIT ) );
+    RtlZeroMemory( m_pfHashFuncs, uAllHashFuncCnt * sizeof( BloomFilterHashFunc ) );
+
     m_uFilterSize = uFilterSize;
     m_uPatternCnt = 0;
     m_uAllHashFuncCnt = uAllHashFuncCnt;
 
-    m_uUserHashFuncCnt = min( aHashFuncCnt , uAllHashFuncCnt );
-    for ( size_t i = 0 ; i < m_uUserHashFuncCnt ; i++ )
+    m_uUserHashFuncCnt = min( aHashFuncCnt, uAllHashFuncCnt );
+    for ( size_t i = 0; i < m_uUserHashFuncCnt; i++ )
     {
         _ASSERT( NULL != aHashFuncs[i] );
         m_pfHashFuncs[i] = aHashFuncs[i];
     }
-    for ( size_t i = m_uUserHashFuncCnt ; i < m_uAllHashFuncCnt ; i++ )
+    for ( size_t i = m_uUserHashFuncCnt; i < m_uAllHashFuncCnt; i++ )
     {
-        #ifndef _WIN64
-            m_pfHashFuncs[i] = (BloomFilterHashFunc)CBloomFilter::MurmurHash3_x86_32;
-        #else
-            m_pfHashFuncs[i] = (BloomFilterHashFunc)CBloomFilter::MurmurHash2_x64_64;
-        #endif
+#ifndef _WIN64
+        m_pfHashFuncs[i] = (BloomFilterHashFunc)CBloomFilter::MurmurHash3_x86_32;
+#else
+        m_pfHashFuncs[i] = (BloomFilterHashFunc)CBloomFilter::MurmurHash2_x64_64;
+#endif
     }
-    
+
     m_bInited = TRUE;
 
-exit :
+exit:
     if ( FALSE == m_bInited )
     {
         if ( NULL != m_pfHashFuncs )
@@ -172,7 +174,7 @@ BOOL CBloomFilter::UnInit()
 
 
 
-BOOL CBloomFilter::AddPattern( CONST UCHAR * aMem , size_t aMemSize )
+BOOL CBloomFilter::AddPattern( CONST UCHAR * aMem, size_t aMemSize )
 {
     if ( FALSE == m_bInited )
     {
@@ -180,13 +182,13 @@ BOOL CBloomFilter::AddPattern( CONST UCHAR * aMem , size_t aMemSize )
     }
 
     //Repeatedly hash the string, and set m_pBitsAry in the Bloom filter's bit array
-    for ( size_t i = 0 ; i < m_uAllHashFuncCnt ; i++ )
+    for ( size_t i = 0; i < m_uAllHashFuncCnt; i++ )
     {
         size_t uHash;
-        m_pfHashFuncs[i]( aMem , aMemSize , (UINT32)i , &uHash );
+        m_pfHashFuncs[i]( aMem, aMemSize, (UINT32)i, &uHash );
         CONST size_t pos = uHash % m_uFilterSize;
-        CONST size_t slot = pos / (CHAR_BIT * sizeof(BITS_ARY_UNIT));
-        CONST size_t bit = pos % (CHAR_BIT * sizeof(BITS_ARY_UNIT));
+        CONST size_t slot = pos / ( CHAR_BIT * sizeof( BITS_ARY_UNIT ) );
+        CONST size_t bit = pos % ( CHAR_BIT * sizeof( BITS_ARY_UNIT ) );
 
         m_pBitsAry[slot] |= (size_t)1 << bit;
     }
@@ -194,18 +196,18 @@ BOOL CBloomFilter::AddPattern( CONST UCHAR * aMem , size_t aMemSize )
     return TRUE;
 }
 
-BOOL CBloomFilter::Contains( CONST UCHAR * aMem , size_t aMemSize )
+BOOL CBloomFilter::Contains( CONST UCHAR * aMem, size_t aMemSize )
 {
-    for ( size_t i = 0 ; i < m_uAllHashFuncCnt ; i++ )
+    for ( size_t i = 0; i < m_uAllHashFuncCnt; i++ )
     {
         size_t uHash;
-        m_pfHashFuncs[i]( aMem , aMemSize , (UINT32)i , &uHash );
+        m_pfHashFuncs[i]( aMem, aMemSize, (UINT32)i, &uHash );
         CONST size_t pos = uHash % m_uFilterSize;
-        CONST size_t slot = pos / (CHAR_BIT * sizeof(BITS_ARY_UNIT));
-        CONST size_t bit = pos % (CHAR_BIT * sizeof(BITS_ARY_UNIT));
+        CONST size_t slot = pos / ( CHAR_BIT * sizeof( BITS_ARY_UNIT ) );
+        CONST size_t bit = pos % ( CHAR_BIT * sizeof( BITS_ARY_UNIT ) );
 
         //If a bit is not set, the element is not contained
-        if ( 0 == (m_pBitsAry[slot] & ((size_t)1 << bit)) )
+        if ( 0 == ( m_pBitsAry[slot] & ( (size_t)1 << bit ) ) )
         {
             return FALSE;
         }
@@ -216,7 +218,7 @@ BOOL CBloomFilter::Contains( CONST UCHAR * aMem , size_t aMemSize )
 
 
 
-VOID CBloomFilter::MurmurHash3_x86_32( CONST VOID * aMem , size_t aMemSize , UINT32 aSeed , UINT32 * a32BitsOutput )
+VOID CBloomFilter::MurmurHash3_x86_32( CONST VOID * aMem, size_t aMemSize, UINT32 aSeed, UINT32 * a32BitsOutput )
 {
     CONST UCHAR * pData = (CONST UCHAR *)aMem;
     CONST size_t uBlocks = aMemSize / 4;
@@ -227,48 +229,56 @@ VOID CBloomFilter::MurmurHash3_x86_32( CONST VOID * aMem , size_t aMemSize , UIN
     CONST UINT32 c2 = 0x1b873593;
 
     //Body
-    CONST UINT32 * blocks = (CONST UINT32 *)(pData + uBlocks * 4);
-    for ( size_t i = uBlocks ; 0 < i ; i-- )
+    CONST UINT32 * blocks = (CONST UINT32 *)( pData + uBlocks * 4 );
+    for ( size_t i = uBlocks; 0 < i; i-- )
     {
-        UINT32 k1 = *(blocks - i);
+        UINT32 k1 = *( blocks - i );
 
-        k1 *= c1;    k1 = _rotl( k1 , 15 );    k1 *= c2;
-        h1 ^= k1;    h1 = _rotl( h1 , 13 );    h1 = h1 * 5 + 0xe6546b64;
+        k1 *= c1;
+        k1 = _rotl( k1, 15 );
+        k1 *= c2;
+        h1 ^= k1;
+        h1 = _rotl( h1, 13 );
+        h1 = h1 * 5 + 0xe6546b64;
     }
 
     //Tail
-    CONST UCHAR * tail = (CONST UCHAR *)(pData + uBlocks * 4);
+    CONST UCHAR * tail = (CONST UCHAR *)( pData + uBlocks * 4 );
     UINT32 k1 = 0;
     switch ( aMemSize & 3 )
     {
-        case 3 :
+        case 3:
             k1 ^= tail[2] << 16;
-        case 2 :
+        case 2:
             k1 ^= tail[1] << 8;
-        case 1 :
+        case 1:
             k1 ^= tail[0];
             k1 *= c1;
-            k1 = _rotl( k1 , 15 );
+            k1 = _rotl( k1, 15 );
             k1 *= c2;
             h1 ^= k1;
     };
 
     //Finalization
     h1 ^= aMemSize;
-    h1 ^= h1 >> 16;    h1 *= 0x85ebca6b;    h1 ^= h1 >> 13;    h1 *= 0xc2b2ae35;    h1 ^= h1 >> 16;
+    h1 ^= h1 >> 16;
+    h1 *= 0x85ebca6b;
+    h1 ^= h1 >> 13;
+    h1 *= 0xc2b2ae35;
+    h1 ^= h1 >> 16;
 
-    *a32BitsOutput = h1; 
+    *a32BitsOutput = h1;
 }
 
 
-VOID CBloomFilter::MurmurHash2_x64_64( CONST VOID * aMem , size_t aMemSize , UINT64 aSeed , UINT64 * a64BitsOutput )
+VOID CBloomFilter::MurmurHash2_x64_64( CONST VOID * aMem, size_t aMemSize, UINT64 aSeed, UINT64 * a64BitsOutput )
 {
     CONST UINT64 m = 0xc6a4a7935bd1e995;
     CONST INT r = 47;
-    UINT64 h = aSeed ^ (aMemSize * m);
+    UINT64 h = aSeed ^ ( aMemSize * m );
 
     CONST UINT64 * pData = (CONST UINT64 *)aMem;
-    CONST UINT64 * pEnd = pData + (aMemSize / 8);
+    CONST UINT64 * pEnd = pData + ( aMemSize / 8 );
     while ( pData != pEnd )
     {
         UINT64 k = *pData++;
@@ -284,19 +294,19 @@ VOID CBloomFilter::MurmurHash2_x64_64( CONST VOID * aMem , size_t aMemSize , UIN
     CONST UCHAR * pData2 = (CONST UCHAR *)pData;
     switch ( aMemSize & 7 )
     {
-        case 7 :
+        case 7:
             h ^= UINT64( pData2[6] ) << 48;
-        case 6 :
+        case 6:
             h ^= UINT64( pData2[5] ) << 40;
-        case 5 :
+        case 5:
             h ^= UINT64( pData2[4] ) << 32;
-        case 4 :
+        case 4:
             h ^= UINT64( pData2[3] ) << 24;
-        case 3 :
+        case 3:
             h ^= UINT64( pData2[2] ) << 16;
-        case 2 :
+        case 2:
             h ^= UINT64( pData2[1] ) << 8;
-        case 1 :
+        case 1:
             h ^= UINT64( pData2[0] );
             h *= m;
     };
@@ -305,7 +315,7 @@ VOID CBloomFilter::MurmurHash2_x64_64( CONST VOID * aMem , size_t aMemSize , UIN
     h *= m;
     h ^= h >> r;
 
-    *((UINT64 *)a64BitsOutput) = h;
+    *( (UINT64 *)a64BitsOutput ) = h;
 }
 
 
@@ -313,11 +323,10 @@ VOID CBloomFilter::MurmurHash2_x64_64( CONST VOID * aMem , size_t aMemSize , UIN
 
 
 
-
-inline INT SearchByte( CONST UCHAR * aMemory , size_t aMemorySize , UCHAR aPattern )
+inline INT SearchByte( CONST UCHAR * aMemory, size_t aMemorySize, UCHAR aPattern )
 {
     size_t i;
-    for ( i = 0 ; i < aMemorySize ; i++ )
+    for ( i = 0; i < aMemorySize; i++ )
     {
         if ( aMemory[i] == aPattern )
         {
@@ -328,29 +337,29 @@ inline INT SearchByte( CONST UCHAR * aMemory , size_t aMemorySize , UCHAR aPatte
 }
 
 
-INT BinarySearch( INT * aArray , INT aArrayLen , INT aKey )
+INT BinarySearch( INT * aArray, INT aArrayLen, INT aKey )
 {
-    INT nStart = 0 , nEnd = aArrayLen - 1;
-    
+    INT nStart = 0, nEnd = aArrayLen - 1;
+
     while ( aKey != aArray[( nEnd + nStart ) / 2] && nEnd >= nStart )
     {
-         if ( aArray[( nEnd + nStart ) / 2] > aKey )
-         {
-              nEnd = ( nEnd + nStart ) / 2 - 1;
-         }
-         else
-         {
-              nStart = ( nEnd + nStart ) / 2 + 1;
-         }
+        if ( aArray[( nEnd + nStart ) / 2] > aKey )
+        {
+            nEnd = ( nEnd + nStart ) / 2 - 1;
+        }
+        else
+        {
+            nStart = ( nEnd + nStart ) / 2 + 1;
+        }
     }
 
-    if ( aArray[ ( nEnd + nStart ) / 2 ] != aKey )
+    if ( aArray[( nEnd + nStart ) / 2] != aKey )
     {
-       return -1;
+        return -1;
     }
     else
     {
-       return ( ( nEnd + nStart ) / 2 );
+        return ( ( nEnd + nStart ) / 2 );
     }
 }
 
@@ -359,11 +368,7 @@ INT BinarySearch( INT * aArray , INT aArrayLen , INT aKey )
 
 
 
-
-
-
-
-INT BoyerMoore( CONST UCHAR * aMemory , size_t aMemorySize , CONST UCHAR * aPattern , size_t aPatternSize )
+INT BoyerMoore( CONST UCHAR * aMemory, size_t aMemorySize, CONST UCHAR * aPattern, size_t aPatternSize )
 {
     //Check parameters
     if ( NULL == aMemory || 0 == aMemorySize || NULL == aPattern )
@@ -376,21 +381,23 @@ INT BoyerMoore( CONST UCHAR * aMemory , size_t aMemorySize , CONST UCHAR * aPatt
     }
     else if ( 1 == aPatternSize )
     {
-        return SearchByte( aMemory , aMemorySize , aPattern[0] );
+        return SearchByte( aMemory, aMemorySize, aPattern[0] );
     }
-    else{}
+    else
+    {
+    }
 
 
 
     size_t badChar[256];
-    INT * goodSuffix = new (std::nothrow) INT[aPatternSize];
+    INT * goodSuffix = new ( std::nothrow ) INT[aPatternSize];
 
     //Initialize the table to default value: when a character is encountered that does not occur
     //in the aPattern, we can safely skip ahead for the whole length of the aPattern
-    _ComputeBadCharacterShift( aPattern , aPatternSize , badChar );
+    _ComputeBadCharacterShift( aPattern, aPatternSize, badChar );
 
     //Good suffix shift
-    _ComputeGoodSuffixShift( aPattern , aPatternSize , goodSuffix );
+    _ComputeGoodSuffixShift( aPattern, aPatternSize, goodSuffix );
 
 
 
@@ -401,27 +408,27 @@ INT BoyerMoore( CONST UCHAR * aMemory , size_t aMemorySize , CONST UCHAR * aPatt
     CONST UCHAR * pCurrMem = aMemory;    //We move pCurrMem instead of aMemory
     while ( aPatternSize <= aMemorySize )
     {
-        for ( scan = last ; pCurrMem[scan] == aPattern[scan] ; scan-- )
+        for ( scan = last; pCurrMem[scan] == aPattern[scan]; scan-- )
         {
             if ( scan == 0 )
             {
-                delete [] goodSuffix;
+                delete[] goodSuffix;
                 return pCurrMem - aMemory;    //Calculate the index
             }
         }
 
-        INT move = max( goodSuffix[scan] , badChar[ pCurrMem[scan] ] );
+        INT move = max( goodSuffix[scan], badChar[pCurrMem[scan]] );
         aMemorySize -= move;
         pCurrMem += move;
     }
 
-    delete [] goodSuffix;
+    delete[] goodSuffix;
     return -1;
 }
 
 
 
-INT BoyerMooreHorspool( CONST UCHAR * aMemory , size_t aMemorySize , CONST UCHAR * aPattern , size_t aPatternSize )
+INT BoyerMooreHorspool( CONST UCHAR * aMemory, size_t aMemorySize, CONST UCHAR * aPattern, size_t aPatternSize )
 {
     //Check parameters
     if ( NULL == aMemory || 0 == aMemorySize || NULL == aPattern )
@@ -434,18 +441,20 @@ INT BoyerMooreHorspool( CONST UCHAR * aMemory , size_t aMemorySize , CONST UCHAR
     }
     else if ( 1 == aPatternSize )
     {
-        return SearchByte( aMemory , aMemorySize , aPattern[0] );
+        return SearchByte( aMemory, aMemorySize, aPattern[0] );
     }
-    else{}
+    else
+    {
+    }
 
 
-    
+
     size_t badChar[256];    //A byte could have 2^8 = 256 values
- 
+
     //Initialize the table to default value: when a character is encountered that does not occur
     //in the aPattern, we can safely skip ahead for the whole length of the aPattern
-    _ComputeBadCharacterShift( aPattern , aPatternSize , badChar );
- 
+    _ComputeBadCharacterShift( aPattern, aPatternSize, badChar );
+
 
 
     size_t scan;
@@ -455,33 +464,33 @@ INT BoyerMooreHorspool( CONST UCHAR * aMemory , size_t aMemorySize , CONST UCHAR
     while ( aPatternSize <= aMemorySize )
     {
         //Scan from the end of the aPattern
-        for ( scan = last ; pCurrMem[scan] == aPattern[scan] ; scan-- )
+        for ( scan = last; pCurrMem[scan] == aPattern[scan]; scan-- )
         {
-            if ( scan == 0 ) //If the first byte matches, we've found it
+            if ( scan == 0 )    //If the first byte matches, we've found it
             {
                 return ( pCurrMem - aMemory );    //Calculate the index
             }
         }
- 
+
         //If a mismatch is found, skip an appropriate range
         //Here we are getting the skip value based on the last byte of aPattern, no matter where we didn't match.
-        //So if aPattern is: "abcd" then we are skipping based on 'd' and that value will be 4, and for "abcdd" we 
+        //So if aPattern is: "abcd" then we are skipping based on 'd' and that value will be 4, and for "abcdd" we
         //again skip on 'd' but the value will be only 1.
-        //The alternative of pretending that the mismatched character was the last character is slower 
+        //The alternative of pretending that the mismatched character was the last character is slower
         //in the normal case (Eg. finding "abcd" in "...azcd..." gives 4 by using 'd' but only 4-2==2 using 'z')
         //If you don't believe, try following
         //aMemorySize -= badCharSkip[ aMemory[scan] ];
         //pCurrMem += badCharSkip[ aMemory[scan] ];
 
-        aMemorySize -= badChar[ pCurrMem[last] ];
-        pCurrMem += badChar[ pCurrMem[last] ];
+        aMemorySize -= badChar[pCurrMem[last]];
+        pCurrMem += badChar[pCurrMem[last]];
     }
- 
+
     return -1;
 }
 
 
-INT BoyerMooreHorspoolRaita( CONST UCHAR * aMemory , size_t aMemorySize , CONST UCHAR * aPattern , size_t aPatternSize )
+INT BoyerMooreHorspoolRaita( CONST UCHAR * aMemory, size_t aMemorySize, CONST UCHAR * aPattern, size_t aPatternSize )
 {
     //Check parameters
     if ( NULL == aMemory || 0 == aMemorySize || NULL == aPattern )
@@ -494,17 +503,19 @@ INT BoyerMooreHorspoolRaita( CONST UCHAR * aMemory , size_t aMemorySize , CONST 
     }
     else if ( 1 == aPatternSize )
     {
-        return SearchByte( aMemory , aMemorySize , aPattern[0] );
+        return SearchByte( aMemory, aMemorySize, aPattern[0] );
     }
-    else{}
+    else
+    {
+    }
 
-    
 
-    size_t badChar[256];    //A byte could have 2^8 = 256 values    
- 
+
+    size_t badChar[256];    //A byte could have 2^8 = 256 values
+
     //Initialize the table to default value: when a character is encountered that does not occur
     //in the aPattern, we can safely skip ahead for the whole length of the aPattern
-    _ComputeBadCharacterShift( aPattern , aPatternSize , badChar );
+    _ComputeBadCharacterShift( aPattern, aPatternSize, badChar );
 
 
 
@@ -513,14 +524,14 @@ INT BoyerMooreHorspoolRaita( CONST UCHAR * aMemory , size_t aMemorySize , CONST 
     size_t secLast = aPatternSize - 2;
     //Boyer-Moore-Horspool-Raita algorithm
     CONST UCHAR * pCurrMem = aMemory;    //We move pCurrMem instead of aMemory
-    while  ( aPatternSize <= aMemorySize )
+    while ( aPatternSize <= aMemorySize )
     {
         if ( pCurrMem[last] == aPattern[last] )    //Scan the last character
         {
             if ( pCurrMem[0] == aPattern[0] )    //Scan the first character
             {
                 //Scan from the second last character to the second character
-                for ( scan = secLast ; pCurrMem[scan] == aPattern[scan] ; scan-- )
+                for ( scan = secLast; pCurrMem[scan] == aPattern[scan]; scan-- )
                 {
                     if ( scan <= 1 )    //Since we have tested 0
                     {
@@ -530,8 +541,8 @@ INT BoyerMooreHorspoolRaita( CONST UCHAR * aMemory , size_t aMemorySize , CONST 
             }
         }
 
-        aMemorySize -= badChar[ pCurrMem[last] ];
-        pCurrMem += badChar[ pCurrMem[last] ];
+        aMemorySize -= badChar[pCurrMem[last]];
+        pCurrMem += badChar[pCurrMem[last]];
     }
 
     return -1;
@@ -541,21 +552,21 @@ INT BoyerMooreHorspoolRaita( CONST UCHAR * aMemory , size_t aMemorySize , CONST 
 
 
 
-VOID InitPatternInfo( CONST UCHAR * aPattern , size_t aPatternSize , BoyerMooreInfo * aPatternInfo )
+VOID InitPatternInfo( CONST UCHAR * aPattern, size_t aPatternSize, BoyerMooreInfo * aPatternInfo )
 {
     aPatternInfo->Pattern = aPattern;
     aPatternInfo->PatternSize = aPatternSize;
-    _ComputeBadCharacterShift( aPattern , aPatternSize , aPatternInfo->BadCharShift );
+    _ComputeBadCharacterShift( aPattern, aPatternSize, aPatternInfo->BadCharShift );
 }
 
-INT SearchPatternByBm( CONST UCHAR * aMemory , size_t aMemorySize , CONST UCHAR * aPattern , size_t aPatternSize )
+INT SearchPatternByBm( CONST UCHAR * aMemory, size_t aMemorySize, CONST UCHAR * aPattern, size_t aPatternSize )
 {
     BoyerMooreInfo patternInfo;
-    InitPatternInfo( aPattern , aPatternSize , &patternInfo );
-    return SearchPatternByBm( aMemory , aMemorySize , &patternInfo );
+    InitPatternInfo( aPattern, aPatternSize, &patternInfo );
+    return SearchPatternByBm( aMemory, aMemorySize, &patternInfo );
 }
 
-INT SearchPatternByBm( CONST UCHAR * aMemory , size_t aMemorySize , CONST BoyerMooreInfo * aBmInfo )
+INT SearchPatternByBm( CONST UCHAR * aMemory, size_t aMemorySize, CONST BoyerMooreInfo * aBmInfo )
 {
     //Check parameters
     if ( NULL == aMemory || NULL == aBmInfo || NULL == aBmInfo->Pattern )
@@ -568,9 +579,11 @@ INT SearchPatternByBm( CONST UCHAR * aMemory , size_t aMemorySize , CONST BoyerM
     }
     else if ( 1 == aBmInfo->PatternSize )
     {
-        return SearchByte( aMemory , aMemorySize , aBmInfo->Pattern[0] );
+        return SearchByte( aMemory, aMemorySize, aBmInfo->Pattern[0] );
     }
-    else{}
+    else
+    {
+    }
 
     size_t scan;
     size_t last = aBmInfo->PatternSize - 1;
@@ -584,7 +597,7 @@ INT SearchPatternByBm( CONST UCHAR * aMemory , size_t aMemorySize , CONST BoyerM
             if ( pCurrMem[0] == aBmInfo->Pattern[0] )    //Scan the first character
             {
                 //Scan from the second last character to the second character
-                for ( scan = secLast ; pCurrMem[scan] == aBmInfo->Pattern[scan] ; scan-- )
+                for ( scan = secLast; pCurrMem[scan] == aBmInfo->Pattern[scan]; scan-- )
                 {
                     if ( scan <= 1 )    //Since we have tested 0
                     {
@@ -594,8 +607,8 @@ INT SearchPatternByBm( CONST UCHAR * aMemory , size_t aMemorySize , CONST BoyerM
             }
         }
 
-        aMemorySize -= aBmInfo->BadCharShift[ pCurrMem[last] ];
-        pCurrMem += aBmInfo->BadCharShift[ pCurrMem[last] ];
+        aMemorySize -= aBmInfo->BadCharShift[pCurrMem[last]];
+        pCurrMem += aBmInfo->BadCharShift[pCurrMem[last]];
     }
 
     return -1;
@@ -606,6 +619,4 @@ INT SearchPatternByBm( CONST UCHAR * aMemory , size_t aMemorySize , CONST BoyerM
 
 
 
-
-
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

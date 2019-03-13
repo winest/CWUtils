@@ -7,38 +7,37 @@ using std::pair;
 
 namespace CWUtils
 {
-
-BOOL GetIniSectionNames( CONST WCHAR * aIniPath , list<wstring> & aSectionNames )
-{   
+BOOL GetIniSectionNames( CONST WCHAR * aIniPath, list<wstring> & aSectionNames )
+{
     BOOL bRet = FALSE;
     WCHAR wzBuf[8];
     WCHAR * wzNames = NULL;
     BOOL bUseHeap = FALSE;
 
-    DWORD dwRet = GetPrivateProfileSectionNamesW( wzBuf , _countof(wzBuf) , aIniPath );
+    DWORD dwRet = GetPrivateProfileSectionNamesW( wzBuf, _countof( wzBuf ), aIniPath );
     if ( 0 == dwRet )
     {
         goto exit;
     }
-    else if ( dwRet == ( _countof(wzBuf)-2 ) )
+    else if ( dwRet == ( _countof( wzBuf ) - 2 ) )
     {
         bUseHeap = TRUE;
-        ULONG ulBufSize = _countof(wzBuf);
-        do 
+        ULONG ulBufSize = _countof( wzBuf );
+        do
         {
             if ( NULL != wzNames )
             {
-                delete [] wzNames;
+                delete[] wzNames;
             }
             ulBufSize = ulBufSize * 2;
-            wzNames = new (std::nothrow) WCHAR[ulBufSize];
+            wzNames = new ( std::nothrow ) WCHAR[ulBufSize];
             if ( NULL == wzNames )
             {
                 goto exit;
             }
 
-            dwRet = GetPrivateProfileSectionNamesW( wzNames , ulBufSize , aIniPath );
-        } while ( dwRet == ( ulBufSize-2 ) );
+            dwRet = GetPrivateProfileSectionNamesW( wzNames, ulBufSize, aIniPath );
+        } while ( dwRet == ( ulBufSize - 2 ) );
     }
     else
     {
@@ -54,16 +53,16 @@ BOOL GetIniSectionNames( CONST WCHAR * aIniPath , list<wstring> & aSectionNames 
     }
     bRet = TRUE;
 
-exit :
+exit:
     if ( bUseHeap && wzNames )
     {
-        delete [] wzNames;
+        delete[] wzNames;
     }
 
     return bRet;
 }
 
-BOOL GetIniSectionValues( const WCHAR * aIniPath , const WCHAR * aSectionName , map<wstring,wstring> & aKeyVal )
+BOOL GetIniSectionValues( const WCHAR * aIniPath, const WCHAR * aSectionName, map<wstring, wstring> & aKeyVal )
 {
     BOOL bRet = FALSE;
     HANDLE hFile = INVALID_HANDLE_VALUE;
@@ -77,43 +76,44 @@ BOOL GetIniSectionValues( const WCHAR * aIniPath , const WCHAR * aSectionName , 
     }
     else
     {
-        hFile = CreateFileW( aIniPath , GENERIC_READ , FILE_SHARE_READ , NULL , OPEN_EXISTING , FILE_ATTRIBUTE_NORMAL , NULL );
+        hFile =
+            CreateFileW( aIniPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
         if ( INVALID_HANDLE_VALUE == hFile )
             goto exit;
     }
 
-    DWORD dwFileSize = GetFileSize( hFile , NULL );
+    DWORD dwFileSize = GetFileSize( hFile, NULL );
     if ( INVALID_FILE_SIZE == dwFileSize )
     {
         goto exit;
     }
     else
     {
-        wzBuf = new (std::nothrow) WCHAR[dwFileSize];
+        wzBuf = new ( std::nothrow ) WCHAR[dwFileSize];
         if ( NULL == wzBuf )
             goto exit;
     }
 
-    if ( GetPrivateProfileSectionW( aSectionName , wzBuf , dwFileSize , aIniPath ) )
-    {        
-        for ( WCHAR * wch = wzBuf ; *wch ; wch += (wcslen(wch) + 1) )
+    if ( GetPrivateProfileSectionW( aSectionName, wzBuf, dwFileSize, aIniPath ) )
+    {
+        for ( WCHAR * wch = wzBuf; *wch; wch += ( wcslen( wch ) + 1 ) )
         {
             wstring line = wch;
             size_t splitter = line.find_first_of( L'=' );
             if ( splitter != wstring::npos && splitter > 0 )
             {
-                aKeyVal.insert( pair<wstring,wstring>(line.substr(0,splitter) , line.substr(splitter+1)) );
+                aKeyVal.insert( pair<wstring, wstring>( line.substr( 0, splitter ), line.substr( splitter + 1 ) ) );
             }
         }
         bRet = TRUE;
     }
 
-exit :
+exit:
     if ( INVALID_HANDLE_VALUE != hFile )
         CloseHandle( hFile );
     if ( NULL != wzBuf )
-        delete [] wzBuf;
+        delete[] wzBuf;
     return bRet;
 }
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

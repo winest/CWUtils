@@ -1,62 +1,59 @@
 #include "stdafx.h"
 #pragma warning( disable : 4127 )
 #include "CWWmiEventMonitor.h"
-#pragma comment( lib , "wbemuuid.lib" )
+#pragma comment( lib, "wbemuuid.lib" )
 
 
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
-    extern "C" {
+extern "C" {
 #endif
 
 HRESULT CWmiEventMonitor::Init()
 {
     HRESULT hResult = S_FALSE;
 
-    do 
+    do
     {
         //Obtain the initial locator to WMI
-        hResult = CoCreateInstance( CLSID_WbemLocator , 0 , CLSCTX_INPROC_SERVER , IID_IWbemLocator , (LPVOID *)&m_pLoc );
+        hResult = CoCreateInstance( CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID *)&m_pLoc );
         if ( FAILED( hResult ) )
         {
-            wprintf_s( L"CoCreateInstance() for IWbemLocator failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"CoCreateInstance() for IWbemLocator failed. hResult=0x%08X\n", hResult );
             break;
         }
 
         //Connect to WMI to access local root\cimv2 namespace and obtain pointer pSvc to make IWbemServices calls
-        hResult = m_pLoc->ConnectServer( _bstr_t( L"ROOT\\CIMV2" ) , NULL , NULL , 0 , NULL , 0 , 0 , &m_pSvc );
+        hResult = m_pLoc->ConnectServer( _bstr_t( L"ROOT\\CIMV2" ), NULL, NULL, 0, NULL, 0, 0, &m_pSvc );
         if ( FAILED( hResult ) )
         {
-            wprintf_s( L"ConnectServer() for ROOT\\CIMV2 failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"ConnectServer() for ROOT\\CIMV2 failed. hResult=0x%08X\n", hResult );
             break;
         }
         wprintf_s( L"Connected to ROOT\\CIMV2\n" );
 
         //Set the authentication that will be used to make calls on the specified proxy
-        hResult = CoSetProxyBlanket( m_pSvc , RPC_C_AUTHN_WINNT , RPC_C_AUTHZ_NONE , NULL , 
-                                     RPC_C_AUTHN_LEVEL_CALL ,  RPC_C_IMP_LEVEL_IMPERSONATE , 
-                                     NULL , EOAC_NONE );
+        hResult = CoSetProxyBlanket( m_pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL, RPC_C_AUTHN_LEVEL_CALL,
+                                     RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE );
         if ( FAILED( hResult ) )
         {
-            wprintf_s( L"CoSetProxyBlanket() failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"CoSetProxyBlanket() failed. hResult=0x%08X\n", hResult );
             break;
         }
 
         //Use an unsecured apartment for security
-        hResult = CoCreateInstance( CLSID_UnsecuredApartment , NULL ,
-                                    CLSCTX_LOCAL_SERVER , IID_IUnsecuredApartment ,
+        hResult = CoCreateInstance( CLSID_UnsecuredApartment, NULL, CLSCTX_LOCAL_SERVER, IID_IUnsecuredApartment,
                                     (void **)&m_pUnsecApp );
         if ( FAILED( hResult ) )
         {
-            wprintf_s( L"CoCreateInstance() for IUnsecuredApartment failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"CoCreateInstance() for IUnsecuredApartment failed. hResult=0x%08X\n", hResult );
             break;
         }
     } while ( 0 );
 
-    if ( FAILED(hResult) )
+    if ( FAILED( hResult ) )
     {
         this->UnInit();
     }
@@ -90,7 +87,7 @@ HRESULT CWmiEventMonitor::StartMonitorProcessEvt( PFN_PROC_CREATE_TERMINATE_CBK 
 {
     HRESULT hResult = S_FALSE;
 
-    do 
+    do
     {
         if ( NULL == aCbk )
         {
@@ -100,7 +97,7 @@ HRESULT CWmiEventMonitor::StartMonitorProcessEvt( PFN_PROC_CREATE_TERMINATE_CBK 
 
         if ( NULL == m_pProcCreateMonitor )
         {
-            m_pProcCreateMonitor = new (std::nothrow) CProcCreateMonitor( m_pSvc , m_pUnsecApp );
+            m_pProcCreateMonitor = new ( std::nothrow ) CProcCreateMonitor( m_pSvc, m_pUnsecApp );
             if ( NULL == m_pProcCreateMonitor )
             {
                 wprintf_s( L"m_pProcCreateMonitor failed to allocate\n" );
@@ -112,7 +109,7 @@ HRESULT CWmiEventMonitor::StartMonitorProcessEvt( PFN_PROC_CREATE_TERMINATE_CBK 
 
         if ( NULL == m_pProcTerminateMonitor )
         {
-            m_pProcTerminateMonitor = new (std::nothrow) CProcTerminateMonitor( m_pSvc , m_pUnsecApp );
+            m_pProcTerminateMonitor = new ( std::nothrow ) CProcTerminateMonitor( m_pSvc, m_pUnsecApp );
             if ( NULL == m_pProcTerminateMonitor )
             {
                 wprintf_s( L"m_pProcTerminateMonitor failed to allocate\n" );
@@ -125,32 +122,32 @@ HRESULT CWmiEventMonitor::StartMonitorProcessEvt( PFN_PROC_CREATE_TERMINATE_CBK 
         hResult = m_pProcCreateMonitor->StartMonitor( aCbk );
         if ( FAILED( hResult ) )
         {
-            wprintf_s( L"StartMonitor() for process creation failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"StartMonitor() for process creation failed. hResult=0x%08X\n", hResult );
             break;
         }
 
         hResult = m_pProcTerminateMonitor->StartMonitor( aCbk );
         if ( FAILED( hResult ) )
         {
-            wprintf_s( L"StartMonitor() for process termination failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"StartMonitor() for process termination failed. hResult=0x%08X\n", hResult );
             break;
         }
 
         wprintf_s( L"Register OK\n" );
     } while ( 0 );
 
-    if ( FAILED(hResult) )
+    if ( FAILED( hResult ) )
     {
         this->StopMonitorProcessEvt();
     }
-    
+
     return hResult;
 }
 
 HRESULT CWmiEventMonitor::StopMonitorProcessEvt()
 {
     HRESULT hResult = S_FALSE;
-    do 
+    do
     {
         if ( NULL != m_pProcCreateMonitor )
         {
@@ -165,20 +162,20 @@ HRESULT CWmiEventMonitor::StopMonitorProcessEvt()
             m_pProcTerminateMonitor->Release();
             m_pProcTerminateMonitor = NULL;
         }
-        
+
         hResult = S_OK;
     } while ( 0 );
-    
+
     return hResult;
 }
 
 
-HRESULT CWmiEventMonitor::DumpIWbemClassObject( IWbemClassObject * aObj , LONG aDumpFlag )
+HRESULT CWmiEventMonitor::DumpIWbemClassObject( IWbemClassObject * aObj, LONG aDumpFlag )
 {
     HRESULT hResult = S_FALSE;
     SAFEARRAY * pSafeAry = NULL;
 
-    do 
+    do
     {
         if ( NULL == aObj )
         {
@@ -197,10 +194,10 @@ HRESULT CWmiEventMonitor::DumpIWbemClassObject( IWbemClassObject * aObj , LONG a
         //wprintf_s( L"ObjectText: %ws\n" , strObjText );
         //SysFreeString( strObjText );
 
-        hResult = aObj->GetNames( NULL , aDumpFlag , NULL , &pSafeAry );
-        if ( FAILED(hResult) )
+        hResult = aObj->GetNames( NULL, aDumpFlag, NULL, &pSafeAry );
+        if ( FAILED( hResult ) )
         {
-            wprintf_s( L"GetNames() failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"GetNames() failed. hResult=0x%08X\n", hResult );
             break;
         }
         hResult = CWmiEventMonitor::DumpSafeArray( pSafeAry );
@@ -216,7 +213,7 @@ HRESULT CWmiEventMonitor::DumpIWbemClassObject( IWbemClassObject * aObj , LONG a
 HRESULT CWmiEventMonitor::DumpSafeArray( SAFEARRAY * aSafeAry )
 {
     HRESULT hResult = S_FALSE;
-    do 
+    do
     {
         if ( NULL == aSafeAry )
         {
@@ -226,58 +223,58 @@ HRESULT CWmiEventMonitor::DumpSafeArray( SAFEARRAY * aSafeAry )
 
         UINT uDimension = SafeArrayGetDim( aSafeAry );
 
-        LONG lMinIndex , lMaxIndex;
-        SafeArrayGetLBound( aSafeAry , uDimension , &lMinIndex );
-        SafeArrayGetUBound( aSafeAry , uDimension , &lMaxIndex );
+        LONG lMinIndex, lMaxIndex;
+        SafeArrayGetLBound( aSafeAry, uDimension, &lMinIndex );
+        SafeArrayGetUBound( aSafeAry, uDimension, &lMaxIndex );
 
         VARTYPE type;
-        SafeArrayGetVartype( aSafeAry , &type );
+        SafeArrayGetVartype( aSafeAry, &type );
 
-        wprintf_s( L"SafeArray. type=%hu, lMinIndex=%d, lMaxIndex=%d\n" , type , lMinIndex , lMaxIndex );
+        wprintf_s( L"SafeArray. type=%hu, lMinIndex=%d, lMaxIndex=%d\n", type, lMinIndex, lMaxIndex );
 
         VOID * pData = NULL;
-        hResult = SafeArrayAccessData( aSafeAry , &pData );
-        if ( FAILED(hResult) )
+        hResult = SafeArrayAccessData( aSafeAry, &pData );
+        if ( FAILED( hResult ) )
         {
-            wprintf_s( L"SafeArrayAccessData() failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"SafeArrayAccessData() failed. hResult=0x%08X\n", hResult );
             break;
         }
 
-        for ( LONG i = lMinIndex ; i < lMaxIndex; i++ )
+        for ( LONG i = lMinIndex; i < lMaxIndex; i++ )
         {
             switch ( type )
             {
-                case VT_I1 :
-                    wprintf_s( L"[%d]=%c\n" , i , ((CHAR *)pData)[i] );
+                case VT_I1:
+                    wprintf_s( L"[%d]=%c\n", i, ( (CHAR *)pData )[i] );
                     break;
-                case VT_UI1 :
-                    wprintf_s( L"[%d]=%u\n" , i , ((UCHAR *)pData)[i] );
+                case VT_UI1:
+                    wprintf_s( L"[%d]=%u\n", i, ( (UCHAR *)pData )[i] );
                     break;
-                case VT_I2 :
-                    wprintf_s( L"[%d]=%hd\n" , i , ((SHORT *)pData)[i] );
+                case VT_I2:
+                    wprintf_s( L"[%d]=%hd\n", i, ( (SHORT *)pData )[i] );
                     break;
-                case VT_UI2 :
-                    wprintf_s( L"[%d]=%hu\n" , i , ((USHORT *)pData)[i] );
+                case VT_UI2:
+                    wprintf_s( L"[%d]=%hu\n", i, ( (USHORT *)pData )[i] );
                     break;
-                case VT_I4 :
-                case VT_INT :
-                    wprintf_s( L"[%d]=%d\n" , i , ((INT *)pData)[i] );
+                case VT_I4:
+                case VT_INT:
+                    wprintf_s( L"[%d]=%d\n", i, ( (INT *)pData )[i] );
                     break;
-                case VT_UI4 :
-                case VT_UINT :
-                    wprintf_s( L"[%d]=%u\n" , i , ((UINT *)pData)[i] );
+                case VT_UI4:
+                case VT_UINT:
+                    wprintf_s( L"[%d]=%u\n", i, ( (UINT *)pData )[i] );
                     break;
-                case VT_LPSTR :
-                    wprintf_s( L"[%d]=%hs\n" , i , ((LPSTR)pData)[i] );
+                case VT_LPSTR:
+                    wprintf_s( L"[%d]=%hs\n", i, ( (LPSTR)pData )[i] );
                     break;
-                case VT_LPWSTR :
-                    wprintf_s( L"[%d]=%ws\n" , i , ((LPWSTR)pData)[i] );
+                case VT_LPWSTR:
+                    wprintf_s( L"[%d]=%ws\n", i, ( (LPWSTR)pData )[i] );
                     break;
-                case VT_BSTR :
-                    wprintf_s( L"[%d]=%s\n" , i , ((BSTR *)pData)[i] );
+                case VT_BSTR:
+                    wprintf_s( L"[%d]=%s\n", i, ( (BSTR *)pData )[i] );
                     break;
                 default:
-                    wprintf_s( L"[%d] has unknown type with value 0x%p\n" , i , (VOID *)pData );
+                    wprintf_s( L"[%d] has unknown type with value 0x%p\n", i, (VOID *)pData );
                     break;
             }
         }
@@ -286,18 +283,6 @@ HRESULT CWmiEventMonitor::DumpSafeArray( SAFEARRAY * aSafeAry )
 
     return hResult;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -319,7 +304,7 @@ ULONG CProcCreateMonitor::Release()
     return lRef;
 }
 
-HRESULT CProcCreateMonitor::QueryInterface( REFIID aRiid , void ** aPpv )
+HRESULT CProcCreateMonitor::QueryInterface( REFIID aRiid, void ** aPpv )
 {
     if ( aRiid == IID_IUnknown || aRiid == IID_IWbemObjectSink )
     {
@@ -333,18 +318,18 @@ HRESULT CProcCreateMonitor::QueryInterface( REFIID aRiid , void ** aPpv )
     }
 }
 
-HRESULT CProcCreateMonitor::Indicate( LONG aObjectCount , IWbemClassObject ** aObjArray )
+HRESULT CProcCreateMonitor::Indicate( LONG aObjectCount, IWbemClassObject ** aObjArray )
 {
     HRESULT hResult = S_OK;
 
-    for ( int i = 0 ; i < aObjectCount ; i++ )
+    for ( int i = 0; i < aObjectCount; i++ )
     {
         //Get the entry
         VARIANT varEntry;
-        hResult = aObjArray[i]->Get( _bstr_t(L"TargetInstance") , 0 , &varEntry , 0 , 0 );
-        if ( FAILED(hResult) )
+        hResult = aObjArray[i]->Get( _bstr_t( L"TargetInstance" ), 0, &varEntry, 0, 0 );
+        if ( FAILED( hResult ) )
         {
-            wprintf_s( L"Get() failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"Get() failed. hResult=0x%08X\n", hResult );
             break;
         }
         IWbemClassObject * pTargetInstance = (IWbemClassObject *)varEntry.punkVal;
@@ -352,40 +337,44 @@ HRESULT CProcCreateMonitor::Indicate( LONG aObjectCount , IWbemClassObject ** aO
         WCHAR wzPath[MAX_PATH] = {};
 
         //Get ProcessId
-        hResult = pTargetInstance->Get( _bstr_t(L"ProcessId") , 0 , &varEntry , 0 , 0 );
-        if ( FAILED(hResult) )
+        hResult = pTargetInstance->Get( _bstr_t( L"ProcessId" ), 0, &varEntry, 0, 0 );
+        if ( FAILED( hResult ) )
         {
-            wprintf_s( L"Get ProcessId failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"Get ProcessId failed. hResult=0x%08X\n", hResult );
             continue;
         }
         dwPid = varEntry.intVal;
 
         //Get ExecutablePath
-        hResult = pTargetInstance->Get( _bstr_t(L"ExecutablePath") , 0 , &varEntry , 0 , 0 );
-        if ( FAILED(hResult) )
+        hResult = pTargetInstance->Get( _bstr_t( L"ExecutablePath" ), 0, &varEntry, 0, 0 );
+        if ( FAILED( hResult ) )
         {
-            wprintf_s( L"Get CommandLine failed. hResult=0x%08X\n" , hResult );
-            continue;;
+            wprintf_s( L"Get CommandLine failed. hResult=0x%08X\n", hResult );
+            continue;
+            ;
         }
 
-        #if defined(_WIN32) && !defined(OLE2ANSI)
-            wcsncpy_s( wzPath , varEntry.bstrVal , _TRUNCATE );
-        #else
-            INT nPathLen = _countof(wzPath);
-            MultiByteToWideChar( CP_ACP , 0 , varEntry.bstrVal , strlen(varEntry.bstrVal) , wzPath , &nPathLen );
-        #endif
+#if defined( _WIN32 ) && !defined( OLE2ANSI )
+        wcsncpy_s( wzPath, varEntry.bstrVal, _TRUNCATE );
+#else
+        INT nPathLen = _countof( wzPath );
+        MultiByteToWideChar( CP_ACP, 0, varEntry.bstrVal, strlen( varEntry.bstrVal ), wzPath, &nPathLen );
+#endif
 
         //wprintf_s( L"dwPid=0x%04X, wzPath=%ws\n" , dwPid , wzPath );
         if ( NULL != m_pfnProc )
         {
-            m_pfnProc( TRUE , dwPid , wzPath );
+            m_pfnProc( TRUE, dwPid, wzPath );
         }
     }
 
     return WBEM_S_NO_ERROR;
 }
 
-HRESULT CProcCreateMonitor::SetStatus( LONG aFlags , HRESULT aResult , BSTR aStrParam , IWbemClassObject __RPC_FAR * aObjParam )
+HRESULT CProcCreateMonitor::SetStatus( LONG aFlags,
+                                       HRESULT aResult,
+                                       BSTR aStrParam,
+                                       IWbemClassObject __RPC_FAR * aObjParam )
 {
     UNREFERENCED_PARAMETER( aFlags );
     UNREFERENCED_PARAMETER( aResult );
@@ -398,33 +387,31 @@ HRESULT CProcCreateMonitor::StartMonitor( PFN_PROC_CREATE_TERMINATE_CBK aCbk )
 {
     HRESULT hResult = S_FALSE;
 
-    do 
+    do
     {
-        hResult = m_pUnsecApp->CreateObjectStub( this , &m_pStub );
+        hResult = m_pUnsecApp->CreateObjectStub( this, &m_pStub );
         if ( FAILED( hResult ) )
         {
-            wprintf_s( L"CreateObjectStub() failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"CreateObjectStub() failed. hResult=0x%08X\n", hResult );
             break;
         }
 
-        hResult = m_pStub->QueryInterface( IID_IWbemObjectSink , (void **)&m_pSink );
+        hResult = m_pStub->QueryInterface( IID_IWbemObjectSink, (void **)&m_pSink );
         if ( FAILED( hResult ) )
         {
-            wprintf_s( L"CreateObjectStub() failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"CreateObjectStub() failed. hResult=0x%08X\n", hResult );
             break;
         }
 
         //The ExecNotificationQueryAsync method will call Indicate() when an event occurs
-        hResult = m_pSvc->ExecNotificationQueryAsync( _bstr_t( "WQL" ) ,
+        hResult = m_pSvc->ExecNotificationQueryAsync( _bstr_t( "WQL" ),
                                                       _bstr_t( "SELECT * "
                                                                "FROM __InstanceCreationEvent WITHIN 1 "
-                                                               "WHERE TargetInstance ISA 'Win32_Process'" ) ,
-                                                      WBEM_FLAG_SEND_STATUS ,
-                                                      NULL ,
-                                                      m_pSink );
+                                                               "WHERE TargetInstance ISA 'Win32_Process'" ),
+                                                      WBEM_FLAG_SEND_STATUS, NULL, m_pSink );
         if ( FAILED( hResult ) )
         {
-            wprintf_s( L"ExecNotificationQueryAsync() failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"ExecNotificationQueryAsync() failed. hResult=0x%08X\n", hResult );
             break;
         }
 
@@ -437,14 +424,14 @@ HRESULT CProcCreateMonitor::StartMonitor( PFN_PROC_CREATE_TERMINATE_CBK aCbk )
 HRESULT CProcCreateMonitor::StopMonitor()
 {
     HRESULT hResult = S_FALSE;
-    do 
+    do
     {
         if ( m_pSvc && m_pSink )
         {
             hResult = m_pSvc->CancelAsyncCall( m_pSink );
             if ( FAILED( hResult ) )
             {
-                wprintf_s( L"CancelAsyncCall() failed. hResult=0x%08X\n" , hResult );
+                wprintf_s( L"CancelAsyncCall() failed. hResult=0x%08X\n", hResult );
                 break;
             }
             m_pSink->Release();
@@ -460,14 +447,9 @@ HRESULT CProcCreateMonitor::StopMonitor()
         m_pfnProc = NULL;
         hResult = S_OK;
     } while ( 0 );
-    
+
     return hResult;
 }
-
-
-
-
-
 
 
 
@@ -489,7 +471,7 @@ ULONG CProcTerminateMonitor::Release()
     return lRef;
 }
 
-HRESULT CProcTerminateMonitor::QueryInterface( REFIID aRiid , void ** aPpv )
+HRESULT CProcTerminateMonitor::QueryInterface( REFIID aRiid, void ** aPpv )
 {
     if ( aRiid == IID_IUnknown || aRiid == IID_IWbemObjectSink )
     {
@@ -503,18 +485,18 @@ HRESULT CProcTerminateMonitor::QueryInterface( REFIID aRiid , void ** aPpv )
     }
 }
 
-HRESULT CProcTerminateMonitor::Indicate( LONG aObjectCount , IWbemClassObject ** aObjArray )
+HRESULT CProcTerminateMonitor::Indicate( LONG aObjectCount, IWbemClassObject ** aObjArray )
 {
     HRESULT hResult = S_OK;
 
-    for ( int i = 0 ; i < aObjectCount ; i++ )
+    for ( int i = 0; i < aObjectCount; i++ )
     {
         //Get the entry
         VARIANT varEntry;
-        hResult = aObjArray[i]->Get( _bstr_t(L"TargetInstance") , 0 , &varEntry , 0 , 0 );
-        if ( FAILED(hResult) )
+        hResult = aObjArray[i]->Get( _bstr_t( L"TargetInstance" ), 0, &varEntry, 0, 0 );
+        if ( FAILED( hResult ) )
         {
-            wprintf_s( L"Get() failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"Get() failed. hResult=0x%08X\n", hResult );
             break;
         }
         IWbemClassObject * pTargetInstance = (IWbemClassObject *)varEntry.punkVal;
@@ -522,40 +504,44 @@ HRESULT CProcTerminateMonitor::Indicate( LONG aObjectCount , IWbemClassObject **
         WCHAR wzPath[MAX_PATH] = {};
 
         //Get ProcessId
-        hResult = pTargetInstance->Get( _bstr_t(L"ProcessId") , 0 , &varEntry , 0 , 0 );
-        if ( FAILED(hResult) )
+        hResult = pTargetInstance->Get( _bstr_t( L"ProcessId" ), 0, &varEntry, 0, 0 );
+        if ( FAILED( hResult ) )
         {
-            wprintf_s( L"Get ProcessId failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"Get ProcessId failed. hResult=0x%08X\n", hResult );
             continue;
         }
         dwPid = varEntry.intVal;
 
         //Get ExecutablePath
-        hResult = pTargetInstance->Get( _bstr_t(L"ExecutablePath") , 0 , &varEntry , 0 , 0 );
-        if ( FAILED(hResult) )
+        hResult = pTargetInstance->Get( _bstr_t( L"ExecutablePath" ), 0, &varEntry, 0, 0 );
+        if ( FAILED( hResult ) )
         {
-            wprintf_s( L"Get CommandLine failed. hResult=0x%08X\n" , hResult );
-            continue;;
+            wprintf_s( L"Get CommandLine failed. hResult=0x%08X\n", hResult );
+            continue;
+            ;
         }
 
-        #if defined(_WIN32) && !defined(OLE2ANSI)
-            wcsncpy_s( wzPath , varEntry.bstrVal , _TRUNCATE );
-        #else
-            INT nPathLen = _countof(wzPath);
-            MultiByteToWideChar( CP_ACP , 0 , varEntry.bstrVal , strlen(varEntry.bstrVal) , wzPath , &nPathLen );
-        #endif
+#if defined( _WIN32 ) && !defined( OLE2ANSI )
+        wcsncpy_s( wzPath, varEntry.bstrVal, _TRUNCATE );
+#else
+        INT nPathLen = _countof( wzPath );
+        MultiByteToWideChar( CP_ACP, 0, varEntry.bstrVal, strlen( varEntry.bstrVal ), wzPath, &nPathLen );
+#endif
 
         //wprintf_s( L"dwPid=0x%04X, wzPath=%ws\n" , dwPid , wzPath );
         if ( NULL != m_pfnProc )
         {
-            m_pfnProc( FALSE , dwPid , wzPath );
+            m_pfnProc( FALSE, dwPid, wzPath );
         }
     }
 
     return WBEM_S_NO_ERROR;
 }
 
-HRESULT CProcTerminateMonitor::SetStatus( LONG aFlags , HRESULT aResult , BSTR aStrParam , IWbemClassObject __RPC_FAR * aObjParam )
+HRESULT CProcTerminateMonitor::SetStatus( LONG aFlags,
+                                          HRESULT aResult,
+                                          BSTR aStrParam,
+                                          IWbemClassObject __RPC_FAR * aObjParam )
 {
     UNREFERENCED_PARAMETER( aFlags );
     UNREFERENCED_PARAMETER( aResult );
@@ -568,33 +554,31 @@ HRESULT CProcTerminateMonitor::StartMonitor( PFN_PROC_CREATE_TERMINATE_CBK aCbk 
 {
     HRESULT hResult = S_FALSE;
 
-    do 
+    do
     {
-        hResult = m_pUnsecApp->CreateObjectStub( this , &m_pStub );
+        hResult = m_pUnsecApp->CreateObjectStub( this, &m_pStub );
         if ( FAILED( hResult ) )
         {
-            wprintf_s( L"CreateObjectStub() failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"CreateObjectStub() failed. hResult=0x%08X\n", hResult );
             break;
         }
 
-        hResult = m_pStub->QueryInterface( IID_IWbemObjectSink , (void **)&m_pSink );
+        hResult = m_pStub->QueryInterface( IID_IWbemObjectSink, (void **)&m_pSink );
         if ( FAILED( hResult ) )
         {
-            wprintf_s( L"CreateObjectStub() failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"CreateObjectStub() failed. hResult=0x%08X\n", hResult );
             break;
         }
 
         //The ExecNotificationQueryAsync method will call Indicate() when an event occurs
-        hResult = m_pSvc->ExecNotificationQueryAsync( _bstr_t( "WQL" ) ,
+        hResult = m_pSvc->ExecNotificationQueryAsync( _bstr_t( "WQL" ),
                                                       _bstr_t( "SELECT * "
                                                                "FROM __InstanceDeletionEvent WITHIN 1 "
-                                                               "WHERE TargetInstance ISA 'Win32_Process'" ) ,
-                                                      WBEM_FLAG_SEND_STATUS ,
-                                                      NULL ,
-                                                      m_pSink );
+                                                               "WHERE TargetInstance ISA 'Win32_Process'" ),
+                                                      WBEM_FLAG_SEND_STATUS, NULL, m_pSink );
         if ( FAILED( hResult ) )
         {
-            wprintf_s( L"ExecNotificationQueryAsync() failed. hResult=0x%08X\n" , hResult );
+            wprintf_s( L"ExecNotificationQueryAsync() failed. hResult=0x%08X\n", hResult );
             break;
         }
 
@@ -607,14 +591,14 @@ HRESULT CProcTerminateMonitor::StartMonitor( PFN_PROC_CREATE_TERMINATE_CBK aCbk 
 HRESULT CProcTerminateMonitor::StopMonitor()
 {
     HRESULT hResult = S_FALSE;
-    do 
+    do
     {
         if ( m_pSvc && m_pSink )
         {
             hResult = m_pSvc->CancelAsyncCall( m_pSink );
             if ( FAILED( hResult ) )
             {
-                wprintf_s( L"CancelAsyncCall() failed. hResult=0x%08X\n" , hResult );
+                wprintf_s( L"CancelAsyncCall() failed. hResult=0x%08X\n", hResult );
                 break;
             }
             m_pSink->Release();
@@ -630,12 +614,12 @@ HRESULT CProcTerminateMonitor::StopMonitor()
         m_pfnProc = NULL;
         hResult = S_OK;
     } while ( 0 );
-    
+
     return hResult;
 }
 
 #ifdef __cplusplus
-    }
+}
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

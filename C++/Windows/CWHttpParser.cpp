@@ -12,63 +12,59 @@ using namespace CWUtils;
 #include "CWHttpParser.tmh"
 
 
-#define MAX_MAP_TABLE_VALUE       0x7F //map table handles 0x00~0x7F
+#define MAX_MAP_TABLE_VALUE 0x7F    //map table handles 0x00~0x7F
 
 namespace CWUtils
 {
-
-
-
 typedef struct _HttpFieldMap
 {
     CHAR szFieldName[32];
     UINT uFieldId;
 } HttpFieldMap;
 
-HttpFieldMap g_FieldTable[] =
-{
-    { "HEAD " ,               HTTP_FIELD_METHOD_HEAD } ,
-    { "GET " ,                HTTP_FIELD_METHOD_GET } ,
-    { "POST " ,               HTTP_FIELD_METHOD_POST } ,
-    { "PUT " ,                HTTP_FIELD_METHOD_PUT } ,
-    { "DELETE " ,             HTTP_FIELD_METHOD_DELETE } ,
-    { "TRACE " ,              HTTP_FIELD_METHOD_TRACE } ,
-    { "OPTIONS " ,            HTTP_FIELD_METHOD_OPTIONS } ,
-    { "CONNECT " ,            HTTP_FIELD_METHOD_CONNECT } ,
-    { "PATCH " ,              HTTP_FIELD_METHOD_PATCH } ,
-    { "HTTP/" ,               HTTP_FIELD_HTTP_RESPONSE } ,
-    { "Host:" ,               HTTP_FIELD_HOST } ,
-    { "Proxy-Connection:" ,   HTTP_FIELD_PROXY_CONNECTION } ,
-    { "Referer:" ,            HTTP_FIELD_REFERER } ,
-    { "User-Agent:" ,         HTTP_FIELD_USER_AGENT } ,
-    { "Accept:" ,             HTTP_FIELD_ACCEPT } ,
-    { "Accept-Encoding:" ,    HTTP_FIELD_ACCEPT_ENCODING } ,
-    { "Accept-Language:" ,    HTTP_FIELD_ACCEPT_LANGUAGE } ,
-    { "Accept-Charset:" ,     HTTP_FIELD_ACCEPT_CHARSET } ,
-    { "Accept-Ranges:" ,      HTTP_FIELD_ACCEPT_RANGES } ,
-    { "Transfer-Encoding:" ,  HTTP_FIELD_TRANSFER_ENCODING } ,
-    { "Cookie:" ,             HTTP_FIELD_COOKIE } ,
-    { "Server:" ,             HTTP_FIELD_SERVER } ,
-    { "Connection:" ,         HTTP_FIELD_CONNECTION } ,
-    { "Keep-Alive:" ,         HTTP_FIELD_KEEP_ALIVE } ,
-    { "Date:" ,               HTTP_FIELD_DATE } ,
-    { "Last-Modified:" ,      HTTP_FIELD_LAST_MODIFIED } ,
-    { "ETag:" ,               HTTP_FIELD_ETAG } ,
-    { "Cache-Control:" ,      HTTP_FIELD_CACHE_CONTROL } ,
-    { "Vary:" ,               HTTP_FIELD_VARY } ,
-    { "Via:" ,                HTTP_FIELD_VIA } ,
-    { "Content-Length:" ,     HTTP_FIELD_CONTENT_LENGTH } ,
-    { "Content-Type:" ,       HTTP_FIELD_CONTENT_TYPE } ,
-    { "Content-Encoding:" ,   HTTP_FIELD_CONTENT_ENCODING } ,
-    { "x-flash-version:" ,    HTTP_FIELD_X_FLASH_VERSION } ,
-    { "x-sessioncookie:" ,    HTTP_FIELD_X_SESSION_COOKIE } ,
-    { "X-Powered-By:" ,       HTTP_FIELD_X_POWERED_BY } ,
-    { "X-Vary-Option:" ,      HTTP_FIELD_X_VARY_OPTION } ,
-    { "X-Cache:" ,            HTTP_FIELD_X_CACHE } ,
-    { "X-Cache-Lookup:" ,     HTTP_FIELD_X_CACHE_LOOKUP } ,
-    { "\r\n" ,                HTTP_FIELD_END } ,        //check header end
-    { "\n" ,                  HTTP_FIELD_END }         //check header end
-}; 
+HttpFieldMap g_FieldTable[] = {
+    { "HEAD ", HTTP_FIELD_METHOD_HEAD },
+    { "GET ", HTTP_FIELD_METHOD_GET },
+    { "POST ", HTTP_FIELD_METHOD_POST },
+    { "PUT ", HTTP_FIELD_METHOD_PUT },
+    { "DELETE ", HTTP_FIELD_METHOD_DELETE },
+    { "TRACE ", HTTP_FIELD_METHOD_TRACE },
+    { "OPTIONS ", HTTP_FIELD_METHOD_OPTIONS },
+    { "CONNECT ", HTTP_FIELD_METHOD_CONNECT },
+    { "PATCH ", HTTP_FIELD_METHOD_PATCH },
+    { "HTTP/", HTTP_FIELD_HTTP_RESPONSE },
+    { "Host:", HTTP_FIELD_HOST },
+    { "Proxy-Connection:", HTTP_FIELD_PROXY_CONNECTION },
+    { "Referer:", HTTP_FIELD_REFERER },
+    { "User-Agent:", HTTP_FIELD_USER_AGENT },
+    { "Accept:", HTTP_FIELD_ACCEPT },
+    { "Accept-Encoding:", HTTP_FIELD_ACCEPT_ENCODING },
+    { "Accept-Language:", HTTP_FIELD_ACCEPT_LANGUAGE },
+    { "Accept-Charset:", HTTP_FIELD_ACCEPT_CHARSET },
+    { "Accept-Ranges:", HTTP_FIELD_ACCEPT_RANGES },
+    { "Transfer-Encoding:", HTTP_FIELD_TRANSFER_ENCODING },
+    { "Cookie:", HTTP_FIELD_COOKIE },
+    { "Server:", HTTP_FIELD_SERVER },
+    { "Connection:", HTTP_FIELD_CONNECTION },
+    { "Keep-Alive:", HTTP_FIELD_KEEP_ALIVE },
+    { "Date:", HTTP_FIELD_DATE },
+    { "Last-Modified:", HTTP_FIELD_LAST_MODIFIED },
+    { "ETag:", HTTP_FIELD_ETAG },
+    { "Cache-Control:", HTTP_FIELD_CACHE_CONTROL },
+    { "Vary:", HTTP_FIELD_VARY },
+    { "Via:", HTTP_FIELD_VIA },
+    { "Content-Length:", HTTP_FIELD_CONTENT_LENGTH },
+    { "Content-Type:", HTTP_FIELD_CONTENT_TYPE },
+    { "Content-Encoding:", HTTP_FIELD_CONTENT_ENCODING },
+    { "x-flash-version:", HTTP_FIELD_X_FLASH_VERSION },
+    { "x-sessioncookie:", HTTP_FIELD_X_SESSION_COOKIE },
+    { "X-Powered-By:", HTTP_FIELD_X_POWERED_BY },
+    { "X-Vary-Option:", HTTP_FIELD_X_VARY_OPTION },
+    { "X-Cache:", HTTP_FIELD_X_CACHE },
+    { "X-Cache-Lookup:", HTTP_FIELD_X_CACHE_LOOKUP },
+    { "\r\n", HTTP_FIELD_END },    //check header end
+    { "\n", HTTP_FIELD_END }       //check header end
+};
 
 
 
@@ -90,12 +86,12 @@ VOID CHttpFieldMgr::Reset()
     m_vecBody.clear();
 }
 
-HttpParserErr CHttpFieldMgr::GetFieldValue( HttpFieldId aFieldId , std::string & aData )
+HttpParserErr CHttpFieldMgr::GetFieldValue( HttpFieldId aFieldId, std::string & aData )
 {
-    std::map<HttpFieldId , std::string>::iterator it = m_mapFields.find( aFieldId );
+    std::map<HttpFieldId, std::string>::iterator it = m_mapFields.find( aFieldId );
     if ( m_mapFields.end() != it )
     {
-        aData.assign( it->second.c_str() , it->second.size() );
+        aData.assign( it->second.c_str(), it->second.size() );
         return HTTP_PARSER_SUCCESS;
     }
     else
@@ -104,67 +100,75 @@ HttpParserErr CHttpFieldMgr::GetFieldValue( HttpFieldId aFieldId , std::string &
     }
 }
 
-HttpParserErr CHttpFieldMgr::SetField( HttpFieldId aFieldId , std::string & aData , UINT aDataSize , BOOL aAppend , BOOL aComplete )
+HttpParserErr CHttpFieldMgr::SetField( HttpFieldId aFieldId,
+                                       std::string & aData,
+                                       UINT aDataSize,
+                                       BOOL aAppend,
+                                       BOOL aComplete )
 {
-    map<HttpFieldId , string>::iterator it = m_mapFields.find( aFieldId );
+    map<HttpFieldId, string>::iterator it = m_mapFields.find( aFieldId );
     if ( aAppend && ( m_mapFields.end() != it ) )
     {
-        it->second.append( aData.c_str() , aDataSize );
+        it->second.append( aData.c_str(), aDataSize );
     }
     else
     {
         if ( m_mapFields.end() == it )
         {
-            pair<map<HttpFieldId , string>::iterator , BOOL> p = m_mapFields.insert( make_pair(aFieldId , aData) );
+            pair<map<HttpFieldId, string>::iterator, BOOL> p = m_mapFields.insert( make_pair( aFieldId, aData ) );
             it = p.first;
         }
         else
         {
-            it->second.assign( aData.c_str() , aDataSize );
+            it->second.assign( aData.c_str(), aDataSize );
         }
     }
 
     if ( aComplete )    //Trim data
     {
-        CWUtils::TrimStringA( it->second , " \r" );
+        CWUtils::TrimStringA( it->second, " \r" );
     }
     return HTTP_PARSER_SUCCESS;
 }
 
-HttpParserErr CHttpFieldMgr::SetUnknownField( std::string aFieldName , std::string & aData , UINT aDataSize , BOOL aAppend , BOOL aComplete )
+HttpParserErr CHttpFieldMgr::SetUnknownField( std::string aFieldName,
+                                              std::string & aData,
+                                              UINT aDataSize,
+                                              BOOL aAppend,
+                                              BOOL aComplete )
 {
-    map<string , string>::iterator it = m_mapUnknownFields.find( aFieldName );
+    map<string, string>::iterator it = m_mapUnknownFields.find( aFieldName );
     if ( aAppend && ( m_mapUnknownFields.end() != it ) )
     {
-        it->second.append( aData.c_str() , aDataSize );
+        it->second.append( aData.c_str(), aDataSize );
     }
     else
     {
         if ( m_mapUnknownFields.end() == it )
         {
-            pair<map<string , string>::iterator , BOOL> p = m_mapUnknownFields.insert( make_pair(aFieldName , aData) );
+            pair<map<string, string>::iterator, BOOL> p = m_mapUnknownFields.insert( make_pair( aFieldName, aData ) );
             it = p.first;
         }
         else
         {
-            it->second.assign( aData.c_str() , aDataSize );
+            it->second.assign( aData.c_str(), aDataSize );
         }
     }
 
     if ( aComplete )    //Trim data
     {
-        CWUtils::TrimStringA( it->second , " \r" );
+        CWUtils::TrimStringA( it->second, " \r" );
     }
     return HTTP_PARSER_SUCCESS;
 }
 
-VOID CHttpFieldMgr::GetVersion( UINT & aMajorVer , UINT & aMinorVer )
+VOID CHttpFieldMgr::GetVersion( UINT & aMajorVer, UINT & aMinorVer )
 {
     aMajorVer = m_uMajorVer;
     aMinorVer = m_uMinorVer;
 }
 
-VOID CHttpFieldMgr::SetVersion( UINT aMajorVer , UINT aMinorVer )
+VOID CHttpFieldMgr::SetVersion( UINT aMajorVer, UINT aMinorVer )
 {
     m_uMajorVer = aMajorVer;
     m_uMinorVer = aMinorVer;
@@ -236,35 +240,37 @@ const UCHAR * CHttpFieldMgr::GetCurrentBodyPtr()
     return m_vecBody.data();
 }
 
-HttpParserErr CHttpFieldMgr::InsertBody( const UCHAR * aBuf , UINT aBufSize )
+HttpParserErr CHttpFieldMgr::InsertBody( const UCHAR * aBuf, UINT aBufSize )
 {
-    DbgOut( VERB , DBG_PROTOHANDLER , "Enter. m_vecBody=0x%p (%Iu/%Iu)" , m_vecBody.data() , m_vecBody.size() , m_vecBody.capacity() );
+    DbgOut( VERB, DBG_PROTOHANDLER, "Enter. m_vecBody=0x%p (%Iu/%Iu)", m_vecBody.data(), m_vecBody.size(),
+            m_vecBody.capacity() );
 
     HttpParserErr uParserRet = HTTP_PARSER_FAILURE;
 
-    do 
+    do
     {
         if ( NULL == aBuf || aBufSize == 0 )
         {
-            DbgOut( WARN , DBG_PROTOHANDLER , "Skip empty buffer" );
+            DbgOut( WARN, DBG_PROTOHANDLER, "Skip empty buffer" );
             uParserRet = HTTP_PARSER_SUCCESS;
             break;
         }
 
-        m_vecBody.insert( m_vecBody.end() , aBuf , aBuf + aBufSize );
+        m_vecBody.insert( m_vecBody.end(), aBuf, aBuf + aBufSize );
         uParserRet = HTTP_PARSER_SUCCESS;
     } while ( 0 );
-    
 
-    DbgOut( VERB , DBG_PROTOHANDLER , "Leave. m_vecBody=0x%p (%Iu/%Iu)" , m_vecBody.data() , m_vecBody.size() , m_vecBody.capacity() );
+
+    DbgOut( VERB, DBG_PROTOHANDLER, "Leave. m_vecBody=0x%p (%Iu/%Iu)", m_vecBody.data(), m_vecBody.size(),
+            m_vecBody.capacity() );
     return uParserRet;
 }
 
 HttpParserErr CHttpFieldMgr::ParseHttpVersion( const std::string & aVersion )
 {
-    if ( 3 <= aVersion.length() && isdigit(aVersion[0]) && ('.' == aVersion[1]) && isdigit(aVersion[2]) )
+    if ( 3 <= aVersion.length() && isdigit( aVersion[0] ) && ( '.' == aVersion[1] ) && isdigit( aVersion[2] ) )
     {
-        SetVersion( (UINT)(aVersion[0] - '0') , (UINT)(aVersion[2] - '0') );
+        SetVersion( ( UINT )( aVersion[0] - '0' ), ( UINT )( aVersion[2] - '0' ) );
         return HTTP_PARSER_SUCCESS;
     }
     return HTTP_PARSER_FAILURE;
@@ -273,9 +279,9 @@ HttpParserErr CHttpFieldMgr::ParseHttpVersion( const std::string & aVersion )
 HttpParserErr CHttpFieldMgr::ParseContentLength()
 {
     std::string data;
-    if ( HTTP_PARSER_SUCCESS == GetFieldValue( HTTP_FIELD_CONTENT_LENGTH , data ) && 0 < data.length() )
+    if ( HTTP_PARSER_SUCCESS == GetFieldValue( HTTP_FIELD_CONTENT_LENGTH, data ) && 0 < data.length() )
     {
-        m_uContentLength = strtoul( data.c_str() , NULL , 10 );
+        m_uContentLength = strtoul( data.c_str(), NULL, 10 );
         return HTTP_PARSER_SUCCESS;
     }
     return HTTP_PARSER_FAILURE;
@@ -284,7 +290,8 @@ HttpParserErr CHttpFieldMgr::ParseContentLength()
 BOOL CHttpFieldMgr::IsChunkedTransferEncoding()
 {
     std::string data;
-    if ( HTTP_PARSER_SUCCESS == GetFieldValue( HTTP_FIELD_TRANSFER_ENCODING , data ) && std::string::npos != data.find( "chunked" ) )
+    if ( HTTP_PARSER_SUCCESS == GetFieldValue( HTTP_FIELD_TRANSFER_ENCODING, data ) &&
+         std::string::npos != data.find( "chunked" ) )
     {
         return TRUE;
     }
@@ -297,7 +304,7 @@ BOOL CHttpFieldMgr::IsChunkedTransferEncoding()
 VOID CHttpFieldMgr::UpdateContentEncodingType()
 {
     std::string data;
-    if ( HTTP_PARSER_SUCCESS == GetFieldValue( HTTP_FIELD_CONTENT_ENCODING , data ) )
+    if ( HTTP_PARSER_SUCCESS == GetFieldValue( HTTP_FIELD_CONTENT_ENCODING, data ) )
     {
         if ( data == "gzip" )
         {
@@ -331,13 +338,6 @@ VOID CHttpFieldMgr::UpdateContentEncodingType()
 
 
 
-
-
-
-
-
-
-
 //================================================================================
 //=============================== CHttpReqFieldMgr ===============================
 //================================================================================
@@ -353,14 +353,19 @@ VOID CHttpReqFieldMgr::Reset()
     m_strReferer.clear();
 }
 
-HttpParserErr CHttpReqFieldMgr::SetField( HttpFieldId aFieldId , std::string & aData , UINT aDataSize , BOOL aAppend , BOOL aComplete )
+HttpParserErr CHttpReqFieldMgr::SetField( HttpFieldId aFieldId,
+                                          std::string & aData,
+                                          UINT aDataSize,
+                                          BOOL aAppend,
+                                          BOOL aComplete )
 {
-    DbgOut( VERB , DBG_PROTOHANDLER , "Enter. aFieldId=%u, aData=%hs, aAppend=%d, aComplete=%d" , aFieldId , aData.c_str() , aAppend , aComplete );
-    HttpParserErr uParserRet = CHttpFieldMgr::SetField( aFieldId , aData , aDataSize , aAppend , aComplete );
-    if ( (HTTP_PARSER_SUCCESS == uParserRet) && aComplete )
+    DbgOut( VERB, DBG_PROTOHANDLER, "Enter. aFieldId=%u, aData=%hs, aAppend=%d, aComplete=%d", aFieldId, aData.c_str(),
+            aAppend, aComplete );
+    HttpParserErr uParserRet = CHttpFieldMgr::SetField( aFieldId, aData, aDataSize, aAppend, aComplete );
+    if ( ( HTTP_PARSER_SUCCESS == uParserRet ) && aComplete )
     {
         std::string strFieldName;
-        for ( SIZE_T i = 0 ; i < _countof(g_FieldTable) ; i++ )
+        for ( SIZE_T i = 0; i < _countof( g_FieldTable ); i++ )
         {
             if ( g_FieldTable[i].uFieldId == aFieldId )
             {
@@ -380,7 +385,7 @@ HttpParserErr CHttpReqFieldMgr::SetField( HttpFieldId aFieldId , std::string & a
         {
             switch ( aFieldId )
             {
-                case HTTP_FIELD_TRANSFER_ENCODING :
+                case HTTP_FIELD_TRANSFER_ENCODING:
                 {
                     if ( IsChunkedTransferEncoding() )
                     {
@@ -388,14 +393,15 @@ HttpParserErr CHttpReqFieldMgr::SetField( HttpFieldId aFieldId , std::string & a
                     }
                     break;
                 }
-                case HTTP_FIELD_CONTENT_ENCODING :
+                case HTTP_FIELD_CONTENT_ENCODING:
                 {
                     UpdateContentEncodingType();
                     break;
                 }
-                case HTTP_FIELD_CONTENT_LENGTH :
+                case HTTP_FIELD_CONTENT_LENGTH:
                 {
-                    if ( HTTP_FIELD_METHOD_HEAD == m_uMethodId ) //When method is HEAD, content length always equals 0
+                    if ( HTTP_FIELD_METHOD_HEAD ==
+                         m_uMethodId )    //When method is HEAD, content length always equals 0
                     {
                         m_uContentLength = 0;
                     }
@@ -412,32 +418,32 @@ HttpParserErr CHttpReqFieldMgr::SetField( HttpFieldId aFieldId , std::string & a
                     }
                     break;
                 }
-                case HTTP_FIELD_USER_AGENT :
+                case HTTP_FIELD_USER_AGENT:
                 {
                     //GetFieldValue(HTTP_FIELD_USER_AGENT, m_strAgent);
                     m_strAgent = aData;
-                    CWUtils::TrimStringA( m_strAgent , " " );
+                    CWUtils::TrimStringA( m_strAgent, " " );
                     break;
                 }
-                case HTTP_FIELD_HOST :
+                case HTTP_FIELD_HOST:
                 {
                     //GetFieldValue(HTTP_FIELD_HOST, m_strHost);
                     m_strHost = aData;
-                    CWUtils::TrimStringA( m_strHost , " " );
+                    CWUtils::TrimStringA( m_strHost, " " );
                     break;
                 }
-                case HTTP_FIELD_REFERER :
+                case HTTP_FIELD_REFERER:
                 {
                     m_strReferer = aData;
-                    CWUtils::TrimStringA( m_strReferer , " " );
+                    CWUtils::TrimStringA( m_strReferer, " " );
                     break;
                 }
-                case HTTP_FIELD_HTTP_RESPONSE :    //Incorrect state
+                case HTTP_FIELD_HTTP_RESPONSE:    //Incorrect state
                 {
                     uParserRet = HTTP_PARSER_FAILURE;
                     break;
                 }
-                default :
+                default:
                 {
                     break;
                 }
@@ -447,7 +453,7 @@ HttpParserErr CHttpReqFieldMgr::SetField( HttpFieldId aFieldId , std::string & a
         m_vecParsedHeader.push_back( strFieldName + aData );
     }
 
-    DbgOut( VERB , DBG_PROTOHANDLER , "Leave. uParserRet=%u" , uParserRet );
+    DbgOut( VERB, DBG_PROTOHANDLER, "Leave. uParserRet=%u", uParserRet );
     return uParserRet;
 }
 
@@ -486,32 +492,32 @@ HttpParserErr CHttpReqFieldMgr::ParseRequestVersionAndUri( HttpFieldId aFieldId 
 {
     HttpParserErr uParserRet = HTTP_PARSER_FAILURE;
 
-    do 
+    do
     {
         std::string strUri;
         const CHAR * szRequestVerMark = " HTTP/";
 
-        if ( HTTP_PARSER_SUCCESS == GetFieldValue( aFieldId , strUri ) )
+        if ( HTTP_PARSER_SUCCESS == GetFieldValue( aFieldId, strUri ) )
         {
             std::string strUriUpper = strUri;
-            std::transform( strUri.begin() , strUri.end() , strUriUpper.begin() , ::toupper );
+            std::transform( strUri.begin(), strUri.end(), strUriUpper.begin(), ::toupper );
             SIZE_T pos = strUriUpper.rfind( szRequestVerMark );
             if ( std::string::npos != pos )
             {
-                std::string ver = strUri.substr( pos + strlen(szRequestVerMark) );
+                std::string ver = strUri.substr( pos + strlen( szRequestVerMark ) );
                 if ( HTTP_PARSER_SUCCESS != ParseHttpVersion( ver ) )
                 {
                     break;
                 }
 
                 strUri.resize( pos );
-                CWUtils::TrimStringA( strUri , " " );
+                CWUtils::TrimStringA( strUri, " " );
                 m_strUri = strUri;
                 uParserRet = HTTP_PARSER_SUCCESS;
             }
         }
     } while ( 0 );
-    
+
     return uParserRet;
 }
 
@@ -525,19 +531,24 @@ HttpParserErr CHttpReqFieldMgr::ParseRequestVersionAndUri( HttpFieldId aFieldId 
 VOID CHttpRspFieldMgr::Reset()
 {
     CHttpFieldMgr::Reset();
-    m_uContentLength = INFINITE;    //To compatible with HTTP 1.0 
+    m_uContentLength = INFINITE;    //To compatible with HTTP 1.0
     m_bIsChunked = FALSE;
     m_uStatusCode = HTTP_STATUS_CODE_UNKNOWN;
 }
 
-HttpParserErr CHttpRspFieldMgr::SetField( HttpFieldId aFieldId , std::string & aData , UINT aDataSize , BOOL aAppend , BOOL aComplete )
+HttpParserErr CHttpRspFieldMgr::SetField( HttpFieldId aFieldId,
+                                          std::string & aData,
+                                          UINT aDataSize,
+                                          BOOL aAppend,
+                                          BOOL aComplete )
 {
-    DbgOut( VERB , DBG_PROTOHANDLER , "Enter. aFieldId=%u, aData=%hs, aAppend=%d, aComplete=%d" , aFieldId , aData.c_str() , aAppend , aComplete );
-    HttpParserErr uParserRet = CHttpFieldMgr::SetField( aFieldId , aData , aDataSize , aAppend , aComplete );
-    if ( (HTTP_PARSER_SUCCESS == uParserRet) && aComplete )
+    DbgOut( VERB, DBG_PROTOHANDLER, "Enter. aFieldId=%u, aData=%hs, aAppend=%d, aComplete=%d", aFieldId, aData.c_str(),
+            aAppend, aComplete );
+    HttpParserErr uParserRet = CHttpFieldMgr::SetField( aFieldId, aData, aDataSize, aAppend, aComplete );
+    if ( ( HTTP_PARSER_SUCCESS == uParserRet ) && aComplete )
     {
         std::string strFieldName;
-        for ( SIZE_T i = 0 ; i < _countof(g_FieldTable) ; i++ )
+        for ( SIZE_T i = 0; i < _countof( g_FieldTable ); i++ )
         {
             if ( g_FieldTable[i].uFieldId == aFieldId )
             {
@@ -554,7 +565,7 @@ HttpParserErr CHttpRspFieldMgr::SetField( HttpFieldId aFieldId , std::string & a
         {
             switch ( aFieldId )
             {
-                case HTTP_FIELD_TRANSFER_ENCODING :
+                case HTTP_FIELD_TRANSFER_ENCODING:
                 {
                     if ( IsChunkedTransferEncoding() )
                     {
@@ -562,20 +573,21 @@ HttpParserErr CHttpRspFieldMgr::SetField( HttpFieldId aFieldId , std::string & a
                     }
                     break;
                 }
-                case HTTP_FIELD_CONTENT_ENCODING :
+                case HTTP_FIELD_CONTENT_ENCODING:
                 {
                     UpdateContentEncodingType();
                     break;
                 }
-                case HTTP_FIELD_HTTP_RESPONSE :
+                case HTTP_FIELD_HTTP_RESPONSE:
                 {
                     m_strStatusLine = strFieldName + aData;
                     uParserRet = ParseResponseVersionAndCode();
                     break;
                 }
-                case HTTP_FIELD_CONTENT_LENGTH :
+                case HTTP_FIELD_CONTENT_LENGTH:
                 {
-                    if ( (HTTP_STATUS_CODE_OK > m_uStatusCode) || (HTTP_STATUS_CODE_NO_CONTENT == m_uStatusCode) || (HTTP_STATUS_CODE_NOT_MODIFIED == m_uStatusCode) )
+                    if ( ( HTTP_STATUS_CODE_OK > m_uStatusCode ) || ( HTTP_STATUS_CODE_NO_CONTENT == m_uStatusCode ) ||
+                         ( HTTP_STATUS_CODE_NOT_MODIFIED == m_uStatusCode ) )
                     {
                         m_uContentLength = 0;
                     }
@@ -592,7 +604,7 @@ HttpParserErr CHttpRspFieldMgr::SetField( HttpFieldId aFieldId , std::string & a
                     }
                     break;
                 }
-                default :
+                default:
                 {
                     break;
                 }
@@ -602,7 +614,7 @@ HttpParserErr CHttpRspFieldMgr::SetField( HttpFieldId aFieldId , std::string & a
         }
     }
 
-    DbgOut( VERB , DBG_PROTOHANDLER , "Leave. uParserRet=%u" , uParserRet );
+    DbgOut( VERB, DBG_PROTOHANDLER, "Leave. uParserRet=%u", uParserRet );
     return uParserRet;
 }
 
@@ -621,10 +633,10 @@ HttpParserErr CHttpRspFieldMgr::ParseResponseVersionAndCode()
 {
     HttpParserErr uParserRet = HTTP_PARSER_FAILURE;
 
-    do 
+    do
     {
         std::string data;
-        if ( HTTP_PARSER_SUCCESS == GetFieldValue( HTTP_FIELD_HTTP_RESPONSE , data ) )
+        if ( HTTP_PARSER_SUCCESS == GetFieldValue( HTTP_FIELD_HTTP_RESPONSE, data ) )
         {
             if ( 7 > data.length() )    //Version length + space + status code length
             {
@@ -636,16 +648,18 @@ HttpParserErr CHttpRspFieldMgr::ParseResponseVersionAndCode()
                 break;
             }
 
-            if ( !isdigit(data[4]) || !isdigit(data[5]) || !isdigit(data[6]) )
+            if ( !isdigit( data[4] ) || !isdigit( data[5] ) || !isdigit( data[6] ) )
             {
                 break;
             }
 
-            m_uStatusCode = (HttpStatusCode)( ((data[4] - '0') * 100) + ((data[5] - '0') * 10) + (data[6] - '0') );
-            DbgOut( INFO , DBG_PROTOHANDLER , "m_uStatusCode=%u" , m_uStatusCode );
-            
+            m_uStatusCode =
+                ( HttpStatusCode )( ( ( data[4] - '0' ) * 100 ) + ( ( data[5] - '0' ) * 10 ) + ( data[6] - '0' ) );
+            DbgOut( INFO, DBG_PROTOHANDLER, "m_uStatusCode=%u", m_uStatusCode );
+
             //All 1xx, 204, and 304 responses must not include a body
-            if ( (HTTP_STATUS_CODE_OK > m_uStatusCode) || (HTTP_STATUS_CODE_NO_CONTENT == m_uStatusCode) || (HTTP_STATUS_CODE_NOT_MODIFIED == m_uStatusCode) )
+            if ( ( HTTP_STATUS_CODE_OK > m_uStatusCode ) || ( HTTP_STATUS_CODE_NO_CONTENT == m_uStatusCode ) ||
+                 ( HTTP_STATUS_CODE_NOT_MODIFIED == m_uStatusCode ) )
             {
                 m_uContentLength = 0;
             }
@@ -661,35 +675,24 @@ HttpParserErr CHttpRspFieldMgr::ParseResponseVersionAndCode()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //================================================================================
 //================================= CHttpParser ==================================
 //================================================================================
-BOOL CHttpParser::Init( VOID * aCbkCtx , ParserUpdateCallback aHeaderCbk , ParserUpdateCallback aBodyCbk ,
-                        UINT aMaxHeaderCnt , UINT aMaxBodySize )
+BOOL CHttpParser::Init( VOID * aCbkCtx,
+                        ParserUpdateCallback aHeaderCbk,
+                        ParserUpdateCallback aBodyCbk,
+                        UINT aMaxHeaderCnt,
+                        UINT aMaxBodySize )
 {
     BOOL bRet = FALSE;
-    do 
+    do
     {
-        std::map<std::string , UINT> mapFields;
-        for ( INT i = 0 ; i < _countof(g_FieldTable) ; i++ )
+        std::map<std::string, UINT> mapFields;
+        for ( INT i = 0; i < _countof( g_FieldTable ); i++ )
         {
             mapFields[g_FieldTable[i].szFieldName] = g_FieldTable[i].uFieldId;
         }
-        m_FieldMatcher = new (std::nothrow) CPrefixTree<UINT>( FALSE , mapFields );
+        m_FieldMatcher = new ( std::nothrow ) CPrefixTree<UINT>( FALSE, mapFields );
         if ( NULL == m_FieldMatcher )
         {
             break;
@@ -704,7 +707,7 @@ BOOL CHttpParser::Init( VOID * aCbkCtx , ParserUpdateCallback aHeaderCbk , Parse
 
         bRet = TRUE;
     } while ( 0 );
-    
+
     return bRet;
 }
 
@@ -732,23 +735,24 @@ VOID CHttpParser::UnInit()
     }
 }
 
-HttpParserErr CHttpParser::Input( BOOL aConnOut , const UCHAR * aBuf , UINT aBufSize , INT & aCallbackRet )
+HttpParserErr CHttpParser::Input( BOOL aConnOut, const UCHAR * aBuf, UINT aBufSize, INT & aCallbackRet )
 {
-    DbgOut( VERB , DBG_PROTOHANDLER , "Enter. aConnOut=%d" , aConnOut );
+    DbgOut( VERB, DBG_PROTOHANDLER, "Enter. aConnOut=%d", aConnOut );
 
     HttpParserErr uParserRet = m_uLastParserErr;
 
-    do 
+    do
     {
         if ( NULL == aBuf || 0 == aBufSize )
         {
-            DbgOut( WARN , DBG_PROTOHANDLER , "Empty buffer. aBuf=0x%p, aBufSize=%lu" , aBuf , aBufSize );
+            DbgOut( WARN, DBG_PROTOHANDLER, "Empty buffer. aBuf=0x%p, aBufSize=%lu", aBuf, aBufSize );
             break;
         }
 
         if ( HTTP_PARSER_SUCCESS != m_uLastParserErr && HTTP_PARSER_NEED_MORE_DATA != m_uLastParserErr )
         {
-            DbgOut( WARN , DBG_PROTOHANDLER , "Stop parsing because of previous state disable parsing. m_uLastParserErr=%u" , m_uLastParserErr );
+            DbgOut( WARN, DBG_PROTOHANDLER,
+                    "Stop parsing because of previous state disable parsing. m_uLastParserErr=%u", m_uLastParserErr );
             break;
         }
 
@@ -774,14 +778,15 @@ HttpParserErr CHttpParser::Input( BOOL aConnOut , const UCHAR * aBuf , UINT aBuf
             parseParam.pFieldMgr->Reset();
         }
 
-        if ( parseParam.pFieldMgr->IsHeaderEnd() ) //Parse body
+        if ( parseParam.pFieldMgr->IsHeaderEnd() )    //Parse body
         {
             uParserRet = (HttpParserErr)ParseBody( &parseParam );
             if ( m_pfnBodyCbk )
             {
-                if ( FALSE == m_pfnBodyCbk( m_pCbkCtx , aConnOut , uParserRet , &aCallbackRet ) )
+                if ( FALSE == m_pfnBodyCbk( m_pCbkCtx, aConnOut, uParserRet, &aCallbackRet ) )
                 {
-                    DbgOut( INFO , DBG_PROTOHANDLER , "Stop parsing because of callback. uParserRet=%u, nCallbackRet=%d" , uParserRet , aCallbackRet );
+                    DbgOut( INFO, DBG_PROTOHANDLER, "Stop parsing because of callback. uParserRet=%u, nCallbackRet=%d",
+                            uParserRet, aCallbackRet );
                     uParserRet = HTTP_PARSER_USER_ABORT;
                     break;
                 }
@@ -792,9 +797,10 @@ HttpParserErr CHttpParser::Input( BOOL aConnOut , const UCHAR * aBuf , UINT aBuf
             uParserRet = (HttpParserErr)ParseHeader( &parseParam );
             if ( m_pfnHeaderCbk )
             {
-                if ( FALSE == m_pfnHeaderCbk( m_pCbkCtx , aConnOut , uParserRet , &aCallbackRet ) )
+                if ( FALSE == m_pfnHeaderCbk( m_pCbkCtx, aConnOut, uParserRet, &aCallbackRet ) )
                 {
-                    DbgOut( INFO , DBG_PROTOHANDLER , "Stop parsing because of callback. uParserRet=%u, nCallbackRet=%d" , uParserRet , aCallbackRet );
+                    DbgOut( INFO, DBG_PROTOHANDLER, "Stop parsing because of callback. uParserRet=%u, nCallbackRet=%d",
+                            uParserRet, aCallbackRet );
                     uParserRet = HTTP_PARSER_USER_ABORT;
                     break;
                 }
@@ -806,9 +812,11 @@ HttpParserErr CHttpParser::Input( BOOL aConnOut , const UCHAR * aBuf , UINT aBuf
                 uParserRet = (HttpParserErr)ParseBody( &parseParam );
                 if ( m_pfnBodyCbk )
                 {
-                    if ( FALSE == m_pfnBodyCbk( m_pCbkCtx , aConnOut , uParserRet , &aCallbackRet ) )
+                    if ( FALSE == m_pfnBodyCbk( m_pCbkCtx, aConnOut, uParserRet, &aCallbackRet ) )
                     {
-                        DbgOut( INFO , DBG_PROTOHANDLER , "Stop parsing because of callback. uParserRet=%u, nCallbackRet=%d" , uParserRet , aCallbackRet );
+                        DbgOut( INFO, DBG_PROTOHANDLER,
+                                "Stop parsing because of callback. uParserRet=%u, nCallbackRet=%d", uParserRet,
+                                aCallbackRet );
                         uParserRet = HTTP_PARSER_USER_ABORT;
                         break;
                     }
@@ -816,25 +824,26 @@ HttpParserErr CHttpParser::Input( BOOL aConnOut , const UCHAR * aBuf , UINT aBuf
             }
         }
     } while ( 0 );
-    
+
     m_uLastParserErr = uParserRet;
-    DbgOut( VERB , DBG_PROTOHANDLER , "Leave. uParserRet=%u, nCallbackRet=%d" , uParserRet , aCallbackRet );
+    DbgOut( VERB, DBG_PROTOHANDLER, "Leave. uParserRet=%u, nCallbackRet=%d", uParserRet, aCallbackRet );
     return uParserRet;
 }
 
 HttpParserErr CHttpParser::ParseHeader( ParseParam * aParam )
 {
-    DbgOut( VERB , DBG_PROTOHANDLER , "Enter" );
-    
+    DbgOut( VERB, DBG_PROTOHANDLER, "Enter" );
+
     HttpParserErr uParserRet = HTTP_PARSER_NEED_MORE_DATA;
 
-    do 
+    do
     {
-        if ( NULL == aParam->pBuf || 0 == aParam->uBufSize ||
-             NULL == aParam->pFieldMgr || NULL == aParam->pIncompleteState )
+        if ( NULL == aParam->pBuf || 0 == aParam->uBufSize || NULL == aParam->pFieldMgr ||
+             NULL == aParam->pIncompleteState )
         {
-            DbgOut( WARN , DBG_PROTOHANDLER , "Unexpected parameter. pBuf=0x%p, uBufSize=%u, pFieldMgr=0x%p, pIncompleteState=0x%p" ,
-                                              aParam->pBuf , aParam->uBufSize , aParam->pFieldMgr , aParam->pIncompleteState );
+            DbgOut( WARN, DBG_PROTOHANDLER,
+                    "Unexpected parameter. pBuf=0x%p, uBufSize=%u, pFieldMgr=0x%p, pIncompleteState=0x%p", aParam->pBuf,
+                    aParam->uBufSize, aParam->pFieldMgr, aParam->pIncompleteState );
             uParserRet = HTTP_PARSER_FAILURE;
             break;
         }
@@ -842,12 +851,13 @@ HttpParserErr CHttpParser::ParseHeader( ParseParam * aParam )
         //If current Field id is HTTP_FIELD_INCOMPLETE, we don't need call ParseIncompleteLine function
         //because DoFieldSearch function will complete matching as normal case
         //ParseIncompleteLine() handle either known-complete field with incomplete data or unknown field
-        if ( (HTTP_FIELD_EMPTY != aParam->pIncompleteState->uFieldId) && (HTTP_FIELD_INCOMPLETE != aParam->pIncompleteState->uFieldId) )
+        if ( ( HTTP_FIELD_EMPTY != aParam->pIncompleteState->uFieldId ) &&
+             ( HTTP_FIELD_INCOMPLETE != aParam->pIncompleteState->uFieldId ) )
         {
             uParserRet = ParseIncompleteLine( aParam );
             if ( HTTP_PARSER_SUCCESS != uParserRet )
             {
-                DbgOut( ERRO , DBG_PROTOHANDLER , "ParseIncompleteLine() failed" );
+                DbgOut( ERRO, DBG_PROTOHANDLER, "ParseIncompleteLine() failed" );
                 break;
             }
         }
@@ -861,7 +871,8 @@ HttpParserErr CHttpParser::ParseHeader( ParseParam * aParam )
         //Check max header count
         if ( m_uMaxHeaderCnt < aParam->pFieldMgr->GetParsedHeadersCount() )
         {
-            DbgOut( WARN , DBG_PROTOHANDLER , "MaxHeaderCnt exceed. Current/Max=%u/%u" , aParam->pFieldMgr->GetParsedHeadersCount() , m_uMaxHeaderCnt );
+            DbgOut( WARN, DBG_PROTOHANDLER, "MaxHeaderCnt exceed. Current/Max=%u/%u",
+                    aParam->pFieldMgr->GetParsedHeadersCount(), m_uMaxHeaderCnt );
             uParserRet = HTTP_PARSER_DATA_EXCEED;
             break;
         }
@@ -869,7 +880,7 @@ HttpParserErr CHttpParser::ParseHeader( ParseParam * aParam )
         //Parse start from field
         const UCHAR * pBufBeg = aParam->pBuf;
         const UCHAR * pBufEnd = aParam->pBuf + aParam->uBufSize;
-        DbgOut( INFO , DBG_PROTOHANDLER , "pBufBeg=0x%p, pBufEnd=0x%p, uBufSize=%u" , pBufBeg , pBufEnd , aParam->uBufSize );
+        DbgOut( INFO, DBG_PROTOHANDLER, "pBufBeg=0x%p, pBufEnd=0x%p, uBufSize=%u", pBufBeg, pBufEnd, aParam->uBufSize );
 
         UCHAR * pLineEnd = NULL;
         HttpFieldId uFieldId = HTTP_FIELD_EMPTY;
@@ -880,19 +891,23 @@ HttpParserErr CHttpParser::ParseHeader( ParseParam * aParam )
 
         while ( pBufBeg < pBufEnd )
         {
-            DbgOut( INFO , DBG_PROTOHANDLER , "pBufBeg=0x%p, pBufEnd=0x%p, uBufSize=%u" , pBufBeg , pBufEnd , aParam->uBufSize );
+            DbgOut( INFO, DBG_PROTOHANDLER, "pBufBeg=0x%p, pBufEnd=0x%p, uBufSize=%u", pBufBeg, pBufEnd,
+                    aParam->uBufSize );
 
-            uMatcherRet = DoFieldSearch( *m_FieldMatcher , pBufBeg , (UINT)(pBufEnd - pBufBeg) , aParam->pIncompleteState , &uFieldId , &uFieldSize );
+            uMatcherRet = DoFieldSearch( *m_FieldMatcher, pBufBeg, ( UINT )( pBufEnd - pBufBeg ),
+                                         aParam->pIncompleteState, &uFieldId, &uFieldSize );
 
-            DbgOut( INFO , DBG_PROTOHANDLER , "DoFieldSearch(). uMatcherRet=%u, uFieldId=%u, uFieldSize=%u" , uMatcherRet , uFieldId , uFieldSize );
+            DbgOut( INFO, DBG_PROTOHANDLER, "DoFieldSearch(). uMatcherRet=%u, uFieldId=%u, uFieldSize=%u", uMatcherRet,
+                    uFieldId, uFieldSize );
 
-            if ( CPrefixTree<UINT>::HIT == uMatcherRet ) //HIT
+            if ( CPrefixTree<UINT>::HIT == uMatcherRet )    //HIT
             {
-                pBufBeg += uFieldSize;  //Move to the end position of Field
+                pBufBeg += uFieldSize;    //Move to the end position of Field
                 if ( HTTP_FIELD_END == uFieldId )
                 {
                     aParam->uBufSize = pBufEnd - pBufBeg;
-                    DbgOut( INFO , DBG_PROTOHANDLER , "aParam->uBufSize = 0x%p - 0x%p = %u" , pBufEnd , pBufBeg , aParam->uBufSize );
+                    DbgOut( INFO, DBG_PROTOHANDLER, "aParam->uBufSize = 0x%p - 0x%p = %u", pBufEnd, pBufBeg,
+                            aParam->uBufSize );
 
                     aParam->pBuf = (UCHAR *)pBufBeg;
                     aParam->pFieldMgr->SetHeaderEnd( TRUE );
@@ -900,62 +915,65 @@ HttpParserErr CHttpParser::ParseHeader( ParseParam * aParam )
                     break;
                 }
 
-                if ( HTTP_PARSER_SUCCESS == FindLineEndDelimiter( pBufBeg , (UINT)(pBufEnd - pBufBeg) , &pLineEnd , &uLineSize ) )
+                if ( HTTP_PARSER_SUCCESS ==
+                     FindLineEndDelimiter( pBufBeg, ( UINT )( pBufEnd - pBufBeg ), &pLineEnd, &uLineSize ) )
                 {
-                    strFieldData.assign( (const CHAR *)pBufBeg , uLineSize );
-                    aParam->pFieldMgr->SetField( uFieldId , strFieldData , uLineSize , FALSE , TRUE );
+                    strFieldData.assign( (const CHAR *)pBufBeg, uLineSize );
+                    aParam->pFieldMgr->SetField( uFieldId, strFieldData, uLineSize, FALSE, TRUE );
 
                     uParserRet = HTTP_PARSER_NEED_MORE_DATA;
-                    pBufBeg = pLineEnd; //Move to next line
+                    pBufBeg = pLineEnd;    //Move to next line
                 }
-                else //Known-complete field name with incomplete field data
+                else    //Known-complete field name with incomplete field data
                 {
                     aParam->pIncompleteState->bIsIncompleteFieldName = FALSE;
                     aParam->pIncompleteState->uFieldId = uFieldId;
-                    uLineSize = (pBufEnd - pBufBeg);
-                    strFieldData.assign( (const CHAR *)pBufBeg , uLineSize );
-                    aParam->pFieldMgr->SetField( uFieldId , strFieldData , uLineSize , FALSE , FALSE );
+                    uLineSize = ( pBufEnd - pBufBeg );
+                    strFieldData.assign( (const CHAR *)pBufBeg, uLineSize );
+                    aParam->pFieldMgr->SetField( uFieldId, strFieldData, uLineSize, FALSE, FALSE );
 
                     uParserRet = HTTP_PARSER_NEED_MORE_DATA;
                     pBufBeg = pLineEnd;
                     break;
                 }
             }
-            else if ( CPrefixTree<UINT>::MORE_ONE == uMatcherRet ) //Known-partially-complete field name
+            else if ( CPrefixTree<UINT>::MORE_ONE == uMatcherRet )    //Known-partially-complete field name
             {
                 aParam->pIncompleteState->uFieldId = HTTP_FIELD_INCOMPLETE;
-                aParam->pIncompleteState->strUnknownFieldName.append( (const CHAR *)pBufBeg , (pBufEnd - pBufBeg) );    //In case nothing matched finally
+                aParam->pIncompleteState->strUnknownFieldName.append(
+                    (const CHAR *)pBufBeg, ( pBufEnd - pBufBeg ) );    //In case nothing matched finally
                 uParserRet = HTTP_PARSER_NEED_MORE_DATA;
                 pBufBeg = pBufEnd;
                 break;
             }
-            else //Nothing matched
+            else    //Nothing matched
             {
-                DbgOut( INFO , DBG_PROTOHANDLER , "Encounter a nothing matched area!!!" );
+                DbgOut( INFO, DBG_PROTOHANDLER, "Encounter a nothing matched area!!!" );
 
-                CHAR * pFieldEnd = (CHAR *)memchr( pBufBeg , ':' , (pBufEnd - pBufBeg) );
+                CHAR * pFieldEnd = (CHAR *)memchr( pBufBeg, ':', ( pBufEnd - pBufBeg ) );
                 if ( pFieldEnd != NULL )
                 {
                     aParam->pIncompleteState->bIsIncompleteFieldName = FALSE;
-                    uLineSize = (UINT)(pFieldEnd - (CHAR *)pBufBeg); //record field name till ':'
-                    std::string strFieldName( (const CHAR *)pBufBeg , uLineSize );
-                    DbgOut( WARN , DBG_PROTOHANDLER , "Unknown field. strFieldName=%hs" , strFieldName.c_str() );
+                    uLineSize = ( UINT )( pFieldEnd - (CHAR *)pBufBeg );    //record field name till ':'
+                    std::string strFieldName( (const CHAR *)pBufBeg, uLineSize );
+                    DbgOut( WARN, DBG_PROTOHANDLER, "Unknown field. strFieldName=%hs", strFieldName.c_str() );
 
                     pBufBeg = (UCHAR *)pFieldEnd + 1;
-                    if ( HTTP_PARSER_SUCCESS == FindLineEndDelimiter( pBufBeg , (UINT)(pBufEnd - pBufBeg) , &pLineEnd , &uLineSize ) )
+                    if ( HTTP_PARSER_SUCCESS ==
+                         FindLineEndDelimiter( pBufBeg, ( UINT )( pBufEnd - pBufBeg ), &pLineEnd, &uLineSize ) )
                     {
-                        strFieldData.assign( (const CHAR *)pBufBeg , uLineSize );
-                        aParam->pFieldMgr->SetUnknownField( strFieldName , strFieldData , uLineSize , FALSE , TRUE );
+                        strFieldData.assign( (const CHAR *)pBufBeg, uLineSize );
+                        aParam->pFieldMgr->SetUnknownField( strFieldName, strFieldData, uLineSize, FALSE, TRUE );
 
                         uParserRet = HTTP_PARSER_NEED_MORE_DATA;
                         pBufBeg = pLineEnd;
                     }
-                    else //Unknown-complete field name with incomplete field data
+                    else    //Unknown-complete field name with incomplete field data
                     {
                         aParam->pIncompleteState->uFieldId = HTTP_FIELD_UNKNOWN;
-                        uLineSize = (pBufEnd - pBufBeg);
-                        strFieldData.assign( (const CHAR *)pBufBeg , uLineSize );
-                        aParam->pFieldMgr->SetUnknownField( strFieldName , strFieldData , uLineSize , FALSE , FALSE );
+                        uLineSize = ( pBufEnd - pBufBeg );
+                        strFieldData.assign( (const CHAR *)pBufBeg, uLineSize );
+                        aParam->pFieldMgr->SetUnknownField( strFieldName, strFieldData, uLineSize, FALSE, FALSE );
 
                         uParserRet = HTTP_PARSER_NEED_MORE_DATA;
                         pBufBeg = pLineEnd;
@@ -965,10 +983,12 @@ HttpParserErr CHttpParser::ParseHeader( ParseParam * aParam )
                 else    //Unknown-incomplete field name
                 {
                     aParam->pIncompleteState->bIsIncompleteFieldName = TRUE;
-                    aParam->pIncompleteState->strUnknownFieldName.assign( (const CHAR *)pBufBeg , (pBufEnd - pBufBeg) );
+                    aParam->pIncompleteState->strUnknownFieldName.assign( (const CHAR *)pBufBeg,
+                                                                          ( pBufEnd - pBufBeg ) );
                     aParam->pIncompleteState->uFieldId = HTTP_FIELD_UNKNOWN;
-                    DbgOut( WARN , DBG_PROTOHANDLER , "Incomplete unknown field. strUnknownFieldName=%hs" , aParam->pIncompleteState->strUnknownFieldName.c_str() );
-                    
+                    DbgOut( WARN, DBG_PROTOHANDLER, "Incomplete unknown field. strUnknownFieldName=%hs",
+                            aParam->pIncompleteState->strUnknownFieldName.c_str() );
+
                     uParserRet = HTTP_PARSER_NEED_MORE_DATA;
                     pBufBeg = pBufEnd;
                     break;
@@ -978,7 +998,8 @@ HttpParserErr CHttpParser::ParseHeader( ParseParam * aParam )
             //Check max header count
             if ( m_uMaxHeaderCnt < aParam->pFieldMgr->GetParsedHeadersCount() )
             {
-                DbgOut( WARN , DBG_PROTOHANDLER , "MaxHeaderCnt exceed. Current/Max=%u/%u" , aParam->pFieldMgr->GetParsedHeadersCount() , m_uMaxHeaderCnt );
+                DbgOut( WARN, DBG_PROTOHANDLER, "MaxHeaderCnt exceed. Current/Max=%u/%u",
+                        aParam->pFieldMgr->GetParsedHeadersCount(), m_uMaxHeaderCnt );
                 uParserRet = HTTP_PARSER_DATA_EXCEED;
                 break;
             }
@@ -990,29 +1011,31 @@ HttpParserErr CHttpParser::ParseHeader( ParseParam * aParam )
         //Check max header count
         if ( m_uMaxHeaderCnt < aParam->pFieldMgr->GetParsedHeadersCount() )
         {
-            DbgOut( WARN , DBG_PROTOHANDLER , "MaxHeaderCnt exceed. Current/Max=%u/%u" , aParam->pFieldMgr->GetParsedHeadersCount() , m_uMaxHeaderCnt );
+            DbgOut( WARN, DBG_PROTOHANDLER, "MaxHeaderCnt exceed. Current/Max=%u/%u",
+                    aParam->pFieldMgr->GetParsedHeadersCount(), m_uMaxHeaderCnt );
             uParserRet = HTTP_PARSER_DATA_EXCEED;
             break;
         }
     } while ( 0 );
-    
-    DbgOut( VERB , DBG_PROTOHANDLER , "Leave. uParserRet=%u" , uParserRet );
+
+    DbgOut( VERB, DBG_PROTOHANDLER, "Leave. uParserRet=%u", uParserRet );
     return uParserRet;
 }
 
 HttpParserErr CHttpParser::ParseBody( ParseParam * aParam )
 {
-    DbgOut( VERB , DBG_PROTOHANDLER , "Enter. pBuf=0x%p, uBufSize=%u" , aParam->pBuf , aParam->uBufSize );
-    
+    DbgOut( VERB, DBG_PROTOHANDLER, "Enter. pBuf=0x%p, uBufSize=%u", aParam->pBuf, aParam->uBufSize );
+
     HttpParserErr uParserRet = HTTP_PARSER_FAILURE;
 
-    do 
+    do
     {
         //We don't check buf length because it could be 0 after header parse
         if ( NULL == aParam->pFieldMgr || NULL == aParam->pIncompleteState )
         {
-            DbgOut( ERRO , DBG_PROTOHANDLER , "Unexpected parameter. pBuf=0x%p, uBufSize=%u, pFieldMgr=0x%p, pIncompleteState=0x%p" ,
-                                              aParam->pBuf , aParam->uBufSize , aParam->pFieldMgr , aParam->pIncompleteState );
+            DbgOut( ERRO, DBG_PROTOHANDLER,
+                    "Unexpected parameter. pBuf=0x%p, uBufSize=%u, pFieldMgr=0x%p, pIncompleteState=0x%p", aParam->pBuf,
+                    aParam->uBufSize, aParam->pFieldMgr, aParam->pIncompleteState );
             uParserRet = HTTP_PARSER_FAILURE;
             break;
         }
@@ -1025,7 +1048,8 @@ HttpParserErr CHttpParser::ParseBody( ParseParam * aParam )
             if ( HTTP_FIELD_METHOD_HEAD == uMethod || HTTP_STATUS_CODE_OK > uStatus ||
                  HTTP_STATUS_CODE_NO_CONTENT == uStatus || HTTP_STATUS_CODE_NOT_MODIFIED == uStatus )
             {
-                DbgOut( INFO , DBG_PROTOHANDLER , "Skip body because of header value. Method=%u, Status=%u" , uMethod , uStatus );
+                DbgOut( INFO, DBG_PROTOHANDLER, "Skip body because of header value. Method=%u, Status=%u", uMethod,
+                        uStatus );
                 uParserRet = HTTP_PARSER_SUCCESS;
                 aParam->pFieldMgr->SetBodyEnd( TRUE );
                 break;
@@ -1033,7 +1057,7 @@ HttpParserErr CHttpParser::ParseBody( ParseParam * aParam )
         }
 
         HttpTransferEncodingType uTransferEncodingType = aParam->pFieldMgr->GetTransferEncodingType();
-        DbgOut( INFO , DBG_PROTOHANDLER , "uTransferEncodingType=%u" , uTransferEncodingType );
+        DbgOut( INFO, DBG_PROTOHANDLER, "uTransferEncodingType=%u", uTransferEncodingType );
 
 
         //Do actions according to Transfer-Encoding type
@@ -1046,18 +1070,18 @@ HttpParserErr CHttpParser::ParseBody( ParseParam * aParam )
         {
             UINT uTotalLen = aParam->pFieldMgr->GetContentLength();
             UINT uCurrentLen = aParam->pFieldMgr->GetCurrentBodyLength();
-            DbgOut( INFO , DBG_PROTOHANDLER , "uCurrentLen/uTotalLen=%u/%u" , uCurrentLen , uTotalLen );
+            DbgOut( INFO, DBG_PROTOHANDLER, "uCurrentLen/uTotalLen=%u/%u", uCurrentLen, uTotalLen );
 
             //Check max body size
             if ( m_uMaxBodySize < uTotalLen )
             {
-                DbgOut( WARN , DBG_PROTOHANDLER , "MaxBodySize exceed. Total/Max=%u/%u" , uTotalLen , m_uMaxBodySize );
+                DbgOut( WARN, DBG_PROTOHANDLER, "MaxBodySize exceed. Total/Max=%u/%u", uTotalLen, m_uMaxBodySize );
                 uParserRet = HTTP_PARSER_DATA_EXCEED;
                 break;
             }
 
             //Skip empty content
-            if ( 0 == uTotalLen ) 
+            if ( 0 == uTotalLen )
             {
                 aParam->pFieldMgr->SetBodyEnd( TRUE );
                 uParserRet = HTTP_PARSER_SUCCESS;
@@ -1069,10 +1093,10 @@ HttpParserErr CHttpParser::ParseBody( ParseParam * aParam )
             {
                 aParam->pFieldMgr->ReserveBodySize( uTotalLen );
             }
-            
+
             //Body only receive at most uTotalLen bytes specified in Content-Length field
             UINT uBufSize = 0;
-            if ( uTotalLen > (uCurrentLen + aParam->uBufSize) )
+            if ( uTotalLen > ( uCurrentLen + aParam->uBufSize ) )
             {
                 uBufSize = aParam->uBufSize;
             }
@@ -1081,13 +1105,14 @@ HttpParserErr CHttpParser::ParseBody( ParseParam * aParam )
                 uBufSize = uTotalLen - uCurrentLen;
             }
 
-            DbgOut( INFO , DBG_PROTOHANDLER , "uTotalLen=%lu, uCurrentLen=%lu, aParam->uBufSize=%lu, uBufSize=%lu" , uTotalLen , uCurrentLen , aParam->uBufSize , uBufSize );
+            DbgOut( INFO, DBG_PROTOHANDLER, "uTotalLen=%lu, uCurrentLen=%lu, aParam->uBufSize=%lu, uBufSize=%lu",
+                    uTotalLen, uCurrentLen, aParam->uBufSize, uBufSize );
 
-            aParam->pFieldMgr->InsertBody( aParam->pBuf , uBufSize );
+            aParam->pFieldMgr->InsertBody( aParam->pBuf, uBufSize );
             uCurrentLen = aParam->pFieldMgr->GetCurrentBodyLength();
             aParam->pBuf += uBufSize;
             aParam->uBufSize -= uBufSize;
-            if ( uTotalLen == uCurrentLen ) //Whole body received
+            if ( uTotalLen == uCurrentLen )    //Whole body received
             {
                 aParam->pFieldMgr->SetBodyEnd( TRUE );
                 uParserRet = HTTP_PARSER_SUCCESS;
@@ -1100,7 +1125,7 @@ HttpParserErr CHttpParser::ParseBody( ParseParam * aParam )
             }
             else
             {
-                DbgOut( ERRO , DBG_PROTOHANDLER , "Content-Length is less than current sent length" );
+                DbgOut( ERRO, DBG_PROTOHANDLER, "Content-Length is less than current sent length" );
                 uParserRet = HTTP_PARSER_FAILURE;
                 break;
             }
@@ -1114,23 +1139,26 @@ HttpParserErr CHttpParser::ParseBody( ParseParam * aParam )
             if ( FALSE == aParam->bConnOut )
             {
                 CHttpRspFieldMgr * pRspFieldMgr = (CHttpRspFieldMgr *)aParam->pFieldMgr;
-                DbgOut( ERRO , DBG_PROTOHANDLER , "Cannot determine content length. status=%u" , pRspFieldMgr->GetStatusCode() );
+                DbgOut( ERRO, DBG_PROTOHANDLER, "Cannot determine content length. status=%u",
+                        pRspFieldMgr->GetStatusCode() );
                 //Check max body size
                 if ( m_uMaxBodySize < pRspFieldMgr->GetCurrentBodyLength() + aParam->uBufSize )
                 {
-                    DbgOut( WARN , DBG_PROTOHANDLER , "MaxBodySize exceed. Total/Max=%u/%u" , pRspFieldMgr->GetCurrentBodyLength() + aParam->uBufSize , m_uMaxBodySize );
+                    DbgOut( WARN, DBG_PROTOHANDLER, "MaxBodySize exceed. Total/Max=%u/%u",
+                            pRspFieldMgr->GetCurrentBodyLength() + aParam->uBufSize, m_uMaxBodySize );
                     uParserRet = HTTP_PARSER_DATA_EXCEED;
                 }
                 else
                 {
-                    aParam->pFieldMgr->InsertBody( aParam->pBuf , aParam->uBufSize );
+                    aParam->pFieldMgr->InsertBody( aParam->pBuf, aParam->uBufSize );
                     uParserRet = HTTP_PARSER_NEED_MORE_DATA;    //Receive until connection terminated
                 }
             }
             else
             {
                 CHttpReqFieldMgr * pReqFieldMgr = (CHttpReqFieldMgr *)aParam->pFieldMgr;
-                DbgOut( INFO , DBG_PROTOHANDLER , "Cannot determine content length, set to end. method=%u" , pReqFieldMgr->GetMethodId() );
+                DbgOut( INFO, DBG_PROTOHANDLER, "Cannot determine content length, set to end. method=%u",
+                        pReqFieldMgr->GetMethodId() );
                 pReqFieldMgr->SetBodyEnd( TRUE );
                 uParserRet = HTTP_PARSER_SUCCESS;
             }
@@ -1138,13 +1166,13 @@ HttpParserErr CHttpParser::ParseBody( ParseParam * aParam )
         }
     } while ( 0 );
 
-    DbgOut( VERB , DBG_PROTOHANDLER , "Leave. uParserRet=%u" , uParserRet );
+    DbgOut( VERB, DBG_PROTOHANDLER, "Leave. uParserRet=%u", uParserRet );
     return uParserRet;
 }
 
 HttpParserErr CHttpParser::ParseChunkedBody( ParseParam * pParam )
 {
-    DbgOut( VERB , DBG_PROTOHANDLER , "Enter" );
+    DbgOut( VERB, DBG_PROTOHANDLER, "Enter" );
 
     HttpParserErr uParserRet = HTTP_PARSER_NEED_MORE_DATA;
     const UCHAR * pBufEnd = pParam->pBuf + pParam->uBufSize;
@@ -1153,36 +1181,39 @@ HttpParserErr CHttpParser::ParseChunkedBody( ParseParam * pParam )
 
     while ( pParam->pBuf < pBufEnd )
     {
-        DbgOut( INFO , DBG_PROTOHANDLER , "ChunkState=%d" , pParam->pChunkState->uState );
+        DbgOut( INFO, DBG_PROTOHANDLER, "ChunkState=%d", pParam->pChunkState->uState );
         pLineEnd = NULL;
         uLineSize = 0;
         if ( HTTP_CHUNK_STATE_UNKNOWN == pParam->pChunkState->uState ||
-             HTTP_CHUNK_STATE_LENGTH == pParam->pChunkState->uState ) 
+             HTTP_CHUNK_STATE_LENGTH == pParam->pChunkState->uState )
         {
             BOOL bAppend = ( HTTP_CHUNK_STATE_UNKNOWN == pParam->pChunkState->uState ) ? FALSE : TRUE;
-            if ( HTTP_PARSER_SUCCESS == FindLineEndDelimiter( pParam->pBuf , pParam->uBufSize , &pLineEnd , &uLineSize ) )
+            if ( HTTP_PARSER_SUCCESS == FindLineEndDelimiter( pParam->pBuf, pParam->uBufSize, &pLineEnd, &uLineSize ) )
             {
                 pParam->pChunkState->uState = HTTP_CHUNK_STATE_BODY;
                 if ( bAppend )
                 {
-                    pParam->pChunkState->strChunkLength.append( (const CHAR *)pParam->pBuf , uLineSize );
+                    pParam->pChunkState->strChunkLength.append( (const CHAR *)pParam->pBuf, uLineSize );
                 }
                 else
                 {
-                    pParam->pChunkState->strChunkLength.assign( (const CHAR *)pParam->pBuf , uLineSize );
+                    pParam->pChunkState->strChunkLength.assign( (const CHAR *)pParam->pBuf, uLineSize );
                 }
-                CWUtils::TrimStringA( pParam->pChunkState->strChunkLength , " \r\n" );
-                pParam->pChunkState->uChunkLength = strtoul( pParam->pChunkState->strChunkLength.c_str() , NULL , 16 );
-                if ( 0 == pParam->pChunkState->uChunkLength ) //Last chunk
+                CWUtils::TrimStringA( pParam->pChunkState->strChunkLength, " \r\n" );
+                pParam->pChunkState->uChunkLength = strtoul( pParam->pChunkState->strChunkLength.c_str(), NULL, 16 );
+                if ( 0 == pParam->pChunkState->uChunkLength )    //Last chunk
                 {
                     pParam->pChunkState->uState = HTTP_CHUNK_STATE_END;
                 }
                 else
                 {
                     //Check max body size
-                    if ( m_uMaxBodySize < pParam->pFieldMgr->GetCurrentBodyLength() + pParam->pChunkState->uChunkLength )
+                    if ( m_uMaxBodySize <
+                         pParam->pFieldMgr->GetCurrentBodyLength() + pParam->pChunkState->uChunkLength )
                     {
-                        DbgOut( WARN , DBG_PROTOHANDLER , "MaxBodySize exceed. New/Max=%u/%u" , pParam->pFieldMgr->GetCurrentBodyLength() + pParam->pChunkState->uChunkLength , m_uMaxBodySize );
+                        DbgOut( WARN, DBG_PROTOHANDLER, "MaxBodySize exceed. New/Max=%u/%u",
+                                pParam->pFieldMgr->GetCurrentBodyLength() + pParam->pChunkState->uChunkLength,
+                                m_uMaxBodySize );
                         uParserRet = HTTP_PARSER_DATA_EXCEED;
                         break;
                     }
@@ -1191,17 +1222,17 @@ HttpParserErr CHttpParser::ParseChunkedBody( ParseParam * pParam )
                 pParam->uBufSize = pBufEnd - pLineEnd;
                 pParam->pBuf = pLineEnd;
             }
-            else //Cannot find line end delimiter
+            else    //Cannot find line end delimiter
             {
                 uLineSize = pParam->uBufSize;
                 pParam->pChunkState->uState = HTTP_CHUNK_STATE_LENGTH;
                 if ( bAppend )
                 {
-                    pParam->pChunkState->strChunkLength.append( (const CHAR *)pParam->pBuf , uLineSize );
+                    pParam->pChunkState->strChunkLength.append( (const CHAR *)pParam->pBuf, uLineSize );
                 }
                 else
                 {
-                    pParam->pChunkState->strChunkLength.assign( (const CHAR *)pParam->pBuf , uLineSize );
+                    pParam->pChunkState->strChunkLength.assign( (const CHAR *)pParam->pBuf, uLineSize );
                 }
 
                 pParam->uBufSize = pBufEnd - pLineEnd;
@@ -1214,14 +1245,15 @@ HttpParserErr CHttpParser::ParseChunkedBody( ParseParam * pParam )
             uLineSize = pParam->pChunkState->uChunkLength - pParam->pChunkState->uReceivedChunkSize;
             if ( uLineSize <= pParam->uBufSize )    //Full chunk received
             {
-                pParam->pFieldMgr->InsertBody( pParam->pBuf , uLineSize );
+                pParam->pFieldMgr->InsertBody( pParam->pBuf, uLineSize );
 
                 pParam->pChunkState->uReceivedChunkSize = pParam->pChunkState->uChunkLength;
                 pParam->pBuf += uLineSize;
                 pParam->uBufSize = pBufEnd - pParam->pBuf;
 
                 //Parse end delimiter
-                if ( HTTP_PARSER_SUCCESS == FindLineEndDelimiter( pParam->pBuf , pParam->uBufSize , &pLineEnd , &uLineSize ) )
+                if ( HTTP_PARSER_SUCCESS ==
+                     FindLineEndDelimiter( pParam->pBuf, pParam->uBufSize, &pLineEnd, &uLineSize ) )
                 {
                     //Clear state for next chunk
                     pParam->pChunkState->uState = HTTP_CHUNK_STATE_UNKNOWN;
@@ -1230,7 +1262,7 @@ HttpParserErr CHttpParser::ParseChunkedBody( ParseParam * pParam )
                     pParam->pBuf = pLineEnd;
                     pParam->uBufSize = pBufEnd - pParam->pBuf;
                 }
-                else //Cannot find line end delimiter
+                else    //Cannot find line end delimiter
                 {
                     pParam->pBuf = pLineEnd;
                     pParam->uBufSize = pBufEnd - pParam->pBuf;
@@ -1238,9 +1270,9 @@ HttpParserErr CHttpParser::ParseChunkedBody( ParseParam * pParam )
                     break;
                 }
             }
-            else //Received buffer is not enough
+            else    //Received buffer is not enough
             {
-                pParam->pFieldMgr->InsertBody( pParam->pBuf , pParam->uBufSize );
+                pParam->pFieldMgr->InsertBody( pParam->pBuf, pParam->uBufSize );
                 pParam->pChunkState->uReceivedChunkSize += pParam->uBufSize;
                 uParserRet = HTTP_PARSER_NEED_MORE_DATA;
                 break;
@@ -1248,14 +1280,15 @@ HttpParserErr CHttpParser::ParseChunkedBody( ParseParam * pParam )
         }
         else if ( HTTP_CHUNK_STATE_END == pParam->pChunkState->uState )
         {
-            if ( HTTP_PARSER_SUCCESS == FindLineEndDelimiter( pParam->pBuf , pParam->uBufSize , &pLineEnd , &uLineSize ) )
+            if ( HTTP_PARSER_SUCCESS == FindLineEndDelimiter( pParam->pBuf, pParam->uBufSize, &pLineEnd, &uLineSize ) )
             {
-                DbgOut( INFO , DBG_PROTOHANDLER , "Full chunked received. TotalSize=%u" , pParam->pFieldMgr->GetCurrentBodyLength() );
+                DbgOut( INFO, DBG_PROTOHANDLER, "Full chunked received. TotalSize=%u",
+                        pParam->pFieldMgr->GetCurrentBodyLength() );
                 pParam->pFieldMgr->SetBodyEnd( TRUE );
                 uParserRet = HTTP_PARSER_SUCCESS;
                 break;
             }
-            else // cannot find line end delimiter.
+            else    // cannot find line end delimiter.
             {
                 uParserRet = HTTP_PARSER_NEED_MORE_DATA;
                 break;
@@ -1263,17 +1296,22 @@ HttpParserErr CHttpParser::ParseChunkedBody( ParseParam * pParam )
         }
         else
         {
-            DbgOut( ERRO , DBG_PROTOHANDLER , "Unknown chunked state=%u" , pParam->pChunkState->uState );
+            DbgOut( ERRO, DBG_PROTOHANDLER, "Unknown chunked state=%u", pParam->pChunkState->uState );
             uParserRet = HTTP_PARSER_FAILURE;
             break;
         }
     }
 
-    DbgOut( VERB , DBG_PROTOHANDLER , "Leave" );
+    DbgOut( VERB, DBG_PROTOHANDLER, "Leave" );
     return uParserRet;
 }
 
-UINT CHttpParser::DoFieldSearch( CPrefixTree<UINT> & aMatcher , const UCHAR * aBuf , UINT aBufSize , CIncompleteHeaderState * aIncompleteState , HttpFieldId * aFieldId , UINT * aFieldSize )
+UINT CHttpParser::DoFieldSearch( CPrefixTree<UINT> & aMatcher,
+                                 const UCHAR * aBuf,
+                                 UINT aBufSize,
+                                 CIncompleteHeaderState * aIncompleteState,
+                                 HttpFieldId * aFieldId,
+                                 UINT * aFieldSize )
 {
     if ( NULL == aBuf || 0 == aBufSize || NULL == aIncompleteState || NULL == aFieldId || NULL == aFieldSize )
     {
@@ -1285,10 +1323,11 @@ UINT CHttpParser::DoFieldSearch( CPrefixTree<UINT> & aMatcher , const UCHAR * aB
     UINT uFieldId;
 
     // re-use previous position for search
-    UINT uMatcherRet = aMatcher.SearchShortest( aIncompleteState->pPrevNodePos , &aIncompleteState->pPrevNodePos , (const CHAR *)aBuf , aBufSize , uFoundSize , uFieldId );
+    UINT uMatcherRet = aMatcher.SearchShortest( aIncompleteState->pPrevNodePos, &aIncompleteState->pPrevNodePos,
+                                                (const CHAR *)aBuf, aBufSize, uFoundSize, uFieldId );
     switch ( uMatcherRet )
     {
-        case CPrefixTree<UINT>::HIT :
+        case CPrefixTree<UINT>::HIT:
         {
             aIncompleteState->pPrevNodePos = NULL;
             if ( aFieldSize )
@@ -1301,7 +1340,7 @@ UINT CHttpParser::DoFieldSearch( CPrefixTree<UINT> & aMatcher , const UCHAR * aB
             }
             break;
         }
-        case CPrefixTree<UINT>::MISS :
+        case CPrefixTree<UINT>::MISS:
         {
             aIncompleteState->pPrevNodePos = NULL;
             break;
@@ -1310,7 +1349,7 @@ UINT CHttpParser::DoFieldSearch( CPrefixTree<UINT> & aMatcher , const UCHAR * aB
         {
             break;
         }
-        default :
+        default:
         {
             aIncompleteState->pPrevNodePos = NULL;
             break;
@@ -1320,20 +1359,23 @@ UINT CHttpParser::DoFieldSearch( CPrefixTree<UINT> & aMatcher , const UCHAR * aB
     return uMatcherRet;
 }
 
-HttpParserErr CHttpParser::FindLineEndDelimiter( const UCHAR * aBuf , UINT aBufSize , UCHAR ** aLineEndPos , UINT * aLineSize )
+HttpParserErr CHttpParser::FindLineEndDelimiter( const UCHAR * aBuf,
+                                                 UINT aBufSize,
+                                                 UCHAR ** aLineEndPos,
+                                                 UINT * aLineSize )
 {
     HttpParserErr uParserRet = HTTP_PARSER_FAILURE;
 
-    do 
+    do
     {
         if ( NULL == aLineEndPos || NULL == aLineSize )
         {
-            DbgOut( ERRO , DBG_PROTOHANDLER , "Invalid parameter" );
+            DbgOut( ERRO, DBG_PROTOHANDLER, "Invalid parameter" );
             break;
         }
 
-        (*aLineEndPos) = const_cast<UCHAR *>(aBuf) + aBufSize;
-        (*aLineSize) = aBufSize;
+        ( *aLineEndPos ) = const_cast<UCHAR *>( aBuf ) + aBufSize;
+        ( *aLineSize ) = aBufSize;
         if ( NULL == aBuf || 0 == aBufSize )
         {
             uParserRet = HTTP_PARSER_NEED_MORE_DATA;
@@ -1341,19 +1383,19 @@ HttpParserErr CHttpParser::FindLineEndDelimiter( const UCHAR * aBuf , UINT aBufS
         }
 
         UCHAR * pPos = NULL;
-        pPos = (UCHAR *)memchr( (CHAR *)aBuf , '\n' , aBufSize );
+        pPos = (UCHAR *)memchr( (CHAR *)aBuf, '\n', aBufSize );
         if ( NULL != pPos )
         {
-            (*aLineSize) = (UINT)(pPos - aBuf);
-            (*aLineEndPos) = pPos + 1;
-            if ( (*aLineSize > 0) && (*(pPos - 1) == '\r') ) //Could be'\r\n' or '\n', check pPos - 1
+            ( *aLineSize ) = ( UINT )( pPos - aBuf );
+            ( *aLineEndPos ) = pPos + 1;
+            if ( ( *aLineSize > 0 ) && ( *( pPos - 1 ) == '\r' ) )    //Could be'\r\n' or '\n', check pPos - 1
             {
-                (*aLineSize) -= 1; //Line size decrease 1 because line end with "\r\n"
+                ( *aLineSize ) -= 1;    //Line size decrease 1 because line end with "\r\n"
             }
             uParserRet = HTTP_PARSER_SUCCESS;
         }
     } while ( 0 );
-    
+
     return uParserRet;
 }
 
@@ -1374,24 +1416,24 @@ HttpParserErr CHttpParser::ParseIncompleteLine( ParseParam * aParam )
         //Field name
         if ( pIncompleteState->bIsIncompleteFieldName )
         {
-            CHAR * pFieldEnd = (CHAR *)memchr( (CHAR *)pBufBeg , ':' , aParam->uBufSize );
-            if ( NULL != pFieldEnd ) //Field name is completely received. Don't break to keep parsing field data
+            CHAR * pFieldEnd = (CHAR *)memchr( (CHAR *)pBufBeg, ':', aParam->uBufSize );
+            if ( NULL != pFieldEnd )    //Field name is completely received. Don't break to keep parsing field data
             {
-                pIncompleteState->strUnknownFieldName.append( (CHAR *)pBufBeg , ((UCHAR *)pFieldEnd - pBufBeg + 1) );
+                pIncompleteState->strUnknownFieldName.append( (CHAR *)pBufBeg, ( (UCHAR *)pFieldEnd - pBufBeg + 1 ) );
                 pIncompleteState->bIsIncompleteFieldName = FALSE;
-                pBufBeg = (UCHAR *)pFieldEnd + 1; //Move to the begin position of Field data
+                pBufBeg = (UCHAR *)pFieldEnd + 1;    //Move to the begin position of Field data
                 aParam->pBuf = pBufBeg;
                 aParam->uBufSize = ( pBufEnd - pBufBeg );
             }
-            else //Field name not complete
+            else    //Field name not complete
             {
-                if ( HTTP_PARSER_SUCCESS == FindLineEndDelimiter( pBufBeg , aParam->uBufSize , &pLineEnd , &uLineSize ) )
+                if ( HTTP_PARSER_SUCCESS == FindLineEndDelimiter( pBufBeg, aParam->uBufSize, &pLineEnd, &uLineSize ) )
                 {
-                    pIncompleteState->strUnknownFieldName.append( (CHAR *)pBufBeg , uLineSize );
-                    CWUtils::TrimStringA( pIncompleteState->strUnknownFieldName , " \r\n" );
-                    if ( 0 == pIncompleteState->strUnknownFieldName.length() ) //A space filled string, ignore
+                    pIncompleteState->strUnknownFieldName.append( (CHAR *)pBufBeg, uLineSize );
+                    CWUtils::TrimStringA( pIncompleteState->strUnknownFieldName, " \r\n" );
+                    if ( 0 == pIncompleteState->strUnknownFieldName.length() )    //A space filled string, ignore
                     {
-                        pBufBeg = (UCHAR *)pFieldEnd + 1; //Move to the begin position of Field data
+                        pBufBeg = (UCHAR *)pFieldEnd + 1;    //Move to the begin position of Field data
                         aParam->pBuf = pBufBeg;
                         aParam->uBufSize = ( pBufEnd - pBufBeg );
                         uParserRet = HTTP_PARSER_SUCCESS;
@@ -1408,7 +1450,7 @@ HttpParserErr CHttpParser::ParseIncompleteLine( ParseParam * aParam )
                 }
                 else
                 {
-                    pIncompleteState->strUnknownFieldName.append( (CHAR *)pBufBeg , aParam->uBufSize );
+                    pIncompleteState->strUnknownFieldName.append( (CHAR *)pBufBeg, aParam->uBufSize );
                     pBufBeg = pLineEnd;
                     aParam->pBuf = pBufBeg;
                     aParam->uBufSize = ( pBufEnd - pBufBeg );
@@ -1419,32 +1461,34 @@ HttpParserErr CHttpParser::ParseIncompleteLine( ParseParam * aParam )
         }
 
         //Field data
-        if ( HTTP_PARSER_SUCCESS == FindLineEndDelimiter( pBufBeg , aParam->uBufSize , &pLineEnd , &uLineSize ) )
+        if ( HTTP_PARSER_SUCCESS == FindLineEndDelimiter( pBufBeg, aParam->uBufSize, &pLineEnd, &uLineSize ) )
         {
-            strFieldData.assign( (const CHAR *)pBufBeg , uLineSize );
+            strFieldData.assign( (const CHAR *)pBufBeg, uLineSize );
             if ( HTTP_FIELD_UNKNOWN != pIncompleteState->uFieldId )
             {
-                pFieldMgr->SetField( pIncompleteState->uFieldId , strFieldData , uLineSize , TRUE , TRUE );
+                pFieldMgr->SetField( pIncompleteState->uFieldId, strFieldData, uLineSize, TRUE, TRUE );
             }
             else
             {
-                pFieldMgr->SetUnknownField( pIncompleteState->strUnknownFieldName , strFieldData , uLineSize , TRUE , TRUE );
+                pFieldMgr->SetUnknownField( pIncompleteState->strUnknownFieldName, strFieldData, uLineSize, TRUE,
+                                            TRUE );
             }
-            pBufBeg = pLineEnd + 1; //Move to next line
+            pBufBeg = pLineEnd + 1;    //Move to next line
             aParam->pBuf = pBufBeg;
             aParam->uBufSize = ( pBufEnd - pBufBeg );
             pIncompleteState->uFieldId = HTTP_FIELD_EMPTY;
         }
-        else //Cannot find end position, buffer may not complete
+        else    //Cannot find end position, buffer may not complete
         {
-            strFieldData.assign( (const CHAR *)pBufBeg , aParam->uBufSize );
+            strFieldData.assign( (const CHAR *)pBufBeg, aParam->uBufSize );
             if ( HTTP_FIELD_UNKNOWN != pIncompleteState->uFieldId )
             {
-                pFieldMgr->SetField( pIncompleteState->uFieldId , strFieldData , aParam->uBufSize , TRUE , FALSE );
+                pFieldMgr->SetField( pIncompleteState->uFieldId, strFieldData, aParam->uBufSize, TRUE, FALSE );
             }
             else
             {
-                pFieldMgr->SetUnknownField( pIncompleteState->strUnknownFieldName , strFieldData , aParam->uBufSize , TRUE , FALSE );
+                pFieldMgr->SetUnknownField( pIncompleteState->strUnknownFieldName, strFieldData, aParam->uBufSize, TRUE,
+                                            FALSE );
             }
 
             pBufBeg = pLineEnd;
@@ -1453,10 +1497,10 @@ HttpParserErr CHttpParser::ParseIncompleteLine( ParseParam * aParam )
             uParserRet = HTTP_PARSER_NEED_MORE_DATA;
             break;
         }
-        
+
         uParserRet = HTTP_PARSER_SUCCESS;
     } while ( 0 );
-    
+
     return uParserRet;
 }
 
@@ -1494,17 +1538,17 @@ BOOL CHttpParser::GetMethod( std::string & aMethod )
     BOOL bRet = FALSE;
 
     HttpFieldId uMethod = m_ReqFieldMgr.GetMethodId();
-    for ( SIZE_T i = 0 ; i < _countof(g_FieldTable) ; i++ )
+    for ( SIZE_T i = 0; i < _countof( g_FieldTable ); i++ )
     {
         if ( g_FieldTable[i].uFieldId == uMethod )
         {
             aMethod.assign( g_FieldTable[i].szFieldName );
-            CWUtils::TrimStringA( aMethod , " " );
+            CWUtils::TrimStringA( aMethod, " " );
             bRet = TRUE;
             break;
         }
     }
-    
+
     return bRet;
 }
 
@@ -1527,13 +1571,13 @@ VOID CHttpParser::GetUrl( std::string & aUrl )
     }
     else
     {
-        DbgOut( ERRO , DBG_PROTOHANDLER , "tmpUri is NULL" );
+        DbgOut( ERRO, DBG_PROTOHANDLER, "tmpUri is NULL" );
     }
 
     this->GetHost( strHost );
     this->GetMethod( strMethod );
 
-    if ( strUri.length() && (strUri[0] == '/' || strUri == "*") )
+    if ( strUri.length() && ( strUri[0] == '/' || strUri == "*" ) )
     {
         aUrl = "http://";
         if ( strHost.length() > 0 )
@@ -1542,7 +1586,7 @@ VOID CHttpParser::GetUrl( std::string & aUrl )
         }
         else
         {
-            DbgOut( ERRO , DBG_PROTOHANDLER , "Host header not included" );
+            DbgOut( ERRO, DBG_PROTOHANDLER, "Host header not included" );
         }
 
         //RFC2616 section 5.1.2
@@ -1559,7 +1603,7 @@ VOID CHttpParser::GetUrl( std::string & aUrl )
         aUrl = "http://";
         aUrl += strUri;
     }
-    else                                  //AbsoluteUri
+    else    //AbsoluteUri
     {
         aUrl = strUri;
     }
@@ -1617,4 +1661,4 @@ BOOL CHttpParser::IsBodyEnd( BOOL aConnOut )
 
 
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

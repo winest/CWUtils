@@ -2,13 +2,12 @@
 #include "CWXml.h"
 
 #include "CWFile.h"
-#pragma comment ( lib , "Shlwapi.lib" )
-#pragma comment ( lib , "XmlLite.lib" )
+#pragma comment( lib, "Shlwapi.lib" )
+#pragma comment( lib, "XmlLite.lib" )
 using namespace std;
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -16,13 +15,13 @@ extern "C" {
 typedef list<CWXmlElementNode>::iterator NODE_IT;
 typedef list<CWXmlElementNode>::const_iterator CONST_NODE_IT;
 
-typedef map<wstring , CWXmlElementAttr>::iterator ATTR_IT;
-typedef map<wstring , CWXmlElementAttr>::const_iterator CONST_ATTR_MIT;
+typedef map<wstring, CWXmlElementAttr>::iterator ATTR_IT;
+typedef map<wstring, CWXmlElementAttr>::const_iterator CONST_ATTR_MIT;
 
 BOOL _IsFileExist( CONST WCHAR * aFullPath )
 {
     DWORD dwAttr = GetFileAttributesW( aFullPath );
-    return ( (dwAttr != INVALID_FILE_ATTRIBUTES) && !(dwAttr & FILE_ATTRIBUTE_DIRECTORY) );
+    return ( ( dwAttr != INVALID_FILE_ATTRIBUTES ) && !( dwAttr & FILE_ATTRIBUTE_DIRECTORY ) );
 }
 
 
@@ -32,29 +31,31 @@ VOID CWXml::Print( CONST CWXmlElementNode * aNode )
     CONST CWXmlElementNode * curr = ( NULL != aNode ) ? aNode : m_nodeRoot;
     if ( m_nodeRoot != curr )
     {
-        for ( UINT i = 0 ; i < aNode->uDepth ; i++ )
+        for ( UINT i = 0; i < aNode->uDepth; i++ )
         {
             wprintf_s( L"    " );
         }
-        wprintf_s( L"Node=\"%ws\":\"%ws\"%ws" , curr->wstrNamespace.c_str() , curr->wstrName.c_str() , curr->mapAttr.empty() ? L"" : L" with attributes" );
-        for ( CONST_ATTR_MIT itAttr = curr->mapAttr.begin()  ; itAttr != curr->mapAttr.end() ; itAttr++ )
+        wprintf_s( L"Node=\"%ws\":\"%ws\"%ws", curr->wstrNamespace.c_str(), curr->wstrName.c_str(),
+                   curr->mapAttr.empty() ? L"" : L" with attributes" );
+        for ( CONST_ATTR_MIT itAttr = curr->mapAttr.begin(); itAttr != curr->mapAttr.end(); itAttr++ )
         {
-            wprintf_s( L" \"%ws\":\"%ws\"=\"%ws\"" , itAttr->second.wstrPrefix.c_str() , itAttr->second.wstrLocalName.c_str() , itAttr->second.wstrValue.c_str() );
+            wprintf_s( L" \"%ws\":\"%ws\"=\"%ws\"", itAttr->second.wstrPrefix.c_str(),
+                       itAttr->second.wstrLocalName.c_str(), itAttr->second.wstrValue.c_str() );
         }
         if ( 0 < curr->wstrText.length() )
         {
-            wprintf_s( L". Text=\"%ws\"" , curr->wstrText.c_str() );
+            wprintf_s( L". Text=\"%ws\"", curr->wstrText.c_str() );
         }
         wprintf_s( L"\n" );
-    }   
+    }
 
-    for ( CONST_NODE_IT itNode = curr->lsChildren.begin() ; itNode != curr->lsChildren.end() ; itNode++ )
+    for ( CONST_NODE_IT itNode = curr->lsChildren.begin(); itNode != curr->lsChildren.end(); itNode++ )
     {
-        Print( &(*itNode) );
+        Print( &( *itNode ) );
     }
 }
 
-HRESULT CWXml::ParserXmlFile( IN CONST WCHAR * aXmlPath , IN OUT CWXmlElementNode * aRootNode , IN DWORD aCodePage )
+HRESULT CWXml::ParserXmlFile( IN CONST WCHAR * aXmlPath, IN OUT CWXmlElementNode * aRootNode, IN DWORD aCodePage )
 {
     _ASSERT( NULL != aRootNode );
     if ( FALSE == _IsFileExist( aXmlPath ) )
@@ -68,15 +69,16 @@ HRESULT CWXml::ParserXmlFile( IN CONST WCHAR * aXmlPath , IN OUT CWXmlElementNod
     IStream * pFileStream = NULL;
 
     //Open read-only input stream
-    CW_XML_SHOW_ERR( hrRet , SHCreateStreamOnFileW( aXmlPath , STGM_READ , &pFileStream ) );
-    CW_XML_SHOW_ERR( hrRet , CreateXmlReader( __uuidof( IXmlReader ) , (void **)&m_reader , NULL ) );
-    CW_XML_SHOW_ERR( hrRet , CreateXmlReaderInputWithEncodingCodePage(pFileStream , NULL , aCodePage , FALSE , aXmlPath , &m_readerInput) );
-    CW_XML_SHOW_ERR( hrRet , m_reader->SetProperty( XmlReaderProperty_DtdProcessing , DtdProcessing_Prohibit ) );
-    CW_XML_SHOW_ERR( hrRet , m_reader->SetInput( m_readerInput ) );
+    CW_XML_SHOW_ERR( hrRet, SHCreateStreamOnFileW( aXmlPath, STGM_READ, &pFileStream ) );
+    CW_XML_SHOW_ERR( hrRet, CreateXmlReader( __uuidof( IXmlReader ), (void **)&m_reader, NULL ) );
+    CW_XML_SHOW_ERR( hrRet, CreateXmlReaderInputWithEncodingCodePage( pFileStream, NULL, aCodePage, FALSE, aXmlPath,
+                                                                      &m_readerInput ) );
+    CW_XML_SHOW_ERR( hrRet, m_reader->SetProperty( XmlReaderProperty_DtdProcessing, DtdProcessing_Prohibit ) );
+    CW_XML_SHOW_ERR( hrRet, m_reader->SetInput( m_readerInput ) );
 
     hrRet = ParseNode( m_nodeRoot );
-        
-exit :
+
+exit:
     if ( NULL != m_readerInput )
     {
         m_readerInput->Release();
@@ -105,31 +107,31 @@ HRESULT CWXml::ParseNode( IN CWXmlElementNode * aNode )
     UINT uCurrDepth = 0;
 
     //aNode will always point to the last existing element when parsing current line
-    while ( S_OK == ( hrRet = m_reader->Read(&nodeType) ) )
+    while ( S_OK == ( hrRet = m_reader->Read( &nodeType ) ) )
     {
-        CW_XML_SHOW_ERR( hrRet , m_reader->GetDepth( &uCurrDepth ) );
+        CW_XML_SHOW_ERR( hrRet, m_reader->GetDepth( &uCurrDepth ) );
         if ( m_nodeRoot != aNode && uCurrDepth <= aNode->uDepth )
         {
             aNode = aNode->nodeParent;
         }
-        
+
         switch ( nodeType )
         {
-            case XmlNodeType_XmlDeclaration :
+            case XmlNodeType_XmlDeclaration:
                 break;
-            case XmlNodeType_EndElement :
+            case XmlNodeType_EndElement:
                 break;
-            case XmlNodeType_Text :
-                CW_XML_SHOW_ERR( hrRet , m_reader->GetValue(&wzText , NULL) );
+            case XmlNodeType_Text:
+                CW_XML_SHOW_ERR( hrRet, m_reader->GetValue( &wzText, NULL ) );
                 if ( NULL != wzText )
                 {
                     aNode->wstrText = wzText;
                 }
                 break;
-            case XmlNodeType_Element :
+            case XmlNodeType_Element:
             {
-                CW_XML_SHOW_ERR( hrRet , m_reader->GetPrefix(&wzPrefix , NULL) );
-                CW_XML_SHOW_ERR( hrRet , m_reader->GetLocalName(&wzLocalName , NULL) );
+                CW_XML_SHOW_ERR( hrRet, m_reader->GetPrefix( &wzPrefix, NULL ) );
+                CW_XML_SHOW_ERR( hrRet, m_reader->GetLocalName( &wzLocalName, NULL ) );
                 if ( NULL != wzLocalName )
                 {
                     CWXmlElementNode node;
@@ -137,30 +139,30 @@ HRESULT CWXml::ParseNode( IN CWXmlElementNode * aNode )
                     node.wstrName = ( wzLocalName ) ? wzLocalName : L"";
                     node.nodeParent = aNode;
                     node.uDepth = uCurrDepth;
-                    CW_XML_SHOW_ERR( hrRet , ParseAttributes( node.mapAttr ) );                    
+                    CW_XML_SHOW_ERR( hrRet, ParseAttributes( node.mapAttr ) );
                     aNode->lsChildren.push_back( node );
                     aNode = &aNode->lsChildren.back();
                 }
                 break;
             }
-            default :
+            default:
                 break;
         }
     }
 
-exit :
+exit:
     return hrRet;
 }
 
-HRESULT CWXml::ParseAttributes( OUT map<wstring , CWXmlElementAttr> & aAttributes )
+HRESULT CWXml::ParseAttributes( OUT map<wstring, CWXmlElementAttr> & aAttributes )
 {
     CONST WCHAR * wzPrefix;
     CONST WCHAR * wzLocalName;
     CONST WCHAR * wzValue;
     HRESULT hrRet = m_reader->MoveToFirstAttribute();
 
-    if ( S_FALSE == hrRet ) //No attribute
-    {        
+    if ( S_FALSE == hrRet )    //No attribute
+    {
         return S_OK;
     }
     else if ( S_OK != hrRet )
@@ -169,13 +171,13 @@ HRESULT CWXml::ParseAttributes( OUT map<wstring , CWXmlElementAttr> & aAttribute
     }
     else
     {
-        for ( ; ; )
+        for ( ;; )
         {
             if ( FALSE == m_reader->IsDefault() )
             {
-                CW_XML_SHOW_ERR( hrRet , m_reader->GetPrefix(&wzPrefix , NULL) );
-                CW_XML_SHOW_ERR( hrRet , m_reader->GetLocalName(&wzLocalName , NULL) );
-                CW_XML_SHOW_ERR( hrRet , m_reader->GetValue(&wzValue , NULL) );
+                CW_XML_SHOW_ERR( hrRet, m_reader->GetPrefix( &wzPrefix, NULL ) );
+                CW_XML_SHOW_ERR( hrRet, m_reader->GetLocalName( &wzLocalName, NULL ) );
+                CW_XML_SHOW_ERR( hrRet, m_reader->GetValue( &wzValue, NULL ) );
 
                 CWXmlElementAttr attr;
                 attr.wstrPrefix = ( NULL != wzPrefix ) ? wzPrefix : L"";
@@ -190,7 +192,7 @@ HRESULT CWXml::ParseAttributes( OUT map<wstring , CWXmlElementAttr> & aAttribute
         }
     }
 
-exit :
+exit:
     return hrRet;
 }
 
@@ -200,4 +202,4 @@ exit :
 }
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

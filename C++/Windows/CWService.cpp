@@ -3,7 +3,6 @@
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -15,20 +14,20 @@ BOOL _GetWindowsDir( wstring & aWinDir )
     UINT uReturnSize = 0;
     WCHAR wzWinDir[MAX_PATH] = { 0 };
 
-    uReturnSize = ::GetSystemWindowsDirectoryW( (LPWSTR)&wzWinDir , _countof(wzWinDir) );
-    if ( _countof(wzWinDir) <= uReturnSize )
+    uReturnSize = ::GetSystemWindowsDirectoryW( (LPWSTR)&wzWinDir, _countof( wzWinDir ) );
+    if ( _countof( wzWinDir ) <= uReturnSize )
     {
-        WCHAR * wzWinDirEx = new (std::nothrow) WCHAR[uReturnSize + 1];
+        WCHAR * wzWinDirEx = new ( std::nothrow ) WCHAR[uReturnSize + 1];
         if ( NULL != wzWinDirEx )
         {
             wzWinDirEx[uReturnSize] = L'\0';
-            uReturnSize = ::GetSystemWindowsDirectoryW( wzWinDirEx , uReturnSize );
+            uReturnSize = ::GetSystemWindowsDirectoryW( wzWinDirEx, uReturnSize );
             if ( 0 != uReturnSize )
             {
                 aWinDir = wzWinDirEx;
                 bRet = TRUE;
             }
-            delete [] wzWinDirEx;
+            delete[] wzWinDirEx;
             wzWinDirEx = NULL;
         }
     }
@@ -38,7 +37,7 @@ BOOL _GetWindowsDir( wstring & aWinDir )
         bRet = TRUE;
     }
 
-    if ( TRUE == bRet && L'\\' != aWinDir[aWinDir.length()-1] )
+    if ( TRUE == bRet && L'\\' != aWinDir[aWinDir.length() - 1] )
     {
         aWinDir.push_back( L'\\' );
     }
@@ -47,18 +46,18 @@ BOOL _GetWindowsDir( wstring & aWinDir )
 
 
 
-BOOL _WaitForServiceState( SC_HANDLE aService , DWORD aDesiredState , DWORD aTimeout ) 
-{ 
-    BOOL  bRet = TRUE;
-    SERVICE_STATUS svcStatus = { 0 };    
-    BOOL  bFirstTime = TRUE;
-    DWORD dwLastState = 0 , dwLastCheckPoint = 0;
+BOOL _WaitForServiceState( SC_HANDLE aService, DWORD aDesiredState, DWORD aTimeout )
+{
+    BOOL bRet = TRUE;
+    SERVICE_STATUS svcStatus = { 0 };
+    BOOL bFirstTime = TRUE;
+    DWORD dwLastState = 0, dwLastCheckPoint = 0;
     DWORD dwExpireTime = GetTickCount() + aTimeout;
 
-    for ( ;; ) 
+    for ( ;; )
     {
-        bRet = ::QueryServiceStatus(aService, &svcStatus );
-        if ( FALSE == bRet ) 
+        bRet = ::QueryServiceStatus( aService, &svcStatus );
+        if ( FALSE == bRet )
         {
             break;
         }
@@ -70,22 +69,22 @@ BOOL _WaitForServiceState( SC_HANDLE aService , DWORD aDesiredState , DWORD aTim
         }
 
         //Timeout triggered
-        if ( ( INFINITE != aTimeout ) && ( dwExpireTime < GetTickCount() ) ) 
+        if ( ( INFINITE != aTimeout ) && ( dwExpireTime < GetTickCount() ) )
         {
             SetLastError( ERROR_TIMEOUT );
             bRet = FALSE;
             break;
         }
 
-        if ( bFirstTime ) 
+        if ( bFirstTime )
         {
             bFirstTime = FALSE;
             dwLastState = svcStatus.dwCurrentState;
             dwLastCheckPoint = svcStatus.dwCheckPoint;
         }
-        else 
-        {    
-            if ( dwLastState != svcStatus.dwCurrentState ) 
+        else
+        {
+            if ( dwLastState != svcStatus.dwCurrentState )
             {
                 dwLastState = svcStatus.dwCurrentState;
                 dwLastCheckPoint = svcStatus.dwCheckPoint;
@@ -102,8 +101,8 @@ BOOL _WaitForServiceState( SC_HANDLE aService , DWORD aDesiredState , DWORD aTim
         }
 
         //Wait the specified period of time
-        DWORD dwWaitHint = svcStatus.dwWaitHint / 10;               //Poll 1/10 of the wait hint
-        dwWaitHint = min( 10 * 1000 , max(1000 , dwWaitHint) );     //Sleep 1~10 seconds
+        DWORD dwWaitHint = svcStatus.dwWaitHint / 10;              //Poll 1/10 of the wait hint
+        dwWaitHint = min( 10 * 1000, max( 1000, dwWaitHint ) );    //Sleep 1~10 seconds
         Sleep( dwWaitHint );
     }
 
@@ -111,19 +110,19 @@ BOOL _WaitForServiceState( SC_HANDLE aService , DWORD aDesiredState , DWORD aTim
 }
 
 
-BOOL IsScmLocked( UINT aRetryTimes , DWORD aRetryWaitTime )
+BOOL IsScmLocked( UINT aRetryTimes, DWORD aRetryWaitTime )
 {
     BOOL bLocked = TRUE;
     size_t dwTimes = 0;
 
-    SC_HANDLE hSvcMgr = OpenSCManagerW( NULL , NULL , SC_MANAGER_LOCK );
+    SC_HANDLE hSvcMgr = OpenSCManagerW( NULL, NULL, SC_MANAGER_LOCK );
     if ( NULL == hSvcMgr )
     {
         //DbgOut( ERRO , DBG_UTILS , "OpenSCManagerW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
         goto exit;
     }
 
-    for ( dwTimes = 0 ; dwTimes < aRetryTimes ; dwTimes++ )
+    for ( dwTimes = 0; dwTimes < aRetryTimes; dwTimes++ )
     {
         SC_LOCK lockSc = LockServiceDatabase( hSvcMgr );
         if ( lockSc )
@@ -152,7 +151,7 @@ BOOL IsScmLocked( UINT aRetryTimes , DWORD aRetryWaitTime )
         Sleep( aRetryWaitTime );
     }
 
-exit :
+exit:
     if ( NULL != hSvcMgr )
     {
         CloseServiceHandle( hSvcMgr );
@@ -162,19 +161,19 @@ exit :
 
 
 
-BOOL IsServiceAccessible( CONST WCHAR * aServiceName , DWORD aDesiredAccess )
+BOOL IsServiceAccessible( CONST WCHAR * aServiceName, DWORD aDesiredAccess )
 {
     BOOL bRet = FALSE;
-    SC_HANDLE hSvcMgr = NULL , hSvc = NULL;
-    do 
+    SC_HANDLE hSvcMgr = NULL, hSvc = NULL;
+    do
     {
-        hSvcMgr = OpenSCManagerW( NULL , NULL , GENERIC_READ );
+        hSvcMgr = OpenSCManagerW( NULL, NULL, GENERIC_READ );
         if ( NULL == hSvcMgr )
         {
             break;
         }
 
-        hSvc = OpenServiceW( hSvcMgr , aServiceName , aDesiredAccess );
+        hSvc = OpenServiceW( hSvcMgr, aServiceName, aDesiredAccess );
         if ( NULL == hSvc )
         {
             break;
@@ -182,7 +181,7 @@ BOOL IsServiceAccessible( CONST WCHAR * aServiceName , DWORD aDesiredAccess )
 
         bRet = TRUE;
     } while ( 0 );
-    
+
     if ( NULL != hSvc )
     {
         CloseServiceHandle( hSvc );
@@ -194,45 +193,48 @@ BOOL IsServiceAccessible( CONST WCHAR * aServiceName , DWORD aDesiredAccess )
     return bRet;
 }
 
-BOOL GetServiceBinaryPath( CONST WCHAR * aServiceName , wstring & aFullPath )
+BOOL GetServiceBinaryPath( CONST WCHAR * aServiceName, wstring & aFullPath )
 {
     BOOL bRet = FALSE;
-    SC_HANDLE hSvcMgr = NULL , hSvc = NULL;
+    SC_HANDLE hSvcMgr = NULL, hSvc = NULL;
     LPQUERY_SERVICE_CONFIGW pSvcCfg = NULL;
     DWORD dwBytesNeeded, cbBufSize, dwError;
 
     wstring wstrWinDir;
-    if ( ! _GetWindowsDir(wstrWinDir) )
+    if ( !_GetWindowsDir( wstrWinDir ) )
     {
         //DbgOut( ERRO , DBG_UTILS , "Cannot get windows directory, use C:\\Windows\\ as default. GetLastError()=%!WINERROR!" , GetLastError() );
         wstrWinDir = L"C:\\Windows\\";
     }
 
-    do 
+    do
     {
-        CONST struct { wstring wstrOldPrefix; wstring wstrNewPrefix; } stPrefixMap[] = { { L"\\SystemRoot\\" , wstrWinDir } ,
-                                                                                     { L"%SystemRoot%\\" , wstrWinDir } };
-        hSvcMgr = OpenSCManagerW( NULL , NULL , SC_MANAGER_ALL_ACCESS );
+        CONST struct
+        {
+            wstring wstrOldPrefix;
+            wstring wstrNewPrefix;
+        } stPrefixMap[] = { { L"\\SystemRoot\\", wstrWinDir }, { L"%SystemRoot%\\", wstrWinDir } };
+        hSvcMgr = OpenSCManagerW( NULL, NULL, SC_MANAGER_ALL_ACCESS );
         if ( NULL == hSvcMgr )
         {
             //DbgOut( ERRO , DBG_UTILS , "OpenSCManagerW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
             break;
         }
 
-        hSvc = OpenServiceW( hSvcMgr , aServiceName , SERVICE_QUERY_CONFIG );
+        hSvc = OpenServiceW( hSvcMgr, aServiceName, SERVICE_QUERY_CONFIG );
         if ( NULL == hSvc )
         {
             //DbgOut( ERRO , DBG_UTILS , "OpenServiceW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
             break;
         }
 
-        if ( ! QueryServiceConfigW( hSvc , NULL , 0 , &dwBytesNeeded ) )
+        if ( !QueryServiceConfigW( hSvc, NULL, 0, &dwBytesNeeded ) )
         {
             dwError = GetLastError();
             if ( ERROR_INSUFFICIENT_BUFFER == dwError )
             {
                 cbBufSize = dwBytesNeeded;
-                pSvcCfg = (LPQUERY_SERVICE_CONFIGW)LocalAlloc( LMEM_FIXED , cbBufSize );
+                pSvcCfg = (LPQUERY_SERVICE_CONFIGW)LocalAlloc( LMEM_FIXED, cbBufSize );
                 if ( NULL == pSvcCfg )
                 {
                     //DbgOut( ERRO , DBG_UTILS , "LocalAlloc() failed. GetLastError()=%!WINERROR!" , dwError );
@@ -246,7 +248,7 @@ BOOL GetServiceBinaryPath( CONST WCHAR * aServiceName , wstring & aFullPath )
             }
         }
 
-        if ( ! QueryServiceConfigW( hSvc , pSvcCfg , cbBufSize , &dwBytesNeeded ) )
+        if ( !QueryServiceConfigW( hSvc, pSvcCfg, cbBufSize, &dwBytesNeeded ) )
         {
             //DbgOut( ERRO , DBG_UTILS , "QueryServiceConfigW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
             break;
@@ -257,23 +259,24 @@ BOOL GetServiceBinaryPath( CONST WCHAR * aServiceName , wstring & aFullPath )
             //DbgOut( ERRO , DBG_UTILS , "Binary path is empty" );
             break;
         }
-    
+
         aFullPath = pSvcCfg->lpBinaryPathName;
         bRet = TRUE;
 
-        //Handle the case ImagePath is started with "\\SystemRoot\\" or "%SystemRoot%"    
-        for ( size_t i = 0 ; i < _countof(stPrefixMap) ; i++ )
+        //Handle the case ImagePath is started with "\\SystemRoot\\" or "%SystemRoot%"
+        for ( size_t i = 0; i < _countof( stPrefixMap ); i++ )
         {
-            if ( 0 == _wcsnicmp(pSvcCfg->lpBinaryPathName , stPrefixMap[i].wstrOldPrefix.c_str() , stPrefixMap[i].wstrOldPrefix.length()) )
+            if ( 0 == _wcsnicmp( pSvcCfg->lpBinaryPathName, stPrefixMap[i].wstrOldPrefix.c_str(),
+                                 stPrefixMap[i].wstrOldPrefix.length() ) )
             {
-                aFullPath.replace( 0 , stPrefixMap[i].wstrOldPrefix.length() , stPrefixMap[i].wstrNewPrefix );
+                aFullPath.replace( 0, stPrefixMap[i].wstrOldPrefix.length(), stPrefixMap[i].wstrNewPrefix );
                 break;
             }
         }
-    
+
         //DbgOut( VERB , DBG_UTILS , "Service binary path=%ws" , wstrFullPath.c_str() );
     } while ( 0 );
-    
+
     if ( NULL != pSvcCfg )
     {
         LocalFree( pSvcCfg );
@@ -289,32 +292,31 @@ BOOL GetServiceBinaryPath( CONST WCHAR * aServiceName , wstring & aFullPath )
     return bRet;
 }
 
-BOOL InstallService( CONST WCHAR * aServicePath , CONST WCHAR * aServiceName , DWORD aServiceType , DWORD aStartType )
+BOOL InstallService( CONST WCHAR * aServicePath, CONST WCHAR * aServiceName, DWORD aServiceType, DWORD aStartType )
 {
     BOOL bRet = FALSE;
-    SC_HANDLE hSvcMgr = NULL , hSvc = NULL;
+    SC_HANDLE hSvcMgr = NULL, hSvc = NULL;
 
-    do 
+    do
     {
-        hSvcMgr = OpenSCManagerW( NULL , NULL , SC_MANAGER_CREATE_SERVICE );
+        hSvcMgr = OpenSCManagerW( NULL, NULL, SC_MANAGER_CREATE_SERVICE );
         if ( NULL == hSvcMgr )
         {
             //DbgOut( ERRO , DBG_UTILS , "OpenSCManagerW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
             break;
         }
 
-        hSvc = CreateServiceW( hSvcMgr , aServiceName , aServicePath , SERVICE_ALL_ACCESS ,
-                               aServiceType , aStartType , SERVICE_ERROR_NORMAL , aServicePath ,
-                               NULL , NULL , NULL , NULL , NULL );
-        if ( NULL == hSvc ) 
+        hSvc = CreateServiceW( hSvcMgr, aServiceName, aServicePath, SERVICE_ALL_ACCESS, aServiceType, aStartType,
+                               SERVICE_ERROR_NORMAL, aServicePath, NULL, NULL, NULL, NULL, NULL );
+        if ( NULL == hSvc )
         {
             //DbgOut( ERRO , DBG_UTILS , "CreateServiceW() failed. aServiceName=%ws" , aServiceName );
             break;
         }
         bRet = TRUE;
     } while ( 0 );
-    
-    
+
+
     if ( NULL != hSvc )
     {
         CloseServiceHandle( hSvc );
@@ -329,18 +331,18 @@ BOOL InstallService( CONST WCHAR * aServicePath , CONST WCHAR * aServiceName , D
 BOOL UninstallService( CONST WCHAR * aServiceName )
 {
     BOOL bRet = FALSE;
-    SC_HANDLE hSvcMgr = NULL , hSvc = NULL;
+    SC_HANDLE hSvcMgr = NULL, hSvc = NULL;
 
-    do 
+    do
     {
-        hSvcMgr = OpenSCManagerW( NULL , NULL , SC_MANAGER_CREATE_SERVICE );
+        hSvcMgr = OpenSCManagerW( NULL, NULL, SC_MANAGER_CREATE_SERVICE );
         if ( NULL == hSvcMgr )
         {
             //DbgOut( ERRO , DBG_UTILS , "OpenSCManagerW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
             break;
         }
 
-        hSvc = OpenServiceW( hSvcMgr , aServiceName , DELETE );
+        hSvc = OpenServiceW( hSvcMgr, aServiceName, DELETE );
         if ( NULL == hSvc )
         {
             //DbgOut( ERRO , DBG_UTILS , "OpenServiceW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
@@ -349,7 +351,7 @@ BOOL UninstallService( CONST WCHAR * aServiceName )
 
         bRet = DeleteService( hSvc );
     } while ( 0 );
-    
+
     if ( NULL != hSvc )
     {
         CloseServiceHandle( hSvc );
@@ -363,29 +365,29 @@ BOOL UninstallService( CONST WCHAR * aServiceName )
 
 
 
-BOOL GetServiceCurrentState( IN CONST WCHAR * aServiceName , OUT DWORD * aCurrentState )
+BOOL GetServiceCurrentState( IN CONST WCHAR * aServiceName, OUT DWORD * aCurrentState )
 {
     BOOL bRet = FALSE;
-    SC_HANDLE hSvcMgr = NULL , hSvc = NULL;
+    SC_HANDLE hSvcMgr = NULL, hSvc = NULL;
 
-    do 
+    do
     {
-        hSvcMgr = OpenSCManagerW( NULL , NULL , GENERIC_READ );
+        hSvcMgr = OpenSCManagerW( NULL, NULL, GENERIC_READ );
         if ( NULL == hSvcMgr )
         {
             //DbgOut( ERRO , DBG_UTILS , "OpenSCManagerW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
             break;
         }
 
-        hSvc = OpenServiceW( hSvcMgr , aServiceName , GENERIC_READ );
-        if ( NULL == hSvc ) 
+        hSvc = OpenServiceW( hSvcMgr, aServiceName, GENERIC_READ );
+        if ( NULL == hSvc )
         {
             //DbgOut( ERRO , DBG_UTILS , "OpenServiceW() failed. aServiceName=%ws" , aServiceName );
             break;
         }
 
-        SERVICE_STATUS SrvStatus = {0};
-        if ( ! QueryServiceStatus( hSvc , &SrvStatus ) ) 
+        SERVICE_STATUS SrvStatus = { 0 };
+        if ( !QueryServiceStatus( hSvc, &SrvStatus ) )
         {
             //DbgOut( ERRO , DBG_UTILS , "QueryServiceStatus() failed" );
             break;
@@ -394,7 +396,7 @@ BOOL GetServiceCurrentState( IN CONST WCHAR * aServiceName , OUT DWORD * aCurren
         *aCurrentState = SrvStatus.dwCurrentState;
         bRet = TRUE;
     } while ( 0 );
-    
+
 
     if ( NULL != hSvc )
     {
@@ -407,10 +409,10 @@ BOOL GetServiceCurrentState( IN CONST WCHAR * aServiceName , OUT DWORD * aCurren
     return bRet;
 }
 
-BOOL StartServiceByName( CONST WCHAR * aServiceName , DWORD aTimeout )
+BOOL StartServiceByName( CONST WCHAR * aServiceName, DWORD aTimeout )
 {
     BOOL bRet = FALSE;
-    SC_HANDLE hSvcMgr = NULL , hSvc = NULL;
+    SC_HANDLE hSvcMgr = NULL, hSvc = NULL;
 
     if ( NULL == aServiceName )
     {
@@ -418,25 +420,25 @@ BOOL StartServiceByName( CONST WCHAR * aServiceName , DWORD aTimeout )
         goto exit;
     }
 
-    hSvcMgr = OpenSCManagerW( NULL , NULL , SC_MANAGER_ALL_ACCESS );
+    hSvcMgr = OpenSCManagerW( NULL, NULL, SC_MANAGER_ALL_ACCESS );
     if ( NULL == hSvcMgr )
     {
         //DbgOut( ERRO , DBG_UTILS , "OpenSCManagerW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
         goto exit;
     }
 
-    hSvc = OpenServiceW( hSvcMgr , aServiceName , SERVICE_ALL_ACCESS );
+    hSvc = OpenServiceW( hSvcMgr, aServiceName, SERVICE_ALL_ACCESS );
     if ( NULL == hSvc )
     {
         //DbgOut( ERRO , DBG_UTILS , "OpenServiceW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
         goto exit;
     }
 
-    if ( FALSE != StartServiceW( hSvc , 0 , NULL ) )
+    if ( FALSE != StartServiceW( hSvc, 0, NULL ) )
     {
-        if ( TRUE == _WaitForServiceState( hSvc , SERVICE_RUNNING , aTimeout ) )
+        if ( TRUE == _WaitForServiceState( hSvc, SERVICE_RUNNING, aTimeout ) )
         {
-            bRet =  TRUE;
+            bRet = TRUE;
         }
         else
         {
@@ -447,9 +449,9 @@ BOOL StartServiceByName( CONST WCHAR * aServiceName , DWORD aTimeout )
     {
         bRet = ( ERROR_SERVICE_ALREADY_RUNNING == GetLastError() ) ? TRUE : FALSE;
     }
-    
-exit :
-    if ( hSvc ) 
+
+exit:
+    if ( hSvc )
     {
         CloseServiceHandle( hSvc );
     }
@@ -460,11 +462,11 @@ exit :
     return bRet;
 }
 
-BOOL StopServiceByName( CONST WCHAR * aServiceName , DWORD aTimeout )
+BOOL StopServiceByName( CONST WCHAR * aServiceName, DWORD aTimeout )
 {
     BOOL bRet = FALSE;
-    SC_HANDLE hSvcMgr = NULL , hSvc = NULL;
-    SERVICE_STATUS  svcStatus;
+    SC_HANDLE hSvcMgr = NULL, hSvc = NULL;
+    SERVICE_STATUS svcStatus;
 
     if ( NULL == aServiceName )
     {
@@ -472,30 +474,30 @@ BOOL StopServiceByName( CONST WCHAR * aServiceName , DWORD aTimeout )
         goto exit;
     }
 
-    hSvcMgr = OpenSCManagerW( NULL , NULL , SC_MANAGER_ALL_ACCESS );
+    hSvcMgr = OpenSCManagerW( NULL, NULL, SC_MANAGER_ALL_ACCESS );
     if ( NULL == hSvcMgr )
     {
         //DbgOut( ERRO , DBG_UTILS , "OpenSCManagerW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
         goto exit;
     }
 
-    hSvc = OpenServiceW( hSvcMgr , aServiceName , SERVICE_ALL_ACCESS );
+    hSvc = OpenServiceW( hSvcMgr, aServiceName, SERVICE_ALL_ACCESS );
     if ( NULL == hSvc )
     {
         //DbgOut( ERRO , DBG_UTILS , "OpenServiceW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
         goto exit;
     }
 
-    for ( ;; ) 
+    for ( ;; )
     {
-        if ( FALSE != ControlService( hSvc , SERVICE_CONTROL_STOP,  &svcStatus ) )
-        {         
-            if ( TRUE == _WaitForServiceState( hSvc , SERVICE_STOPPED , aTimeout ) )
+        if ( FALSE != ControlService( hSvc, SERVICE_CONTROL_STOP, &svcStatus ) )
+        {
+            if ( TRUE == _WaitForServiceState( hSvc, SERVICE_STOPPED, aTimeout ) )
             {
-                bRet =  TRUE;
+                bRet = TRUE;
             }
             else
-            {                
+            {
                 SetLastError( ERROR_SERVICE_REQUEST_TIMEOUT );
                 break;
             }
@@ -506,9 +508,9 @@ BOOL StopServiceByName( CONST WCHAR * aServiceName , DWORD aTimeout )
             break;
         }
     }
-    
-exit :
-    if ( hSvc ) 
+
+exit:
+    if ( hSvc )
     {
         CloseServiceHandle( hSvc );
     }
@@ -521,16 +523,16 @@ exit :
 
 
 
-BOOL ChangeServiceStartType( CONST WCHAR * aServiceName , DWORD aStartType , DWORD * aLastStartType )
+BOOL ChangeServiceStartType( CONST WCHAR * aServiceName, DWORD aStartType, DWORD * aLastStartType )
 {
     BOOL bRet = FALSE;
-    SC_HANDLE hSvcMgr = NULL , hSvc = NULL;
+    SC_HANDLE hSvcMgr = NULL, hSvc = NULL;
     SC_LOCK lockSvcDb = NULL;
     QUERY_SERVICE_CONFIGW * pLastConfig = NULL;
 
-    do 
+    do
     {
-        hSvcMgr = OpenSCManagerW( NULL , NULL , SC_MANAGER_ALL_ACCESS );
+        hSvcMgr = OpenSCManagerW( NULL, NULL, SC_MANAGER_ALL_ACCESS );
         if ( NULL == hSvcMgr )
         {
             //DbgOut( ERRO , DBG_UTILS , "OpenSCManagerW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
@@ -544,14 +546,14 @@ BOOL ChangeServiceStartType( CONST WCHAR * aServiceName , DWORD aStartType , DWO
             //DbgOut( ERRO , DBG_UTILS , "LockServiceDatabase() failed. GetLastError()=%!WINERROR!" , GetLastError() );
 
             //Allocate a buffer to get details about the lock
-            DWORD dwBytesNeeded = sizeof(QUERY_SERVICE_LOCK_STATUSW) + MAX_PATH;
+            DWORD dwBytesNeeded = sizeof( QUERY_SERVICE_LOCK_STATUSW ) + MAX_PATH;
             LPQUERY_SERVICE_LOCK_STATUSW lpQslsBuf;
-            lpQslsBuf = (LPQUERY_SERVICE_LOCK_STATUSW)LocalAlloc( LPTR , dwBytesNeeded );
+            lpQslsBuf = (LPQUERY_SERVICE_LOCK_STATUSW)LocalAlloc( LPTR, dwBytesNeeded );
             if ( NULL != lpQslsBuf )
             {
-                if ( FALSE != QueryServiceLockStatusW( hSvcMgr , lpQslsBuf , dwBytesNeeded , &dwBytesNeeded ) )
+                if ( FALSE != QueryServiceLockStatusW( hSvcMgr, lpQslsBuf, dwBytesNeeded, &dwBytesNeeded ) )
                 {
-                    //DbgOut( ERRO , DBG_UTILS , "fIsLocked=%lu, lpLockOwner=%ws, dwLockDuration=%lu" , 
+                    //DbgOut( ERRO , DBG_UTILS , "fIsLocked=%lu, lpLockOwner=%ws, dwLockDuration=%lu" ,
                     //        lpQslsBuf->fIsLocked , lpQslsBuf->lpLockOwner , lpQslsBuf->dwLockDuration );
                 }
                 LocalFree( lpQslsBuf );
@@ -560,8 +562,9 @@ BOOL ChangeServiceStartType( CONST WCHAR * aServiceName , DWORD aStartType , DWO
         }
 
         //Open a handle to the service
-        DWORD dwAccess = ( aLastStartType == NULL ) ? SERVICE_CHANGE_CONFIG : ( SERVICE_QUERY_CONFIG | SERVICE_CHANGE_CONFIG );
-        hSvc = OpenServiceW( hSvcMgr , aServiceName , dwAccess );
+        DWORD dwAccess =
+            ( aLastStartType == NULL ) ? SERVICE_CHANGE_CONFIG : ( SERVICE_QUERY_CONFIG | SERVICE_CHANGE_CONFIG );
+        hSvc = OpenServiceW( hSvcMgr, aServiceName, dwAccess );
         if ( NULL == hSvc )
         {
             //DbgOut( ERRO , DBG_UTILS , "OpenServiceW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
@@ -572,12 +575,13 @@ BOOL ChangeServiceStartType( CONST WCHAR * aServiceName , DWORD aStartType , DWO
         if ( NULL != aLastStartType )
         {
             DWORD dwLastConfigSize = 0;
-            if ( FALSE == QueryServiceConfigW( hSvc, NULL, 0, &dwLastConfigSize ) && ERROR_INSUFFICIENT_BUFFER == GetLastError() )
+            if ( FALSE == QueryServiceConfigW( hSvc, NULL, 0, &dwLastConfigSize ) &&
+                 ERROR_INSUFFICIENT_BUFFER == GetLastError() )
             {
-                pLastConfig = (QUERY_SERVICE_CONFIGW *)LocalAlloc( LMEM_FIXED , dwLastConfigSize );
+                pLastConfig = (QUERY_SERVICE_CONFIGW *)LocalAlloc( LMEM_FIXED, dwLastConfigSize );
                 if ( NULL != pLastConfig )
                 {
-                    if ( TRUE == QueryServiceConfigW( hSvc , pLastConfig , dwLastConfigSize , &dwLastConfigSize ) )
+                    if ( TRUE == QueryServiceConfigW( hSvc, pLastConfig, dwLastConfigSize, &dwLastConfigSize ) )
                     {
                         *aLastStartType = pLastConfig->dwStartType;
                     }
@@ -601,7 +605,8 @@ BOOL ChangeServiceStartType( CONST WCHAR * aServiceName , DWORD aStartType , DWO
         }
 
         //Make the changes
-        if ( ! ChangeServiceConfigW( hSvc , SERVICE_NO_CHANGE , aStartType , SERVICE_NO_CHANGE , NULL , NULL , NULL , NULL , NULL , NULL , NULL ) )
+        if ( !ChangeServiceConfigW( hSvc, SERVICE_NO_CHANGE, aStartType, SERVICE_NO_CHANGE, NULL, NULL, NULL, NULL,
+                                    NULL, NULL, NULL ) )
         {
             //DbgOut( ERRO , DBG_UTILS , "ChangeServiceConfigW() failed. GetLastError()=%!WINERROR!" , GetLastError() );
             break;
@@ -637,4 +642,4 @@ BOOL ChangeServiceStartType( CONST WCHAR * aServiceName , DWORD aStartType , DWO
 }
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

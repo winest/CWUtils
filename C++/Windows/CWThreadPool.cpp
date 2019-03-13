@@ -4,10 +4,9 @@
 
 namespace CWUtils
 {
+#define THREAD_POOL_IOCP_COMPLETION_KEY ERROR_CANCELLED
 
-#define THREAD_POOL_IOCP_COMPLETION_KEY  ERROR_CANCELLED
-
-BOOL CThreadPoolIOCP::Start( UINT aWorkerCnt , PFN_THREAD_POOL_IOCP_WORKER_THREAD aWorkerCbk , VOID * aWorkerArgs )
+BOOL CThreadPoolIOCP::Start( UINT aWorkerCnt, PFN_THREAD_POOL_IOCP_WORKER_THREAD aWorkerCbk, VOID * aWorkerArgs )
 {
     _ASSERT( NULL == m_hPort && aWorkerCbk );
 
@@ -17,11 +16,11 @@ BOOL CThreadPoolIOCP::Start( UINT aWorkerCnt , PFN_THREAD_POOL_IOCP_WORKER_THREA
         GetSystemInfo( &sysInfo );
         aWorkerCnt = sysInfo.dwNumberOfProcessors;
     }
-    aWorkerCnt = min( 32 , max( 1 , aWorkerCnt ) );
+    aWorkerCnt = min( 32, max( 1, aWorkerCnt ) );
 
     BOOL bRet = FALSE;
 
-    m_hPort = CreateIoCompletionPort( INVALID_HANDLE_VALUE , NULL , 0 , aWorkerCnt );
+    m_hPort = CreateIoCompletionPort( INVALID_HANDLE_VALUE, NULL, 0, aWorkerCnt );
     if ( NULL == m_hPort )
     {
         goto exit;
@@ -31,10 +30,10 @@ BOOL CThreadPoolIOCP::Start( UINT aWorkerCnt , PFN_THREAD_POOL_IOCP_WORKER_THREA
 
     //The real thread count should be larger since IoCompletionPort only check the maximal active thread count when there is a new request
     //Therefore, there is some possibility that the real active thread count is larger than the aWorkerCnt we specified
-    for ( DWORD i = 0 ; i < ( aWorkerCnt * 2 ) ; i++ )
+    for ( DWORD i = 0; i < ( aWorkerCnt * 2 ); i++ )
     {
         InterlockedIncrement( &m_lThreadCnt );
-        HANDLE hWorkerThread = (HANDLE)_beginthreadex( NULL , 0 , CThreadPoolIOCP::IOCPWorkerThread , this , 0 , NULL );
+        HANDLE hWorkerThread = (HANDLE)_beginthreadex( NULL, 0, CThreadPoolIOCP::IOCPWorkerThread, this, 0, NULL );
         if ( NULL == hWorkerThread )
         {
             InterlockedDecrement( &m_lThreadCnt );
@@ -43,8 +42,8 @@ BOOL CThreadPoolIOCP::Start( UINT aWorkerCnt , PFN_THREAD_POOL_IOCP_WORKER_THREA
         CloseHandle( hWorkerThread );
     }
     bRet = TRUE;
-                
-exit :
+
+exit:
     if ( FALSE == bRet )
     {
         Stop();
@@ -56,7 +55,7 @@ BOOL CThreadPoolIOCP::Stop()
 {
     if ( NULL != m_hPort )
     {
-        PostQueuedCompletionStatus( m_hPort , 0 , THREAD_POOL_IOCP_COMPLETION_KEY , NULL );
+        PostQueuedCompletionStatus( m_hPort, 0, THREAD_POOL_IOCP_COMPLETION_KEY, NULL );
         CloseHandle( m_hPort );
         m_hPort = NULL;
     }
@@ -75,7 +74,7 @@ BOOL CThreadPoolIOCP::Stop()
 BOOL CThreadPoolIOCP::WaitAllJobs( DWORD aWaitMilliSec )
 {
     BOOL bRet = FALSE;
-    LARGE_INTEGER liFreq , liCurrTime , liEndTime;
+    LARGE_INTEGER liFreq, liCurrTime, liEndTime;
     QueryPerformanceFrequency( &liFreq );
     QueryPerformanceCounter( &liCurrTime );
     liEndTime.QuadPart = liCurrTime.QuadPart + aWaitMilliSec * ( liFreq.QuadPart / 1000 );
@@ -104,7 +103,8 @@ UINT CALLBACK CThreadPoolIOCP::IOCPWorkerThread( VOID * aArgs )
 UINT CThreadPoolIOCP::DoIOCPWorkerThread()
 {
     OVERLAPPED_ENTRY entry = { 0 };
-    while ( GetQueuedCompletionStatus( m_hPort , &entry.dwNumberOfBytesTransferred , &entry.lpCompletionKey , &entry.lpOverlapped , INFINITE ) )
+    while ( GetQueuedCompletionStatus( m_hPort, &entry.dwNumberOfBytesTransferred, &entry.lpCompletionKey,
+                                       &entry.lpOverlapped, INFINITE ) )
     {
         if ( THREAD_POOL_IOCP_COMPLETION_KEY == entry.lpCompletionKey )
         {
@@ -112,7 +112,7 @@ UINT CThreadPoolIOCP::DoIOCPWorkerThread()
         }
         else
         {
-            this->m_pfnWorkerCbk( m_pWorkerArgs , entry.lpOverlapped );
+            this->m_pfnWorkerCbk( m_pWorkerArgs, entry.lpOverlapped );
             InterlockedDecrement( &m_lJobCnt );
         }
     }
@@ -122,8 +122,8 @@ UINT CThreadPoolIOCP::DoIOCPWorkerThread()
 BOOL CThreadPoolIOCP::NotifyNewJob( OVERLAPPED * aOverlapped )
 {
     _ASSERT( NULL != m_hPort );
-    InterlockedIncrement( &m_lJobCnt );    
-    return PostQueuedCompletionStatus( m_hPort , 0 , 0 , aOverlapped );
+    InterlockedIncrement( &m_lJobCnt );
+    return PostQueuedCompletionStatus( m_hPort, 0, 0, aOverlapped );
 }
 
 HANDLE CThreadPoolIOCP::GetCompletionPort()
@@ -131,4 +131,4 @@ HANDLE CThreadPoolIOCP::GetCompletionPort()
     return m_hPort;
 }
 
-}
+}    // namespace CWUtils

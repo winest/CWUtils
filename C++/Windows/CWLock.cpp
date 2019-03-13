@@ -3,37 +3,36 @@
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
-    extern "C" {
+extern "C" {
 #endif
 
 BOOL CRWLockSlim::AcquireReaderLock( DWORD aTimeoutInMilli )
 {
     BOOL bRet = FALSE;
 
-    #if ( _WIN32_WINNT_WIN7 <= _WIN32_WINNT )
-        if ( INFINITE == aTimeoutInMilli || FALSE == m_bWin7AndLater )
-        {
-            AcquireSRWLockShared( &m_srwLock );
-            bRet = TRUE;
-        }
-        else
-        {
-            LARGE_INTEGER lnCurr , lnEnd;
-            QueryPerformanceCounter( &lnCurr );
-            lnEnd.QuadPart = lnCurr.QuadPart + aTimeoutInMilli * ( m_lnFreq.QuadPart / 1000 );
-            do 
-            {
-                QueryPerformanceCounter( &lnCurr );
-                bRet = (BOOL)TryAcquireSRWLockShared( &m_srwLock );
-            } while ( lnCurr.QuadPart < lnEnd.QuadPart );
-        }
-    #else
+#if ( _WIN32_WINNT_WIN7 <= _WIN32_WINNT )
+    if ( INFINITE == aTimeoutInMilli || FALSE == m_bWin7AndLater )
+    {
         AcquireSRWLockShared( &m_srwLock );
         bRet = TRUE;
-    #endif
-    
+    }
+    else
+    {
+        LARGE_INTEGER lnCurr, lnEnd;
+        QueryPerformanceCounter( &lnCurr );
+        lnEnd.QuadPart = lnCurr.QuadPart + aTimeoutInMilli * ( m_lnFreq.QuadPart / 1000 );
+        do
+        {
+            QueryPerformanceCounter( &lnCurr );
+            bRet = (BOOL)TryAcquireSRWLockShared( &m_srwLock );
+        } while ( lnCurr.QuadPart < lnEnd.QuadPart );
+    }
+#else
+    AcquireSRWLockShared( &m_srwLock );
+    bRet = TRUE;
+#endif
+
     return bRet;
 }
 
@@ -46,28 +45,28 @@ BOOL CRWLockSlim::AcquireWriterLock( DWORD aTimeoutInMilli )
 {
     BOOL bRet = FALSE;
 
-    #if ( _WIN32_WINNT_WIN7 <= _WIN32_WINNT )
-        if ( INFINITE == aTimeoutInMilli || FALSE == m_bWin7AndLater )
-        {
-            AcquireSRWLockExclusive( &m_srwLock );
-            bRet = TRUE;
-        }
-        else
-        {
-            LARGE_INTEGER lnCurr , lnEnd;
-            QueryPerformanceCounter( &lnCurr );
-            lnEnd.QuadPart = lnCurr.QuadPart + aTimeoutInMilli * ( m_lnFreq.QuadPart / 1000 );
-            do 
-            {
-                QueryPerformanceCounter( &lnCurr );
-                bRet = (BOOL)TryAcquireSRWLockExclusive( &m_srwLock );
-            } while ( lnCurr.QuadPart < lnEnd.QuadPart );
-        }
-    #else
+#if ( _WIN32_WINNT_WIN7 <= _WIN32_WINNT )
+    if ( INFINITE == aTimeoutInMilli || FALSE == m_bWin7AndLater )
+    {
         AcquireSRWLockExclusive( &m_srwLock );
         bRet = TRUE;
-    #endif
-    
+    }
+    else
+    {
+        LARGE_INTEGER lnCurr, lnEnd;
+        QueryPerformanceCounter( &lnCurr );
+        lnEnd.QuadPart = lnCurr.QuadPart + aTimeoutInMilli * ( m_lnFreq.QuadPart / 1000 );
+        do
+        {
+            QueryPerformanceCounter( &lnCurr );
+            bRet = (BOOL)TryAcquireSRWLockExclusive( &m_srwLock );
+        } while ( lnCurr.QuadPart < lnEnd.QuadPart );
+    }
+#else
+    AcquireSRWLockExclusive( &m_srwLock );
+    bRet = TRUE;
+#endif
+
     return bRet;
 }
 
@@ -77,7 +76,7 @@ VOID CRWLockSlim::ReleaseWriterLock()
 }
 
 #ifdef __cplusplus
-    }
+}
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

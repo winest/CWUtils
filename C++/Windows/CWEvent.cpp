@@ -3,7 +3,6 @@
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -11,22 +10,22 @@ extern "C" {
 CEventMgr CEventMgr::m_self;
 
 
-BOOL CEvent::Create( CONST CHAR * aName , BOOL aManualReset , BOOL aInitialState )
+BOOL CEvent::Create( CONST CHAR * aName, BOOL aManualReset, BOOL aInitialState )
 {
     BOOL bRet = FALSE;
 
     do
     {
-        HANDLE hEvt = CreateEventA( NULL , aManualReset , aInitialState , aName );
+        HANDLE hEvt = CreateEventA( NULL, aManualReset, aInitialState, aName );
         if ( NULL == hEvt )
         {
             break;
         }
         m_hEvt = hEvt;
-        
+
         bRet = TRUE;
     } while ( 0 );
-    
+
     if ( FALSE == bRet )
     {
         this->Close();
@@ -37,23 +36,23 @@ BOOL CEvent::Create( CONST CHAR * aName , BOOL aManualReset , BOOL aInitialState
 
 
 
-BOOL CEvent::Open( CONST CHAR * aName , BOOL aManualReset )
+BOOL CEvent::Open( CONST CHAR * aName, BOOL aManualReset )
 {
     UNREFERENCED_PARAMETER( aManualReset );
     BOOL bRet = FALSE;
 
     do
     {
-        HANDLE hEvt = OpenEventA( EVENT_ALL_ACCESS , FALSE , aName );
+        HANDLE hEvt = OpenEventA( EVENT_ALL_ACCESS, FALSE, aName );
         if ( NULL == hEvt )
         {
             break;
         }
         m_hEvt = hEvt;
-        
+
         bRet = TRUE;
     } while ( 0 );
-    
+
     if ( FALSE == bRet )
     {
         this->Close();
@@ -86,15 +85,15 @@ BOOL CEvent::Reset()
 BOOL CEvent::Wait()
 {
     BOOL bRet = FALSE;
-    
+
     do
     {
-        DWORD dwWait = WaitForSingleObject( m_hEvt , INFINITE );
+        DWORD dwWait = WaitForSingleObject( m_hEvt, INFINITE );
         if ( WAIT_OBJECT_0 != dwWait )
         {
             break;
         }
-        
+
         bRet = TRUE;
     } while ( 0 );
 
@@ -108,18 +107,19 @@ HANDLE CEvent::GetHandle()
 
 
 
-BOOL CEventMgr::RegisterCallback( const ULONG aEventId , EventCallback aCallback )
+BOOL CEventMgr::RegisterCallback( const ULONG aEventId, EventCallback aCallback )
 {
     if ( m_self.m_hChkStop == NULL || aCallback == NULL )
         return FALSE;
 
     EnterCriticalSection( &m_self.m_cs );
-    map<ULONG , MapValue>::iterator itEvent = m_self.m_mapEvent.find( aEventId );
+    map<ULONG, MapValue>::iterator itEvent = m_self.m_mapEvent.find( aEventId );
     if ( itEvent != m_self.m_mapEvent.end() )    //If the event handling thread already exist
     {
         //If the callback is already registered, just return TRUE
         list<EventCallback>::iterator itCallback;
-        for ( itCallback = itEvent->second.lsCallback.begin() ; itCallback != itEvent->second.lsCallback.end() ; ++itCallback )
+        for ( itCallback = itEvent->second.lsCallback.begin(); itCallback != itEvent->second.lsCallback.end();
+              ++itCallback )
         {
             if ( *itCallback == aCallback )
             {
@@ -134,22 +134,22 @@ BOOL CEventMgr::RegisterCallback( const ULONG aEventId , EventCallback aCallback
     else
     {
         LeaveCriticalSection( &m_self.m_cs );
-        return m_self.AllocEventThread( aEventId , aCallback );        
-    }    
+        return m_self.AllocEventThread( aEventId, aCallback );
+    }
 }
 
 
-BOOL CEventMgr::UnRegisterCallback( const ULONG aEventId , EventCallback aCallback )
+BOOL CEventMgr::UnRegisterCallback( const ULONG aEventId, EventCallback aCallback )
 {
     if ( m_self.m_hChkStop == NULL || aCallback == NULL )
         return FALSE;
 
     EnterCriticalSection( &m_self.m_cs );
-    map<ULONG , MapValue>::iterator itEvent = m_self.m_mapEvent.find( aEventId );
+    map<ULONG, MapValue>::iterator itEvent = m_self.m_mapEvent.find( aEventId );
     if ( itEvent != m_self.m_mapEvent.end() )    //If the event handling thread exists
     {
         list<EventCallback>::iterator itCallback;
-        for ( itCallback = itEvent->second.lsCallback.begin() ; itCallback != itEvent->second.lsCallback.end() ; )
+        for ( itCallback = itEvent->second.lsCallback.begin(); itCallback != itEvent->second.lsCallback.end(); )
         {
             if ( *itCallback == aCallback )
             {
@@ -164,13 +164,13 @@ BOOL CEventMgr::UnRegisterCallback( const ULONG aEventId , EventCallback aCallba
         if ( itEvent->second.lsCallback.size() == 0 )    //No callback anyone, close the thread
         {
             HANDLE hThread = itEvent->second.hThread;
-            
+
             itEvent->second.bStopThread = TRUE;
             SetEvent( m_self.m_hChkStop );
             ResetEvent( m_self.m_hChkStop );
             LeaveCriticalSection( &m_self.m_cs );
 
-            DWORD ret = WaitForSingleObject( hThread , 1 * 1000 );
+            DWORD ret = WaitForSingleObject( hThread, 1 * 1000 );
             return ( WAIT_OBJECT_0 == ret ) ? TRUE : FALSE;
         }
     }
@@ -184,9 +184,9 @@ BOOL CEventMgr::ForgeEvent( ULONG aEventId )
     BOOL bRet = FALSE;
 
     WCHAR wzEventName[MAX_PATH];
-    swprintf_s( wzEventName , L"%ws-%08X" , EVENT_MGR_PREFIX , aEventId );
+    swprintf_s( wzEventName, L"%ws-%08X", EVENT_MGR_PREFIX, aEventId );
 
-    HANDLE hEvent = CreateEventW( NULL , TRUE , FALSE , wzEventName );
+    HANDLE hEvent = CreateEventW( NULL, TRUE, FALSE, wzEventName );
     if ( hEvent != NULL )
     {
         if ( SetEvent( hEvent ) == TRUE )
@@ -194,7 +194,7 @@ BOOL CEventMgr::ForgeEvent( ULONG aEventId )
 
         ResetEvent( hEvent );
         CloseHandle( hEvent );
-    }    
+    }
     return bRet;
 }
 
@@ -206,25 +206,25 @@ UINT CALLBACK CEventMgr::EventThread( VOID * aArgs )
     BOOL bRun = TRUE;
     EventThreadArgs * args = (EventThreadArgs *)aArgs;
     ULONG ulEventId = args->ulEventId;
-    HANDLE hEvents[2] = { m_self.m_hChkStop , args->hEvent };
+    HANDLE hEvents[2] = { m_self.m_hChkStop, args->hEvent };
 
     while ( bRun )
     {
-        dwRet = WaitForMultipleObjects( _countof(hEvents) , hEvents , FALSE , INFINITE );
+        dwRet = WaitForMultipleObjects( _countof( hEvents ), hEvents, FALSE, INFINITE );
         switch ( dwRet )
         {
-            case WAIT_OBJECT_0 :        //Check whether we have to stop
+            case WAIT_OBJECT_0:    //Check whether we have to stop
             {
-                map<ULONG , MapValue>::iterator itEvent = m_self.m_mapEvent.find( ulEventId );
+                map<ULONG, MapValue>::iterator itEvent = m_self.m_mapEvent.find( ulEventId );
                 if ( itEvent == m_self.m_mapEvent.end() || itEvent->second.bStopThread )
                     bRun = FALSE;
                 break;
             }
 
-            case WAIT_OBJECT_0 + 1 :    //Get event
+            case WAIT_OBJECT_0 + 1:    //Get event
             {
                 EnterCriticalSection( &m_self.m_cs );
-                map<ULONG , MapValue>::iterator itEvent;
+                map<ULONG, MapValue>::iterator itEvent;
                 list<EventCallback>::iterator itCallback;
                 itEvent = m_self.m_mapEvent.find( ulEventId );
                 if ( itEvent == m_self.m_mapEvent.end() || itEvent->second.bStopThread )
@@ -233,34 +233,35 @@ UINT CALLBACK CEventMgr::EventThread( VOID * aArgs )
                 }
                 else
                 {
-                    for ( itCallback = itEvent->second.lsCallback.begin() ; itCallback != itEvent->second.lsCallback.end() ; itCallback++ )
+                    for ( itCallback = itEvent->second.lsCallback.begin();
+                          itCallback != itEvent->second.lsCallback.end(); itCallback++ )
                     {
-                        (*itCallback)( itEvent->second.ulEventId );
+                        ( *itCallback )( itEvent->second.ulEventId );
                     }
                 }
                 LeaveCriticalSection( &m_self.m_cs );
                 break;
             }
 
-            default :
+            default:
             {
                 bRun = FALSE;
                 break;
-            }            
+            }
         }
     }
-    m_self.FreeEventThread( ulEventId , args );
+    m_self.FreeEventThread( ulEventId, args );
     InterlockedDecrement( &m_self.m_nTotalThreads );
     return dwRet;
 }
 
-BOOL CEventMgr::AllocEventThread( ULONG aEventId , EventCallback aCallback )
+BOOL CEventMgr::AllocEventThread( ULONG aEventId, EventCallback aCallback )
 {
     //EventThread is allocated only if there is no thread handling such event type
     WCHAR wzEventName[MAX_PATH];
-    swprintf_s( wzEventName , L"%ws-%08X" , EVENT_MGR_PREFIX , aEventId );
+    swprintf_s( wzEventName, L"%ws-%08X", EVENT_MGR_PREFIX, aEventId );
 
-    HANDLE hEvent = CreateEventW( NULL , TRUE , FALSE , wzEventName );
+    HANDLE hEvent = CreateEventW( NULL, TRUE, FALSE, wzEventName );
     if ( hEvent == NULL )
     {
         return FALSE;
@@ -273,7 +274,8 @@ BOOL CEventMgr::AllocEventThread( ULONG aEventId , EventCallback aCallback )
 
         //Create a suspend thread, fill m_mapEvent, and then resume the thread
         InterlockedIncrement( &this->m_nTotalThreads );
-        HANDLE hThread = (HANDLE)_beginthreadex( NULL , NULL , CEventMgr::EventThread , (VOID *)args , CREATE_SUSPENDED , NULL );
+        HANDLE hThread =
+            (HANDLE)_beginthreadex( NULL, NULL, CEventMgr::EventThread, (VOID *)args, CREATE_SUSPENDED, NULL );
         if ( hThread != NULL )
         {
             EnterCriticalSection( &this->m_cs );
@@ -286,7 +288,7 @@ BOOL CEventMgr::AllocEventThread( ULONG aEventId , EventCallback aCallback )
 
             if ( ResumeThread( hThread ) == (DWORD)-1 )
             {
-                this->FreeEventThread( aEventId , args );
+                this->FreeEventThread( aEventId, args );
                 InterlockedDecrement( &this->m_nTotalThreads );
                 return FALSE;
             }
@@ -297,16 +299,16 @@ BOOL CEventMgr::AllocEventThread( ULONG aEventId , EventCallback aCallback )
         }
         else
         {
-            this->FreeEventThread( aEventId , args );
-            InterlockedDecrement( &(this->m_nTotalThreads) );
+            this->FreeEventThread( aEventId, args );
+            InterlockedDecrement( &( this->m_nTotalThreads ) );
             return FALSE;
         }
     }
 }
 
-BOOL CEventMgr::FreeEventThread( ULONG aEventId , EventThreadArgs * aArgs )
+BOOL CEventMgr::FreeEventThread( ULONG aEventId, EventThreadArgs * aArgs )
 {
-    map<ULONG , MapValue>::iterator itEvent = this->m_mapEvent.find( aEventId );    
+    map<ULONG, MapValue>::iterator itEvent = this->m_mapEvent.find( aEventId );
     if ( itEvent != this->m_mapEvent.end() )
         this->m_mapEvent.erase( itEvent );
 
@@ -322,4 +324,4 @@ BOOL CEventMgr::FreeEventThread( ULONG aEventId , EventThreadArgs * aArgs )
 }
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

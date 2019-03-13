@@ -5,14 +5,13 @@
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
 
-BOOL CSharedMemFifo::Create( CONST CHAR * aName , UINT32 aPermission )
+BOOL CSharedMemFifo::Create( CONST CHAR * aName, UINT32 aPermission )
 {
     BOOL bRet = FALSE;
     this->Close();
@@ -39,9 +38,9 @@ BOOL CSharedMemFifo::Create( CONST CHAR * aName , UINT32 aPermission )
         {
             uCreatePerm |= ( S_IXUSR | S_IXGRP | S_IXOTH );
         }
-        if ( -1 == mkfifo( aName , uCreatePerm ) && EEXIST != errno )
+        if ( -1 == mkfifo( aName, uCreatePerm ) && EEXIST != errno )
         {
-            printf( "mkfifo() failed, errno=%s\n" , strerror(errno) );
+            printf( "mkfifo() failed, errno=%s\n", strerror( errno ) );
             break;
         }
 
@@ -57,7 +56,7 @@ BOOL CSharedMemFifo::Create( CONST CHAR * aName , UINT32 aPermission )
 }
 
 
-BOOL CSharedMemFifo::Open( CONST CHAR * aName , UINT32 aPermission )
+BOOL CSharedMemFifo::Open( CONST CHAR * aName, UINT32 aPermission )
 {
     BOOL bRet = FALSE;
     this->Close();
@@ -84,9 +83,9 @@ BOOL CSharedMemFifo::Open( CONST CHAR * aName , UINT32 aPermission )
         {
             uCreatePerm |= ( S_IXUSR | S_IXGRP | S_IXOTH );
         }
-        if ( -1 != mkfifo( aName , uCreatePerm ) || EEXIST != errno )
+        if ( -1 != mkfifo( aName, uCreatePerm ) || EEXIST != errno )
         {
-            printf( "Not created yet, errno=%s\n" , strerror(errno) );
+            printf( "Not created yet, errno=%s\n", strerror( errno ) );
             break;
         }
 
@@ -134,12 +133,14 @@ BOOL CSharedMemFifo::Connect( UINT32 aPermission )
                 nOpenPerm = O_RDWR;
             }
         }
-        else {}
+        else
+        {
+        }
 
-        m_hSm = open( m_strName.c_str() , nOpenPerm );
+        m_hSm = open( m_strName.c_str(), nOpenPerm );
         if ( -1 == m_hSm )
         {
-            printf( "open() failed, errno=%s\n" , strerror(errno) );
+            printf( "open() failed, errno=%s\n", strerror( errno ) );
             break;
         }
 
@@ -169,7 +170,7 @@ VOID CSharedMemFifo::Close( BOOL aRemove )
     }
 }
 
-BOOL CSharedMemFifo::Write( CONST UCHAR * aBuf , SIZE_T aBufSize )
+BOOL CSharedMemFifo::Write( CONST UCHAR * aBuf, SIZE_T aBufSize )
 {
     BOOL bRet = FALSE;
 
@@ -178,10 +179,10 @@ BOOL CSharedMemFifo::Write( CONST UCHAR * aBuf , SIZE_T aBufSize )
         SIZE_T uWritten = 0;
         do
         {
-            SIZE_T uNowWritten = write( m_hSm , aBuf+uWritten , aBufSize-uWritten );
+            SIZE_T uNowWritten = write( m_hSm, aBuf + uWritten, aBufSize - uWritten );
             if ( -1 == uNowWritten )
             {
-                printf( "write() failed, errno=%s\n" , strerror(errno) );
+                printf( "write() failed, errno=%s\n", strerror( errno ) );
                 break;
             }
             uWritten += uNowWritten;
@@ -193,12 +194,12 @@ BOOL CSharedMemFifo::Write( CONST UCHAR * aBuf , SIZE_T aBufSize )
     return bRet;
 }
 
-INT CSharedMemFifo::Read( UCHAR * aBuf , SIZE_T aBufSize )
+INT CSharedMemFifo::Read( UCHAR * aBuf, SIZE_T aBufSize )
 {
-    return read( m_hSm , aBuf , aBufSize );
+    return read( m_hSm, aBuf, aBufSize );
 }
 
-BOOL CSharedMemFifo::Read( std::string & aBuf , SIZE_T aBufSize )
+BOOL CSharedMemFifo::Read( std::string & aBuf, SIZE_T aBufSize )
 {
     BOOL bRet = FALSE;
     aBuf.clear();
@@ -210,15 +211,15 @@ BOOL CSharedMemFifo::Read( std::string & aBuf , SIZE_T aBufSize )
         SIZE_T uRead = 0;
         do
         {
-            SIZE_T uRemainSize = min( (SIZE_T)sizeof(szBuf) , aBufSize-uRead );
-            SIZE_T uNowRead = read( m_hSm , szBuf , uRemainSize );
+            SIZE_T uRemainSize = min( (SIZE_T)sizeof( szBuf ), aBufSize - uRead );
+            SIZE_T uNowRead = read( m_hSm, szBuf, uRemainSize );
             if ( -1 == uNowRead )
             {
-                printf( "read() failed, errno=%s\n" , strerror(errno) );
+                printf( "read() failed, errno=%s\n", strerror( errno ) );
                 break;
             }
             uRead += uNowRead;
-            aBuf.append( szBuf , uNowRead );
+            aBuf.append( szBuf, uNowRead );
         } while ( uRead < aBufSize );
 
         bRet = TRUE;
@@ -228,20 +229,20 @@ BOOL CSharedMemFifo::Read( std::string & aBuf , SIZE_T aBufSize )
 }
 
 
-BOOL CSharedMemFifo::SmartWrite( CONST UCHAR * aBuf , SIZE_T aBufSize )
+BOOL CSharedMemFifo::SmartWrite( CONST UCHAR * aBuf, SIZE_T aBufSize )
 {
     BOOL bRet = FALSE;
 
     do
     {
-        if ( FALSE == this->Write( (CONST UCHAR *)&aBufSize , sizeof(SIZE_T) ) )
+        if ( FALSE == this->Write( (CONST UCHAR *)&aBufSize, sizeof( SIZE_T ) ) )
         {
-            printf( "Write() failed for size, errno=%d\n" , errno );
+            printf( "Write() failed for size, errno=%d\n", errno );
             break;
         }
-        if ( FALSE == this->Write( aBuf , aBufSize ) )
+        if ( FALSE == this->Write( aBuf, aBufSize ) )
         {
-            printf( "Write() failed for data, errno=%d\n" , errno );
+            printf( "Write() failed for data, errno=%d\n", errno );
             break;
         }
 
@@ -258,15 +259,15 @@ BOOL CSharedMemFifo::SmartRead( std::string & aBuf )
     do
     {
         SIZE_T uDataSize = 0;
-        if ( -1 == this->Read( (UCHAR *)&uDataSize , sizeof(SIZE_T) ) )
+        if ( -1 == this->Read( (UCHAR *)&uDataSize, sizeof( SIZE_T ) ) )
         {
-            printf( "Read() failed for size, errno=%d\n" , errno );
+            printf( "Read() failed for size, errno=%d\n", errno );
             break;
         }
 
-        if ( FALSE == this->Read( aBuf , uDataSize ) )
+        if ( FALSE == this->Read( aBuf, uDataSize ) )
         {
-            printf( "Read() failed for data, errno=%d\n" , errno );
+            printf( "Read() failed for data, errno=%d\n", errno );
             break;
         }
 
@@ -281,20 +282,7 @@ BOOL CSharedMemFifo::SmartRead( std::string & aBuf )
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-BOOL CSharedMemSegment::Create( CONST CHAR * aName , SIZE_T aMaxDataSize , UINT32 aPermission )
+BOOL CSharedMemSegment::Create( CONST CHAR * aName, SIZE_T aMaxDataSize, UINT32 aPermission )
 {
     BOOL bRet = FALSE;
     this->Close();
@@ -305,22 +293,22 @@ BOOL CSharedMemSegment::Create( CONST CHAR * aName , SIZE_T aMaxDataSize , UINT3
         {
             m_strName = aName;
         }
-        
-        
-        
+
+
+
         //Create IPC event
-        if ( FALSE == m_evtData.Create( (string("EvtData_")+m_strName).c_str() , FALSE , FALSE ) )
+        if ( FALSE == m_evtData.Create( ( string( "EvtData_" ) + m_strName ).c_str(), FALSE, FALSE ) )
         {
-            printf( "m_evtData.Create() failed, errno=%d\n" , errno );
+            printf( "m_evtData.Create() failed, errno=%d\n", errno );
             break;
         }
-        if ( FALSE == m_evtDataOk.Create( (string("EvtDataOk_")+m_strName).c_str() , FALSE , FALSE ) )
+        if ( FALSE == m_evtDataOk.Create( ( string( "EvtDataOk_" ) + m_strName ).c_str(), FALSE, FALSE ) )
         {
-            printf( "m_evtDataOk.Create() failed, errno=%d\n" , errno );
+            printf( "m_evtDataOk.Create() failed, errno=%d\n", errno );
             break;
         }
-        
-        
+
+
 
         //Create shared memory
         UINT32 uCreatePerm = 0;
@@ -337,22 +325,22 @@ BOOL CSharedMemSegment::Create( CONST CHAR * aName , SIZE_T aMaxDataSize , UINT3
             uCreatePerm |= ( S_IXUSR | S_IXGRP | S_IXOTH );
         }
 
-        m_hSm = shm_open( aName , O_CREAT | O_EXCL | O_RDWR , uCreatePerm );    //O_RDWR is needed for ftruncate()
+        m_hSm = shm_open( aName, O_CREAT | O_EXCL | O_RDWR, uCreatePerm );    //O_RDWR is needed for ftruncate()
         if ( m_hSm == -1 )
         {
             if ( errno == EEXIST )
             {
                 //Try to open an existing one
-                m_hSm = shm_open( aName , O_RDWR , uCreatePerm );
+                m_hSm = shm_open( aName, O_RDWR, uCreatePerm );
                 if ( m_hSm == -1 )
                 {
-                    printf( "shm_open() failed, errno=%s\n" , strerror(errno) );
+                    printf( "shm_open() failed, errno=%s\n", strerror( errno ) );
                     break;
                 }
             }
             else
             {
-                printf( "shm_open() failed, errno=%s\n" , strerror(errno) );
+                printf( "shm_open() failed, errno=%s\n", strerror( errno ) );
                 break;
             }
         }
@@ -361,13 +349,13 @@ BOOL CSharedMemSegment::Create( CONST CHAR * aName , SIZE_T aMaxDataSize , UINT3
 
         //Set max size
         m_uMaxDataSize = aMaxDataSize;
-        m_uMaxSmSize = sizeof(CWUtilsSmData) - 1 + m_uMaxDataSize;
+        m_uMaxSmSize = sizeof( CWUtilsSmData ) - 1 + m_uMaxDataSize;
         struct stat smStat;
-        if ( -1 != fstat( m_hSm , &smStat) && smStat.st_size == 0 )
+        if ( -1 != fstat( m_hSm, &smStat ) && smStat.st_size == 0 )
         {
-            if ( ftruncate( m_hSm , m_uMaxSmSize ) == -1 )
+            if ( ftruncate( m_hSm, m_uMaxSmSize ) == -1 )
             {
-                printf( "ftruncate() failed. errno=%s\n" , strerror(errno) );
+                printf( "ftruncate() failed. errno=%s\n", strerror( errno ) );
                 break;
             }
         }
@@ -390,10 +378,10 @@ BOOL CSharedMemSegment::Create( CONST CHAR * aName , SIZE_T aMaxDataSize , UINT3
             nProtMap |= PROT_EXEC;
         }
 
-        m_pData = mmap( NULL , m_uMaxSmSize , nProtMap , nFlagMap , m_hSm , 0 );
+        m_pData = mmap( NULL, m_uMaxSmSize, nProtMap, nFlagMap, m_hSm, 0 );
         if ( m_pData == MAP_FAILED )
         {
-            printf( "mmap() failed. errno=%s\n" , strerror(errno) );
+            printf( "mmap() failed. errno=%s\n", strerror( errno ) );
             break;
         }
 
@@ -412,7 +400,7 @@ BOOL CSharedMemSegment::Create( CONST CHAR * aName , SIZE_T aMaxDataSize , UINT3
 
 
 
-BOOL CSharedMemSegment::Open( CONST CHAR * aName , SIZE_T aMaxDataSize , UINT32 aPermission )
+BOOL CSharedMemSegment::Open( CONST CHAR * aName, SIZE_T aMaxDataSize, UINT32 aPermission )
 {
     BOOL bRet = FALSE;
     this->Close();
@@ -423,28 +411,28 @@ BOOL CSharedMemSegment::Open( CONST CHAR * aName , SIZE_T aMaxDataSize , UINT32 
         {
             m_strName = aName;
         }
-        
-        
-        
+
+
+
         //Open IPC event
-        if ( FALSE == m_evtData.Open( (string("EvtData_")+m_strName).c_str() , FALSE ) )
+        if ( FALSE == m_evtData.Open( ( string( "EvtData_" ) + m_strName ).c_str(), FALSE ) )
         {
-            printf( "m_evtData.Open() failed, errno=%d\n" , errno );
+            printf( "m_evtData.Open() failed, errno=%d\n", errno );
             break;
         }
-        if ( FALSE == m_evtDataOk.Open( (string("EvtDataOk_")+m_strName).c_str() , FALSE ) )
+        if ( FALSE == m_evtDataOk.Open( ( string( "EvtDataOk_" ) + m_strName ).c_str(), FALSE ) )
         {
-            printf( "m_evtDataOk.Open() failed, errno=%d\n" , errno );
+            printf( "m_evtDataOk.Open() failed, errno=%d\n", errno );
             break;
         }
-        
-        
+
+
 
         //Open shared memory
-        m_hSm = shm_open( aName , O_RDWR , aPermission );
+        m_hSm = shm_open( aName, O_RDWR, aPermission );
         if ( m_hSm == -1 )
         {
-            printf( "shm_open() failed, errno=%s\n" , strerror(errno) );
+            printf( "shm_open() failed, errno=%s\n", strerror( errno ) );
             break;
         }
 
@@ -452,13 +440,13 @@ BOOL CSharedMemSegment::Open( CONST CHAR * aName , SIZE_T aMaxDataSize , UINT32 
 
         //Set max size
         m_uMaxDataSize = aMaxDataSize;
-        m_uMaxSmSize = sizeof(CWUtilsSmData) - 1 + m_uMaxDataSize;
+        m_uMaxSmSize = sizeof( CWUtilsSmData ) - 1 + m_uMaxDataSize;
         struct stat smStat;
-        if ( -1 != fstat( m_hSm , &smStat) && smStat.st_size == 0 )
+        if ( -1 != fstat( m_hSm, &smStat ) && smStat.st_size == 0 )
         {
-            if ( -1 == ftruncate( m_hSm , m_uMaxSmSize ) )
+            if ( -1 == ftruncate( m_hSm, m_uMaxSmSize ) )
             {
-                printf( "ftruncate() failed. errno=%s\n" , strerror(errno) );
+                printf( "ftruncate() failed. errno=%s\n", strerror( errno ) );
                 break;
             }
         }
@@ -480,10 +468,10 @@ BOOL CSharedMemSegment::Open( CONST CHAR * aName , SIZE_T aMaxDataSize , UINT32 
             nProtMap |= PROT_EXEC;
         }
 
-        m_pData = mmap( NULL , m_uMaxSmSize , nProtMap , nFlagMap , m_hSm , 0 );
+        m_pData = mmap( NULL, m_uMaxSmSize, nProtMap, nFlagMap, m_hSm, 0 );
         if ( m_pData == MAP_FAILED )
         {
-            printf( "mmap() failed. errno=%s\n" , strerror(errno) );
+            printf( "mmap() failed. errno=%s\n", strerror( errno ) );
             break;
         }
 
@@ -506,7 +494,7 @@ VOID CSharedMemSegment::Close()
 {
     if ( m_pData != NULL )
     {
-        munmap( m_pData , m_uMaxSmSize );
+        munmap( m_pData, m_uMaxSmSize );
         m_pData = NULL;
     }
 
@@ -542,10 +530,10 @@ SIZE_T CSharedMemSegment::GetMaxDataSize()
 }
 
 
-BOOL CSharedMemSegment::SmartWrite( CONST UCHAR * aBuf , SIZE_T aBufSize )
+BOOL CSharedMemSegment::SmartWrite( CONST UCHAR * aBuf, SIZE_T aBufSize )
 {
     BOOL bRet = FALSE;
-    
+
     do
     {
         CWUtilsSmData * pData = (CWUtilsSmData *)m_pData;
@@ -554,23 +542,23 @@ BOOL CSharedMemSegment::SmartWrite( CONST UCHAR * aBuf , SIZE_T aBufSize )
             printf( "pData is NULL" );
             break;
         }
-        
+
         BOOL bWriteError = FALSE;
         pData->uTotalSize = aBufSize;
         pData->uFlags = 0;
         SIZE_T uWritten = 0;
         do
         {
-            pData->uCurrSize = min( m_uMaxDataSize , aBufSize-uWritten );
-            memcpy( pData->pData , aBuf+uWritten , pData->uCurrSize );
+            pData->uCurrSize = min( m_uMaxDataSize, aBufSize - uWritten );
+            memcpy( pData->pData, aBuf + uWritten, pData->uCurrSize );
             uWritten += pData->uCurrSize;
-            
+
             //Signal and wait response
             if ( FALSE == m_evtData.Set() )
             {
                 if ( EIDRM != errno )
                 {
-                    printf( "m_evtData.Set() failed, errno=%s\n" , strerror(errno) );
+                    printf( "m_evtData.Set() failed, errno=%s\n", strerror( errno ) );
                 }
                 bWriteError = TRUE;
                 break;
@@ -579,20 +567,20 @@ BOOL CSharedMemSegment::SmartWrite( CONST UCHAR * aBuf , SIZE_T aBufSize )
             {
                 if ( EIDRM != errno )
                 {
-                    printf( "m_evtDataOk.Wait() failed, errno=%s\n" , strerror(errno) );
+                    printf( "m_evtDataOk.Wait() failed, errno=%s\n", strerror( errno ) );
                 }
                 bWriteError = TRUE;
                 break;
             }
         } while ( uWritten < aBufSize );
-        if ( (uWritten < aBufSize) || bWriteError )
+        if ( ( uWritten < aBufSize ) || bWriteError )
         {
             break;
         }
-        
+
         bRet = TRUE;
     } while ( 0 );
-    
+
     return bRet;
 }
 
@@ -609,7 +597,7 @@ BOOL CSharedMemSegment::SmartRead( std::string & aBuf )
             printf( "pData is NULL" );
             break;
         }
-        
+
         SIZE_T uRead = 0;
         SIZE_T uTotalSize = 0;
         BOOL bReadError = FALSE;
@@ -620,7 +608,7 @@ BOOL CSharedMemSegment::SmartRead( std::string & aBuf )
             {
                 if ( EIDRM != errno )
                 {
-                    printf( "m_evtData.Wait() failed, errno=%s\n" , strerror(errno) );
+                    printf( "m_evtData.Wait() failed, errno=%s\n", strerror( errno ) );
                 }
                 bReadError = TRUE;
                 break;
@@ -628,7 +616,7 @@ BOOL CSharedMemSegment::SmartRead( std::string & aBuf )
             aBuf.reserve( pData->uTotalSize );
             uTotalSize = pData->uTotalSize;
 
-            aBuf.append( pData->pData , pData->uCurrSize );
+            aBuf.append( pData->pData, pData->uCurrSize );
             uRead += pData->uCurrSize;
 
             //Signal and wait response
@@ -636,13 +624,13 @@ BOOL CSharedMemSegment::SmartRead( std::string & aBuf )
             {
                 if ( EIDRM != errno )
                 {
-                    printf( "m_evtDataOk.Set() failed, errno=%s\n" , strerror(errno) );
+                    printf( "m_evtDataOk.Set() failed, errno=%s\n", strerror( errno ) );
                 }
                 bReadError = TRUE;
                 break;
             }
         } while ( uRead < uTotalSize );
-        if ( (uRead < uTotalSize) || bReadError )
+        if ( ( uRead < uTotalSize ) || bReadError )
         {
             break;
         }
@@ -658,4 +646,4 @@ BOOL CSharedMemSegment::SmartRead( std::string & aBuf )
 }
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

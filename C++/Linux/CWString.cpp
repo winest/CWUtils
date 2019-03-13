@@ -4,138 +4,138 @@ using namespace std;
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
-    extern "C" {
+extern "C" {
 #endif
 
-BOOL StringToWString( IN CONST std::string & aString , OUT std::wstring & aWString , DWORD aCodePage )
+BOOL StringToWString( IN CONST std::string & aString, OUT std::wstring & aWString, DWORD aCodePage )
 {
-    UNREFERENCED_PARAMETER( aCodePage ); //Linux will use the locale in setlocale( LC_CTYPE , NULL )
-    
+    UNREFERENCED_PARAMETER( aCodePage );    //Linux will use the locale in setlocale( LC_CTYPE , NULL )
+
     BOOL bRet = FALSE;
     aWString.clear();
 
     WCHAR wzBuf[4096];
     size_t uBufSize = _countof( wzBuf );
-    size_t uBufCopied = mbstowcs( wzBuf , aString.c_str() , uBufSize );
+    size_t uBufCopied = mbstowcs( wzBuf, aString.c_str(), uBufSize );
     if ( uBufCopied < uBufSize )
     {
-        aWString.assign( wzBuf , uBufCopied );
+        aWString.assign( wzBuf, uBufCopied );
         bRet = TRUE;
     }
     else
     {
         uBufSize = aString.length() * 2;
-        WCHAR * wzNewBuf = new (std::nothrow) WCHAR[uBufSize];
+        WCHAR * wzNewBuf = new ( std::nothrow ) WCHAR[uBufSize];
         if ( NULL != wzNewBuf )
         {
-            uBufCopied = mbstowcs( wzNewBuf , aString.c_str() , uBufSize );
+            uBufCopied = mbstowcs( wzNewBuf, aString.c_str(), uBufSize );
             if ( uBufCopied < uBufSize )
             {
-                aWString.assign( wzNewBuf , uBufCopied );
+                aWString.assign( wzNewBuf, uBufCopied );
                 bRet = TRUE;
             }
-            delete [] wzNewBuf;
+            delete[] wzNewBuf;
         }
     }
     return bRet;
 }
 
-BOOL WStringToString( IN CONST std::wstring & aWString , OUT std::string & aString , DWORD aCodePage )
+BOOL WStringToString( IN CONST std::wstring & aWString, OUT std::string & aString, DWORD aCodePage )
 {
-    UNREFERENCED_PARAMETER( aCodePage ); //Linux will use the locale in setlocale( LC_CTYPE , NULL )
-    
+    UNREFERENCED_PARAMETER( aCodePage );    //Linux will use the locale in setlocale( LC_CTYPE , NULL )
+
     BOOL bRet = FALSE;
     aString.clear();
 
     CHAR szBuf[4096];
     size_t uBufSize = _countof( szBuf );
-    size_t uBufCopied = wcstombs( szBuf , aWString.c_str() , uBufSize );
+    size_t uBufCopied = wcstombs( szBuf, aWString.c_str(), uBufSize );
     if ( uBufCopied < uBufSize )
     {
-        aString.assign( szBuf , uBufCopied );
+        aString.assign( szBuf, uBufCopied );
         bRet = TRUE;
     }
     else
     {
         uBufSize = aWString.length() * 4;
-        CHAR * szNewBuf = new (std::nothrow) CHAR[uBufSize];
+        CHAR * szNewBuf = new ( std::nothrow ) CHAR[uBufSize];
         if ( NULL != szNewBuf )
         {
-            uBufCopied = wcstombs( szNewBuf , aWString.c_str() , uBufSize );
+            uBufCopied = wcstombs( szNewBuf, aWString.c_str(), uBufSize );
             if ( uBufCopied < uBufSize )
             {
-                aString.assign( szNewBuf , uBufCopied );
+                aString.assign( szNewBuf, uBufCopied );
                 bRet = TRUE;
-            }            
-            delete [] szNewBuf;
+            }
+            delete[] szNewBuf;
         }
     }
     return bRet;
 }
 
-VOID SplitStringA( CONST string & aSrcString , vector<string> & aOutput , CONST CHAR * aDelimiter )
-{    
-    string::size_type lastPos = aSrcString.find_first_not_of( aDelimiter , 0 );   //Skip delimiters at beginning    
-    string::size_type pos     = aSrcString.find_first_of( aDelimiter , lastPos ); //Find first "non-delimiter"
+VOID SplitStringA( CONST string & aSrcString, vector<string> & aOutput, CONST CHAR * aDelimiter )
+{
+    string::size_type lastPos = aSrcString.find_first_not_of( aDelimiter, 0 );    //Skip delimiters at beginning
+    string::size_type pos = aSrcString.find_first_of( aDelimiter, lastPos );      //Find first "non-delimiter"
 
     while ( string::npos != pos || string::npos != lastPos )
-    {        
-        aOutput.push_back( aSrcString.substr(lastPos , pos - lastPos) );   //Found a token, add it to the vector        
-        lastPos = aSrcString.find_first_not_of( aDelimiter , pos );        //Skip delimiters. Note the "not_of"        
-        pos = aSrcString.find_first_of( aDelimiter , lastPos );            //Find next "non-delimiter"
+    {
+        aOutput.push_back( aSrcString.substr( lastPos, pos - lastPos ) );    //Found a token, add it to the vector
+        lastPos = aSrcString.find_first_not_of( aDelimiter, pos );           //Skip delimiters. Note the "not_of"
+        pos = aSrcString.find_first_of( aDelimiter, lastPos );               //Find next "non-delimiter"
     }
 }
 
-VOID SplitStringW( CONST wstring & aSrcString , vector<wstring> & aOutput , CONST WCHAR * aDelimiter )
-{    
-    wstring::size_type lastPos = aSrcString.find_first_not_of( aDelimiter , 0 );   //Skip delimiters at beginning    
-    wstring::size_type pos     = aSrcString.find_first_of( aDelimiter , lastPos ); //Find first "non-delimiter"
+VOID SplitStringW( CONST wstring & aSrcString, vector<wstring> & aOutput, CONST WCHAR * aDelimiter )
+{
+    wstring::size_type lastPos = aSrcString.find_first_not_of( aDelimiter, 0 );    //Skip delimiters at beginning
+    wstring::size_type pos = aSrcString.find_first_of( aDelimiter, lastPos );      //Find first "non-delimiter"
 
     while ( wstring::npos != pos || wstring::npos != lastPos )
-    {        
-        aOutput.push_back( aSrcString.substr(lastPos , pos - lastPos) );   //Found a token, add it to the vector        
-        lastPos = aSrcString.find_first_not_of( aDelimiter , pos );        //Skip delimiters. Note the "not_of"        
-        pos = aSrcString.find_first_of( aDelimiter , lastPos );            //Find next "non-delimiter"
+    {
+        aOutput.push_back( aSrcString.substr( lastPos, pos - lastPos ) );    //Found a token, add it to the vector
+        lastPos = aSrcString.find_first_not_of( aDelimiter, pos );           //Skip delimiters. Note the "not_of"
+        pos = aSrcString.find_first_of( aDelimiter, lastPos );               //Find next "non-delimiter"
     }
 }
 
-BOOL CDECL FormatStringA( OUT string & aOutString , IN CONST CHAR * aFormat , ... )
+BOOL CDECL FormatStringA( OUT string & aOutString, IN CONST CHAR * aFormat, ... )
 {
     BOOL bRet = FALSE;
     aOutString.clear();
     CHAR szBuf[4096];
     CHAR * pBuf = szBuf;
-    SIZE_T uBufLen = _countof(szBuf);
+    SIZE_T uBufLen = _countof( szBuf );
     INT nCopiedLen = 0;
 
     if ( NULL != aFormat )
     {
         va_list args;
-        va_start( args , aFormat );
+        va_start( args, aFormat );
 
         do
         {
-            nCopiedLen = vsnprintf( pBuf , uBufLen , aFormat , args ) + 1;    //Get formatted string length and adding one for null-terminator
+            nCopiedLen = vsnprintf( pBuf, uBufLen, aFormat, args ) +
+                         1;    //Get formatted string length and adding one for null-terminator
 
             if ( 0 < nCopiedLen && nCopiedLen < uBufLen )
             {
-                aOutString.assign( pBuf , (SIZE_T)nCopiedLen );
+                aOutString.assign( pBuf, (SIZE_T)nCopiedLen );
                 break;
             }
 
             if ( pBuf != szBuf )
             {
-                delete [] pBuf;
+                delete[] pBuf;
             }
             uBufLen = uBufLen * 2;
-            pBuf = new (std::nothrow) CHAR[uBufLen];
+            pBuf = new ( std::nothrow ) CHAR[uBufLen];
         } while ( pBuf );
 
         if ( pBuf != szBuf )
         {
-            delete [] pBuf;
+            delete[] pBuf;
         }
 
         va_end( args );
@@ -145,44 +145,45 @@ BOOL CDECL FormatStringA( OUT string & aOutString , IN CONST CHAR * aFormat , ..
         errno = EINVAL;
     }
 
-    return bRet; 
+    return bRet;
 }
 
-BOOL CDECL FormatStringW( OUT wstring & aOutString , IN CONST WCHAR * aFormat , ... )
+BOOL CDECL FormatStringW( OUT wstring & aOutString, IN CONST WCHAR * aFormat, ... )
 {
     BOOL bRet = FALSE;
     aOutString.clear();
     WCHAR wzBuf[4096];
     WCHAR * pBuf = wzBuf;
-    SIZE_T uBufLen = _countof(wzBuf);
+    SIZE_T uBufLen = _countof( wzBuf );
     INT nCopiedLen = 0;
 
     if ( NULL != aFormat )
     {
         va_list args;
-        va_start( args , aFormat );
+        va_start( args, aFormat );
 
         do
         {
-            nCopiedLen = vswprintf( pBuf , uBufLen , aFormat , args ) + 1;    //Get formatted string length and adding one for null-terminator
+            nCopiedLen = vswprintf( pBuf, uBufLen, aFormat, args ) +
+                         1;    //Get formatted string length and adding one for null-terminator
 
             if ( 0 < nCopiedLen && nCopiedLen < uBufLen )
             {
-                aOutString.assign( pBuf , (SIZE_T)nCopiedLen );
+                aOutString.assign( pBuf, (SIZE_T)nCopiedLen );
                 break;
             }
 
             if ( pBuf != wzBuf )
             {
-                delete [] pBuf;
+                delete[] pBuf;
             }
             uBufLen = uBufLen * 2;
-            pBuf = new (std::nothrow) WCHAR[uBufLen];
+            pBuf = new ( std::nothrow ) WCHAR[uBufLen];
         } while ( pBuf );
 
         if ( pBuf != wzBuf )
         {
-            delete [] pBuf;
+            delete[] pBuf;
         }
 
         va_end( args );
@@ -192,38 +193,38 @@ BOOL CDECL FormatStringW( OUT wstring & aOutString , IN CONST WCHAR * aFormat , 
         errno = EINVAL;
     }
 
-    return bRet; 
+    return bRet;
 }
 
 VOID ToLower( IN OUT std::string & aString )
 {
-    std::transform( aString.begin() , aString.end() , aString.begin() , (int (*)(int))std::tolower );
+    std::transform( aString.begin(), aString.end(), aString.begin(), (int ( * )( int ))std::tolower );
 }
 
 VOID ToUpper( IN OUT std::string & aString )
 {
-    std::transform( aString.begin() , aString.end() , aString.begin() , (int (*)(int))std::toupper );
+    std::transform( aString.begin(), aString.end(), aString.begin(), (int ( * )( int ))std::toupper );
 }
 
-VOID ToHexString( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , CONST CHAR * aSplitter )
+VOID ToHexString( CONST UCHAR * aInput, SIZE_T aInputSize, string & aOutput, CONST CHAR * aSplitter )
 {
     aOutput.clear();
     UINT32 aryTable[256];
-    for ( size_t i = 0 ; i < 256 ; i++ )
+    for ( size_t i = 0; i < 256; i++ )
     {
         CHAR szChar[3];
-        snprintf( szChar , sizeof(szChar) , "%02zX" , i );
+        snprintf( szChar, sizeof( szChar ), "%02zX", i );
         aryTable[i] = ( (UINT32)szChar[0] ) + ( (UINT32)szChar[1] << 16 );
     }
 
     size_t uSplitterLen = strlen( aSplitter );
-    aOutput.reserve( aInputSize * (2 + uSplitterLen) );
-    for ( size_t i = 0 ; i < aInputSize ; i++ )
+    aOutput.reserve( aInputSize * ( 2 + uSplitterLen ) );
+    for ( size_t i = 0; i < aInputSize; i++ )
     {
         INT nCurr = i * ( 2 + uSplitterLen );
         UINT32 uVal = aryTable[aInput[i]];
         aOutput.push_back( (CHAR)uVal );
-        aOutput.push_back( (CHAR)( uVal >> 16 ) );
+        aOutput.push_back( ( CHAR )( uVal >> 16 ) );
 
         aOutput.append( aSplitter );
     }
@@ -234,14 +235,18 @@ VOID ToHexString( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , 
 }
 
 
-VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , CONST CHAR * aSplitter , size_t aBytesPerLine )
+VOID ToHexDump( CONST UCHAR * aInput,
+                SIZE_T aInputSize,
+                string & aOutput,
+                CONST CHAR * aSplitter,
+                size_t aBytesPerLine )
 {
     aOutput.clear();
     UINT32 aryTable[256];
-    for ( size_t i = 0 ; i < 256 ; i++ )
+    for ( size_t i = 0; i < 256; i++ )
     {
         CHAR szChar[3];
-        snprintf( szChar , sizeof(szChar) , "%02zX" , i );
+        snprintf( szChar, sizeof( szChar ), "%02zX", i );
         aryTable[i] = ( (UINT32)szChar[0] ) + ( (UINT32)szChar[1] << 16 );
     }
     size_t uSplitterLen = strlen( aSplitter );
@@ -249,23 +254,23 @@ VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , CO
 
     //<8 bytes address><aSplitter><aBytesPerLine's hex with (aBytesPerLine - 1)'s space><aSplitter><aBytesPerLine's ascii><2 bytes line separator>
     size_t uOneLineSize = 8 + uSplitterLen * 2 + aBytesPerLine * 4 - 1 + strLineSep.length();
-    aOutput.reserve( (size_t)ceil((double)aInputSize/(double)aBytesPerLine) * uOneLineSize );
-    for ( int i = 0 ; i < aInputSize ; i += aBytesPerLine )
+    aOutput.reserve( (size_t)ceil( (double)aInputSize / (double)aBytesPerLine ) * uOneLineSize );
+    for ( int i = 0; i < aInputSize; i += aBytesPerLine )
     {
-        CHAR szAddr[8+16];  //Assume aSplitter has at most 15 bytes
-        snprintf( szAddr , sizeof(szAddr) , "%08X%s" , i , aSplitter );
+        CHAR szAddr[8 + 16];    //Assume aSplitter has at most 15 bytes
+        snprintf( szAddr, sizeof( szAddr ), "%08X%s", i, aSplitter );
         aOutput.append( szAddr );
-        for ( int j = 0 ; j < aBytesPerLine ; j++ )
+        for ( int j = 0; j < aBytesPerLine; j++ )
         {
             int nCurr = i + j;
             if ( nCurr >= aInputSize )
             {
-                aOutput.append( (aBytesPerLine - j) * 3 - 1 , ' ' );
+                aOutput.append( ( aBytesPerLine - j ) * 3 - 1, ' ' );
                 break;
             }
             UINT32 uVal = aryTable[aInput[nCurr]];
             aOutput.push_back( (CHAR)uVal );
-            aOutput.push_back( (CHAR)(uVal >> 16) );
+            aOutput.push_back( ( CHAR )( uVal >> 16 ) );
             if ( j + 1 < aBytesPerLine )
             {
                 aOutput.push_back( ' ' );
@@ -274,15 +279,15 @@ VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , CO
 
         aOutput.append( aSplitter );
 
-        for ( int j = 0 ; j < aBytesPerLine ; j++ )
+        for ( int j = 0; j < aBytesPerLine; j++ )
         {
             int nCurr = i + j;
             if ( nCurr >= aInputSize )
             {
-                aOutput.append( aBytesPerLine - j , ' ' );
+                aOutput.append( aBytesPerLine - j, ' ' );
                 break;
             }
-            aOutput.push_back( iscntrl(aInput[nCurr]&0xFF) ? '.' : (char)aInput[nCurr] );
+            aOutput.push_back( iscntrl( aInput[nCurr] & 0xFF ) ? '.' : (char)aInput[nCurr] );
         }
         aOutput.append( strLineSep );
     }
@@ -293,27 +298,27 @@ VOID ToHexDump( CONST UCHAR * aInput , SIZE_T aInputSize , string & aOutput , CO
     }
 }
 
-INT ToInt( CONST CHAR * aStr , SIZE_T aStrLen )
+INT ToInt( CONST CHAR * aStr, SIZE_T aStrLen )
 {
     INT nRet = 0;
-    for ( SIZE_T i = 0 ; i < aStrLen ; ++i )
+    for ( SIZE_T i = 0; i < aStrLen; ++i )
     {
         nRet = ( nRet * 10 ) + ( aStr[i] - '0' );
     }
     return nRet;
 }
 
-INT64 ToInt64( CONST CHAR * aStr , SIZE_T aStrLen )
+INT64 ToInt64( CONST CHAR * aStr, SIZE_T aStrLen )
 {
     INT64 nRet = 0;
-    for ( SIZE_T i = 0 ; i < aStrLen ; ++i )
+    for ( SIZE_T i = 0; i < aStrLen; ++i )
     {
         nRet = ( nRet * 10 ) + ( aStr[i] - '0' );
     }
     return nRet;
 }
 
-VOID ReplaceStringW( IN OUT std::wstring & aString , IN CONST WCHAR * aOldString , IN CONST WCHAR * aNewString )
+VOID ReplaceStringW( IN OUT std::wstring & aString, IN CONST WCHAR * aOldString, IN CONST WCHAR * aNewString )
 {
     if ( NULL == aOldString || NULL == aNewString )
         return;
@@ -325,22 +330,22 @@ VOID ReplaceStringW( IN OUT std::wstring & aString , IN CONST WCHAR * aOldString
 
     while ( sizeNextIndex + sizeOld <= aString.size() )
     {
-        sizeNextIndex = aString.find( aOldString , sizeNextIndex );
-        if ( sizeNextIndex == std::wstring::npos)
+        sizeNextIndex = aString.find( aOldString, sizeNextIndex );
+        if ( sizeNextIndex == std::wstring::npos )
         {
             break;
         }
-        aString.replace(sizeNextIndex, sizeOld, aNewString);
+        aString.replace( sizeNextIndex, sizeOld, aNewString );
         sizeNextIndex += sizeNew;
     }
 }
 
-BOOL UnEscapeStringW( IN CONST WCHAR * aEscapedStr , IN SIZE_T aEscapedStrLen , OUT std::wstring & aUnEscapedStr )
+BOOL UnEscapeStringW( IN CONST WCHAR * aEscapedStr, IN SIZE_T aEscapedStrLen, OUT std::wstring & aUnEscapedStr )
 {
     aUnEscapedStr.clear();
     SIZE_T uFlushedLen = 0;
     BOOL bEscaping = FALSE;
-    for ( SIZE_T i = 0 ; i < aEscapedStrLen ; i++ )
+    for ( SIZE_T i = 0; i < aEscapedStrLen; i++ )
     {
         if ( FALSE == bEscaping )
         {
@@ -353,27 +358,27 @@ BOOL UnEscapeStringW( IN CONST WCHAR * aEscapedStr , IN SIZE_T aEscapedStrLen , 
         {
             switch ( aEscapedStr[i] )
             {
-                case L'r' :
-                    aUnEscapedStr.append( &aEscapedStr[uFlushedLen] , i - uFlushedLen - 1 );
-                    aUnEscapedStr.append( 1 , '\r' );
+                case L'r':
+                    aUnEscapedStr.append( &aEscapedStr[uFlushedLen], i - uFlushedLen - 1 );
+                    aUnEscapedStr.append( 1, '\r' );
                     break;
-                case L'n' :
-                    aUnEscapedStr.append( &aEscapedStr[uFlushedLen] , i - uFlushedLen - 1 );
-                    aUnEscapedStr.append( 1 , '\n' );
+                case L'n':
+                    aUnEscapedStr.append( &aEscapedStr[uFlushedLen], i - uFlushedLen - 1 );
+                    aUnEscapedStr.append( 1, '\n' );
                     break;
-                case L't' :
-                    aUnEscapedStr.append( &aEscapedStr[uFlushedLen] , i - uFlushedLen - 1 );
-                    aUnEscapedStr.append( 1 , '\t' );
+                case L't':
+                    aUnEscapedStr.append( &aEscapedStr[uFlushedLen], i - uFlushedLen - 1 );
+                    aUnEscapedStr.append( 1, '\t' );
                     break;
-                case L'\\' :
-                    aUnEscapedStr.append( &aEscapedStr[uFlushedLen] , i - uFlushedLen - 1 );
-                    aUnEscapedStr.append( 1 , '\\' );
+                case L'\\':
+                    aUnEscapedStr.append( &aEscapedStr[uFlushedLen], i - uFlushedLen - 1 );
+                    aUnEscapedStr.append( 1, '\\' );
                     break;
-                case L'0' :
-                    aUnEscapedStr.append( &aEscapedStr[uFlushedLen] , i - uFlushedLen - 1 );
-                    aUnEscapedStr.append( 1 , '\0' );
+                case L'0':
+                    aUnEscapedStr.append( &aEscapedStr[uFlushedLen], i - uFlushedLen - 1 );
+                    aUnEscapedStr.append( 1, '\0' );
                     break;
-                default :
+                default:
                     goto exit;
             }
             uFlushedLen = i + 1;
@@ -382,14 +387,14 @@ BOOL UnEscapeStringW( IN CONST WCHAR * aEscapedStr , IN SIZE_T aEscapedStrLen , 
     }
     if ( 0 < aEscapedStrLen )
     {
-        aUnEscapedStr.append( &aEscapedStr[uFlushedLen] , aEscapedStrLen - uFlushedLen );
+        aUnEscapedStr.append( &aEscapedStr[uFlushedLen], aEscapedStrLen - uFlushedLen );
     }
 
-exit :
+exit:
     return ( FALSE == bEscaping ) ? TRUE : FALSE;
 }
 
-VOID TrimStringA( IN OUT std::string & aString , CONST CHAR * aTrimChars )
+VOID TrimStringA( IN OUT std::string & aString, CONST CHAR * aTrimChars )
 {
     SIZE_T pos = aString.find_last_not_of( aTrimChars );
     if ( std::string::npos != pos )
@@ -399,7 +404,7 @@ VOID TrimStringA( IN OUT std::string & aString , CONST CHAR * aTrimChars )
     pos = aString.find_first_not_of( aTrimChars );
     if ( std::string::npos != pos )
     {
-        aString.erase( 0 , pos );
+        aString.erase( 0, pos );
     }
 }
 
@@ -411,10 +416,10 @@ BOOL IsBase64SpecialCharA( CHAR aChar )
 
 BOOL IsBase64CharA( CHAR aChar )
 {
-    return ( isdigit(aChar) || isalpha(aChar) || IsBase64SpecialCharA(aChar) );
+    return ( isdigit( aChar ) || isalpha( aChar ) || IsBase64SpecialCharA( aChar ) );
 }
 
-BOOL IsBase64StringA( CONST CHAR * aStr , SIZE_T aStrLen )
+BOOL IsBase64StringA( CONST CHAR * aStr, SIZE_T aStrLen )
 {
     BOOL bRet = FALSE;
     SIZE_T uPosEnd = aStrLen;
@@ -426,55 +431,55 @@ BOOL IsBase64StringA( CONST CHAR * aStr , SIZE_T aStrLen )
     }
 
     //Find ending '=', at most 2 bytes is possible
-    for ( SIZE_T i = 0 ; i < 2 ; i++ )
+    for ( SIZE_T i = 0; i < 2; i++ )
     {
-        if ( '=' == aStr[uPosEnd-1] ) 
+        if ( '=' == aStr[uPosEnd - 1] )
         {
             uPosEnd--;
         }
     }
 
     //Check other characters
-    for ( SIZE_T i = 0 ; i < uPosEnd ; i++ )
+    for ( SIZE_T i = 0; i < uPosEnd; i++ )
     {
-        if ( FALSE == IsBase64CharA(aStr[i]) || '=' == aStr[i] )
+        if ( FALSE == IsBase64CharA( aStr[i] ) || '=' == aStr[i] )
         {
             goto exit;
         }
     }
     bRet = TRUE;
 
-exit :
+exit:
     return bRet;
 }
 
 
-StringType GetStringTypeA( CONST CHAR * aStr , SIZE_T aStrLen )
+StringType GetStringTypeA( CONST CHAR * aStr, SIZE_T aStrLen )
 {
     StringType type = STRING_TYPE_START;
 
-    for ( SIZE_T i = 0 ; i < aStrLen ; i++ )
+    for ( SIZE_T i = 0; i < aStrLen; i++ )
     {
         INT c = ( aStr[i] & 0xFF );
         switch ( type )
         {
-            case STRING_TYPE_NUM :
+            case STRING_TYPE_NUM:
             {
-                if ( false == isdigit(c) )
+                if ( false == isdigit( c ) )
                 {
-                    if ( isalpha(c) )
+                    if ( isalpha( c ) )
                     {
                         type = STRING_TYPE_ALPHANUM;
                     }
-                    else if ( IsBase64SpecialCharA(c) )
+                    else if ( IsBase64SpecialCharA( c ) )
                     {
                         type = STRING_TYPE_BASE64;
                     }
-                    else if ( isprint(c) )
+                    else if ( isprint( c ) )
                     {
                         type = STRING_TYPE_PRINTABLE;
                     }
-                    else if ( isspace(c) )
+                    else if ( isspace( c ) )
                     {
                         type = STRING_TYPE_READABLE;
                     }
@@ -486,23 +491,23 @@ StringType GetStringTypeA( CONST CHAR * aStr , SIZE_T aStrLen )
                 }
                 break;
             }
-            case STRING_TYPE_ALPHA :
+            case STRING_TYPE_ALPHA:
             {
-                if ( false == isalpha(c) )
+                if ( false == isalpha( c ) )
                 {
-                    if ( isdigit(c) )
+                    if ( isdigit( c ) )
                     {
                         type = STRING_TYPE_ALPHANUM;
                     }
-                    else if ( IsBase64SpecialCharA(c) )
+                    else if ( IsBase64SpecialCharA( c ) )
                     {
                         type = STRING_TYPE_BASE64;
                     }
-                    else if ( isprint(c) )
+                    else if ( isprint( c ) )
                     {
                         type = STRING_TYPE_PRINTABLE;
                     }
-                    else if ( isspace(c) )
+                    else if ( isspace( c ) )
                     {
                         type = STRING_TYPE_READABLE;
                     }
@@ -514,19 +519,19 @@ StringType GetStringTypeA( CONST CHAR * aStr , SIZE_T aStrLen )
                 }
                 break;
             }
-            case STRING_TYPE_ALPHANUM :
+            case STRING_TYPE_ALPHANUM:
             {
-                if ( false == isalnum(c) )
+                if ( false == isalnum( c ) )
                 {
-                    if ( IsBase64SpecialCharA(c) )
+                    if ( IsBase64SpecialCharA( c ) )
                     {
                         type = STRING_TYPE_BASE64;
                     }
-                    else if ( isprint(c) )
+                    else if ( isprint( c ) )
                     {
                         type = STRING_TYPE_PRINTABLE;
                     }
-                    else if ( isspace(c) )
+                    else if ( isspace( c ) )
                     {
                         type = STRING_TYPE_READABLE;
                     }
@@ -538,15 +543,15 @@ StringType GetStringTypeA( CONST CHAR * aStr , SIZE_T aStrLen )
                 }
                 break;
             }
-            case STRING_TYPE_BASE64 :
+            case STRING_TYPE_BASE64:
             {
-                if ( false == IsBase64CharA(c) )
+                if ( false == IsBase64CharA( c ) )
                 {
-                    if ( isprint(c) )
+                    if ( isprint( c ) )
                     {
                         type = STRING_TYPE_PRINTABLE;
                     }
-                    else if ( isspace(c) )
+                    else if ( isspace( c ) )
                     {
                         type = STRING_TYPE_READABLE;
                     }
@@ -558,11 +563,11 @@ StringType GetStringTypeA( CONST CHAR * aStr , SIZE_T aStrLen )
                 }
                 break;
             }
-            case STRING_TYPE_PRINTABLE :
+            case STRING_TYPE_PRINTABLE:
             {
-                if ( false == isprint(c) )
+                if ( false == isprint( c ) )
                 {
-                    if ( isspace(c) )
+                    if ( isspace( c ) )
                     {
                         type = STRING_TYPE_READABLE;
                     }
@@ -574,34 +579,34 @@ StringType GetStringTypeA( CONST CHAR * aStr , SIZE_T aStrLen )
                 }
                 break;
             }
-            case STRING_TYPE_READABLE :
+            case STRING_TYPE_READABLE:
             {
-                if ( false == isprint(c) && false == isspace(c) )
+                if ( false == isprint( c ) && false == isspace( c ) )
                 {
                     type = STRING_TYPE_BINARY;
                     goto exit;
                 }
                 break;
             }
-            case STRING_TYPE_START :
+            case STRING_TYPE_START:
             {
-                if ( isdigit(c) )
+                if ( isdigit( c ) )
                 {
                     type = STRING_TYPE_NUM;
                 }
-                else if ( isalpha(c) )
+                else if ( isalpha( c ) )
                 {
                     type = STRING_TYPE_ALPHA;
                 }
-                else if ( IsBase64SpecialCharA(c) )
+                else if ( IsBase64SpecialCharA( c ) )
                 {
                     type = STRING_TYPE_BASE64;
                 }
-                else if ( isprint(c) )
+                else if ( isprint( c ) )
                 {
                     type = STRING_TYPE_PRINTABLE;
                 }
-                else if ( isspace(c) )
+                else if ( isspace( c ) )
                 {
                     type = STRING_TYPE_READABLE;
                 }
@@ -612,7 +617,7 @@ StringType GetStringTypeA( CONST CHAR * aStr , SIZE_T aStrLen )
                 }
                 break;
             }
-            default :
+            default:
             {
                 type = STRING_TYPE_BINARY;
                 goto exit;
@@ -621,21 +626,22 @@ StringType GetStringTypeA( CONST CHAR * aStr , SIZE_T aStrLen )
     }
 
     //Special handling for base64 to check it follows the rule
-    if ( STRING_TYPE_BASE64 == type && FALSE == IsBase64StringA(aStr , aStrLen) )
+    if ( STRING_TYPE_BASE64 == type && FALSE == IsBase64StringA( aStr, aStrLen ) )
     {
         type = STRING_TYPE_PRINTABLE;
     }
 
-exit :
+exit:
     return type;
 }
 
-BOOL WildcardMatchW( IN CONST WCHAR * aString , IN CONST WCHAR * aWildcardPattern )
+BOOL WildcardMatchW( IN CONST WCHAR * aString, IN CONST WCHAR * aWildcardPattern )
 {
-    enum State {
-        Exact ,          //Exact match
-        Any ,            //?
-        AnyRepeat       //*
+    enum State
+    {
+        Exact,       //Exact match
+        Any,         //?
+        AnyRepeat    //*
     } state = Exact;
 
     CONST WCHAR * wzTmp = NULL;
@@ -646,34 +652,34 @@ BOOL WildcardMatchW( IN CONST WCHAR * aString , IN CONST WCHAR * aWildcardPatter
     {
         switch ( *aWildcardPattern )
         {
-            case L'*' :
+            case L'*':
                 state = AnyRepeat;
                 wzTmp = aWildcardPattern + 1;
                 break;
-            case L'?' :
+            case L'?':
                 state = Any;
                 break;
-            default :
+            default:
                 state = Exact;
                 break;
-        }        
+        }
 
         if ( L'\0' == *aString )
             break;
 
         switch ( state )
         {
-            case Exact :
+            case Exact:
                 bMatch = ( *aString == *aWildcardPattern );
                 aString++;
                 aWildcardPattern++;
                 break;
-            case Any :
+            case Any:
                 bMatch = TRUE;
                 aString++;
                 aWildcardPattern++;
                 break;
-            case AnyRepeat :
+            case AnyRepeat:
                 bMatch = TRUE;
                 aString++;
                 if ( *aString == *wzTmp )
@@ -686,11 +692,11 @@ BOOL WildcardMatchW( IN CONST WCHAR * aString , IN CONST WCHAR * aWildcardPatter
 
     switch ( state )
     {
-        case AnyRepeat :
+        case AnyRepeat:
             return ( *aString == *wzTmp );
-        case Any :
+        case Any:
             return ( *aString == *aWildcardPattern );
-        default :
+        default:
             return ( bMatch && ( *aString == *aWildcardPattern ) );
     }
 }
@@ -698,40 +704,40 @@ BOOL WildcardMatchW( IN CONST WCHAR * aString , IN CONST WCHAR * aWildcardPatter
 
 CONST WCHAR * GetPathBaseNameW( IN CONST WCHAR * aFullPath )
 {
-    CONST WCHAR * wzBase = wcsrchr( aFullPath , L'\\' );
+    CONST WCHAR * wzBase = wcsrchr( aFullPath, L'\\' );
     return ( wzBase ) ? ( wzBase + 1 ) : aFullPath;
 }
 
 
 //Encode full URL include parameters after "?"
-BOOL EncodeUrlA( IN CONST std::string & aOldUrl , OUT std::string & aNewUrl )
+BOOL EncodeUrlA( IN CONST std::string & aOldUrl, OUT std::string & aNewUrl )
 {
     CHAR szBuf[INTERNET_MAX_URL_LENGTH] = { 0 };
     INT nLen = 0;
     BOOL bParam = FALSE;
-    for ( SIZE_T i = 0 ; i < aOldUrl.length() && nLen < INTERNET_MAX_PATH_LENGTH ; i++ )
+    for ( SIZE_T i = 0; i < aOldUrl.length() && nLen < INTERNET_MAX_PATH_LENGTH; i++ )
     {
         if ( isalnum( (UCHAR)aOldUrl[i] ) )
         {
-            nLen += snprintf( &szBuf[nLen] , 2 , "%c" , aOldUrl[i] );
-        }        
+            nLen += snprintf( &szBuf[nLen], 2, "%c", aOldUrl[i] );
+        }
         else if ( '/' == aOldUrl[i] || '.' == aOldUrl[i] || ':' == aOldUrl[i] )
         {
-            nLen += snprintf( &szBuf[nLen] , 4 , (bParam) ? "%%%02X" : "%c" , aOldUrl[i] );
+            nLen += snprintf( &szBuf[nLen], 4, ( bParam ) ? "%%%02X" : "%c", aOldUrl[i] );
         }
         else if ( '?' == aOldUrl[i] )
         {
-            nLen += snprintf( &szBuf[nLen] , 4 , (bParam) ? "%%%02X" : "%c" , aOldUrl[i] );
+            nLen += snprintf( &szBuf[nLen], 4, ( bParam ) ? "%%%02X" : "%c", aOldUrl[i] );
             bParam = TRUE;
         }
         else if ( '=' == aOldUrl[i] )
         {
-            nLen += snprintf( &szBuf[nLen] , 4 , (bParam) ? "%c" : "%%%02X" , aOldUrl[i] );
+            nLen += snprintf( &szBuf[nLen], 4, ( bParam ) ? "%c" : "%%%02X", aOldUrl[i] );
             bParam = TRUE;
         }
         else
         {
-            nLen += snprintf( &szBuf[nLen] , 4 , "%%%02X" , (UCHAR)aOldUrl[i] );
+            nLen += snprintf( &szBuf[nLen], 4, "%%%02X", (UCHAR)aOldUrl[i] );
         }
     }
     if ( INTERNET_MAX_PATH_LENGTH <= nLen )
@@ -741,7 +747,7 @@ BOOL EncodeUrlA( IN CONST std::string & aOldUrl , OUT std::string & aNewUrl )
     }
     else
     {
-        aNewUrl.assign( szBuf , nLen );
+        aNewUrl.assign( szBuf, nLen );
         return TRUE;
     }
 }
@@ -774,10 +780,10 @@ VOID CUrlStringPtr::Clean()
 
 BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl )
 {
-    return this->SetUrl( pUrl , strlen(pUrl) );
+    return this->SetUrl( pUrl, strlen( pUrl ) );
 }
 
-BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl , SIZE_T uLen )
+BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl, SIZE_T uLen )
 {
     if ( NULL == pUrl )
     {
@@ -789,22 +795,24 @@ BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl , SIZE_T uLen )
 
     //Parse scheme
     CONST CHAR * pHostStart = m_pUrl;
-    if ( strncasecmp(m_pUrl , "http://" , sizeof("http://")-1) == 0 )
+    if ( strncasecmp( m_pUrl, "http://", sizeof( "http://" ) - 1 ) == 0 )
     {
-        pHostStart += sizeof("http://") - 1;
-        m_uSchemeLen = sizeof("http") - 1;
+        pHostStart += sizeof( "http://" ) - 1;
+        m_uSchemeLen = sizeof( "http" ) - 1;
     }
-    else if ( strncasecmp(m_pUrl , "https://" , sizeof("https://")-1) == 0 )
+    else if ( strncasecmp( m_pUrl, "https://", sizeof( "https://" ) - 1 ) == 0 )
     {
-        pHostStart += sizeof("https://") - 1;
+        pHostStart += sizeof( "https://" ) - 1;
         m_ulScheme = INTERNET_SCHEME_HTTPS;
-        m_uSchemeLen = sizeof("https") - 1;
+        m_uSchemeLen = sizeof( "https" ) - 1;
         m_ulPort = 443;
     }
-    else {}
+    else
+    {
+    }
 
     //Parse relative URI
-    CONST CHAR * pUri = strchr( pHostStart , '/' );
+    CONST CHAR * pUri = strchr( pHostStart, '/' );
     if ( NULL == pUri )
     {
         m_uUriOffset = m_uUrlLen;
@@ -817,7 +825,7 @@ BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl , SIZE_T uLen )
     }
 
     //Parse query parameters
-    CONST CHAR * pParams = strchr( pUri , '?' );
+    CONST CHAR * pParams = strchr( pUri, '?' );
     if ( NULL == pParams )
     {
         m_uParamsOffset = m_uUrlLen;
@@ -825,14 +833,14 @@ BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl , SIZE_T uLen )
     }
     else
     {
-        pParams++;  //Ignore the '?'
+        pParams++;    //Ignore the '?'
         m_uParamsOffset = pParams - pUrl;
         m_uParamsLen = m_uUrlLen - m_uParamsOffset;
         m_uUriLen = pParams - pUri - 1;
     }
 
     //Parse fragment
-    CONST CHAR * pFrag = strchr( pParams , '#' );
+    CONST CHAR * pFrag = strchr( pParams, '#' );
     if ( NULL == pFrag )
     {
         m_uFragOffset = m_uUrlLen;
@@ -840,7 +848,7 @@ BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl , SIZE_T uLen )
     }
     else
     {
-        pFrag++;  //Ignore the '#'
+        pFrag++;    //Ignore the '#'
         m_uFragOffset = pFrag - pUrl;
         m_uFragLen = m_uUrlLen - m_uFragOffset;
         m_uParamsLen = pFrag - pParams - 1;
@@ -850,19 +858,19 @@ BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl , SIZE_T uLen )
     m_uHostOffset = pHostStart - m_pUrl;
     m_uHostLen = pUri - pHostStart;
     CONST CHAR * pHostEnd = ( pHostStart != pUri ) ? pUri - 1 : pUri;
-    for ( CONST CHAR * pTmp = pHostEnd ; pTmp > pHostStart ; pTmp-- )
+    for ( CONST CHAR * pTmp = pHostEnd; pTmp > pHostStart; pTmp-- )
     {
         if ( ':' == *pTmp )
         {
             CONST CHAR * pPortStart = pTmp + 1;
 
             //Care IPv6 address literal, such as [fe80:1234::1]:80
-            if ( ! ( '[' == pHostStart[0] && ']' != *(pTmp-1) ) )
+            if ( !( '[' == pHostStart[0] && ']' != *( pTmp - 1 ) ) )
             {
                 if ( pPortStart < pUri )
                 {
                     CHAR * pPortEnd = NULL;
-                    m_ulPort = strtoul( pPortStart , &pPortEnd , 10 );
+                    m_ulPort = strtoul( pPortStart, &pPortEnd, 10 );
                     m_uPortOffset = pPortStart - m_pUrl;
                     m_uPortLen = pPortEnd - pPortStart;
                 }
@@ -871,13 +879,13 @@ BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl , SIZE_T uLen )
             break;
         }
     }
-    
+
     return TRUE;
 }
 
 
 #ifdef __cplusplus
-    }
+}
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

@@ -9,7 +9,6 @@
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -41,7 +40,7 @@ INT CVMWare::GetClipboardSize()
     return -1;
 }
 
-BOOL CVMWare::GetClipboard( TCHAR * aBuf , INT aBufLen )
+BOOL CVMWare::GetClipboard( TCHAR * aBuf, INT aBufLen )
 {
     int i;
     int size = GetClipboardSize();
@@ -60,7 +59,7 @@ BOOL CVMWare::GetClipboard( TCHAR * aBuf , INT aBufLen )
     tmp = new BYTE[size + 1];
 #else
     tmp = aBuf;
-#endif    
+#endif
     tmp[size] = (BYTE)0;
 
     int left = size;    //How many bytes needed to be copied from clipboard
@@ -74,39 +73,39 @@ BOOL CVMWare::GetClipboard( TCHAR * aBuf , INT aBufLen )
         MagicLB( &regLB );
         switch ( left )
         {
-            case 1 :
+            case 1:
                 tmp[i] = regLB.eax.byte1;
                 left -= 1;
                 break;
-            case 2 :
+            case 2:
                 tmp[i] = regLB.eax.byte1;
-                tmp[i+1] = regLB.eax.byte2;
+                tmp[i + 1] = regLB.eax.byte2;
                 left -= 2;
                 break;
-            case 3 :
+            case 3:
                 tmp[i] = regLB.eax.byte1;
-                tmp[i+1] = regLB.eax.byte2;
-                tmp[i+2] = regLB.eax.byte3;
+                tmp[i + 1] = regLB.eax.byte2;
+                tmp[i + 2] = regLB.eax.byte3;
                 left -= 3;
                 break;
-            default :
-                *( (UINT32 *)(tmp+i) ) = regLB.eax.dword;
+            default:
+                *( (UINT32 *)( tmp + i ) ) = regLB.eax.dword;
                 left -= 4;
                 break;
         }
         i += 4;
     }
-    
+
 #if ( defined UNICODE || defined _UNICODE )
-    MultiByteToWideChar( CP_UTF8 , 0 , (LPCSTR)tmp , size+1 , aBuf , aBufLen + 1 );
-    delete [] tmp;
+    MultiByteToWideChar( CP_UTF8, 0, (LPCSTR)tmp, size + 1, aBuf, aBufLen + 1 );
+    delete[] tmp;
 #endif
-    
+
     return TRUE;
 }
 
 
-BOOL CVMWare::SetClipboard( TCHAR * aText , INT aTextLen )
+BOOL CVMWare::SetClipboard( TCHAR * aText, INT aTextLen )
 {
     int i;
 
@@ -119,28 +118,28 @@ BOOL CVMWare::SetClipboard( TCHAR * aText , INT aTextLen )
 
     BDOOR_REG_LB regLB;
     regLB.ecx.loWord = BDOOR_CMD_GETNEXTPIECE;
-    for ( i = 0 ; i < size ; i+=4 )
+    for ( i = 0; i < size; i += 4 )
     {
         MagicLB( &regLB );
     }
 
     BYTE * tmp;
-#if    ( defined UNICODE || defined _UNICODE )
+#if ( defined UNICODE || defined _UNICODE )
     //Convert aText to in UTF-8
-    size = WideCharToMultiByte( CP_UTF8 , 0 , aText , aTextLen , NULL , 0 , NULL , NULL );
+    size = WideCharToMultiByte( CP_UTF8, 0, aText, aTextLen, NULL, 0, NULL, NULL );
     tmp = new BYTE[size + 1];
-    WideCharToMultiByte( CP_UTF8 , 0 , aText , aTextLen , (LPSTR)tmp , size+1 , NULL , NULL );
+    WideCharToMultiByte( CP_UTF8, 0, aText, aTextLen, (LPSTR)tmp, size + 1, NULL, NULL );
 #else
     //Assume it's already UTF-8 encoding
     size = aTextLen;
     tmp = aText;
 #endif
     tmp[size] = (BYTE)0;
-    
-    //Set the new text size to clipboard    
+
+    //Set the new text size to clipboard
     regLB.ecx.loWord = BDOOR_CMD_SETSELLENGTH;
     regLB.ebx.dword = size;
-    if ( ! MagicLB( &regLB ) )
+    if ( !MagicLB( &regLB ) )
         return FALSE;
 
     //Set the new text to clipboard
@@ -152,23 +151,23 @@ BOOL CVMWare::SetClipboard( TCHAR * aText , INT aTextLen )
     {
         switch ( left )
         {
-            case 1 :
+            case 1:
                 regLB.ebx.byte1 = tmp[i];
                 left -= 1;
                 break;
-            case 2 :
+            case 2:
                 regLB.ebx.byte1 = tmp[i];
-                regLB.ebx.byte2 = tmp[i+1];
+                regLB.ebx.byte2 = tmp[i + 1];
                 left -= 2;
                 break;
-            case 3 :
+            case 3:
                 regLB.ebx.byte1 = tmp[i];
-                regLB.ebx.byte2 = tmp[i+1];
-                regLB.ebx.byte3 = tmp[i+2];
+                regLB.ebx.byte2 = tmp[i + 1];
+                regLB.ebx.byte3 = tmp[i + 2];
                 left -= 3;
                 break;
-            default :
-                regLB.ebx.dword = *( (UINT32 *)(tmp+i) );
+            default:
+                regLB.ebx.dword = *( (UINT32 *)( tmp + i ) );
                 left -= 4;
                 break;
         }
@@ -177,14 +176,11 @@ BOOL CVMWare::SetClipboard( TCHAR * aText , INT aTextLen )
         i += 4;
     }
 
-#if    ( defined UNICODE || defined _UNICODE )
-    delete [] tmp;
+#if ( defined UNICODE || defined _UNICODE )
+    delete[] tmp;
 #endif
     return TRUE;
 }
-
-
-
 
 
 
@@ -198,8 +194,8 @@ MSG_CHANNEL * CVMWare::MsgChannelOpen( UINT32 aProtocol )
     UINT32 flags;
     BDOOR_REG_LB regLB;
 
-    channel = (MSG_CHANNEL *)malloc( sizeof(*channel) );
-    if ( channel == NULL ) 
+    channel = (MSG_CHANNEL *)malloc( sizeof( *channel ) );
+    if ( channel == NULL )
     {
         free( channel );
         channel = NULL;
@@ -208,7 +204,7 @@ MSG_CHANNEL * CVMWare::MsgChannelOpen( UINT32 aProtocol )
 
     flags = GUESTMSG_FLAG_COOKIE;
 
-retry :
+retry:
     //IN: Type
     regLB.ecx.hiWord = MESSAGE_TYPE_OPEN;
     //IN: Magic number of the protocol and flags
@@ -218,7 +214,7 @@ retry :
     MagicLB( &regLB );
 
     //OUT: Status
-    if ( (regLB.ecx.hiWord & MESSAGE_STATUS_SUCCESS ) == 0)
+    if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_SUCCESS ) == 0 )
     {
         if ( flags )
         {
@@ -230,7 +226,7 @@ retry :
         {
             free( channel );
             channel = NULL;
-            return NULL;    
+            return NULL;
         }
     }
 
@@ -246,13 +242,13 @@ retry :
     return channel;
 }
 
-BOOL CVMWare::MsgChannelSend( MSG_CHANNEL * aChannel , UINT8 * aCmd , INT aCmdLen )
+BOOL CVMWare::MsgChannelSend( MSG_CHANNEL * aChannel, UINT8 * aCmd, INT aCmdLen )
 {
     const UINT8 * buf;
     size_t bufLen;
     BDOOR_REG_LB regLB;
 
-retry :
+retry:
     buf = aCmd;
     bufLen = aCmdLen;
 
@@ -280,7 +276,7 @@ retry :
     {
         //High-bandwidth backdoor port supported. Send the message in one backdoor operation. --hpreg
 
-        if ( bufLen ) 
+        if ( bufLen )
         {
             BDOOR_REG_HB regHB;
 
@@ -293,9 +289,9 @@ retry :
             regHB.esi.dword = (uintptr_t)buf;
 
             MagicHBOut( &regHB );
-            if ( ( regHB.ebx.hiWord & MESSAGE_STATUS_SUCCESS ) == 0 ) 
+            if ( ( regHB.ebx.hiWord & MESSAGE_STATUS_SUCCESS ) == 0 )
             {
-                if ( ( regHB.ebx.hiWord & MESSAGE_STATUS_CPT ) != 0) 
+                if ( ( regHB.ebx.hiWord & MESSAGE_STATUS_CPT ) != 0 )
                 {
                     //A checkpoint occurred. Retry the operation. --hpreg
                     goto retry;
@@ -303,69 +299,69 @@ retry :
                 return FALSE;
             }
         }
-    } 
-    else 
+    }
+    else
     {
         //High-bandwidth backdoor port not supported. Send the message, 4 bytes at a time. --hpreg
-        
+
         while ( bufLen > 0 )
         {
-             //IN: Type
-             regLB.ecx.hiWord = MESSAGE_TYPE_SENDPAYLOAD;
-             //IN: Id and cookie
-             regLB.edx.hiWord = aChannel->id;
-             regLB.esi.dword = aChannel->cookieHigh;
-             regLB.edi.dword = aChannel->cookieLow;
-             //IN: Piece of message
+            //IN: Type
+            regLB.ecx.hiWord = MESSAGE_TYPE_SENDPAYLOAD;
+            //IN: Id and cookie
+            regLB.edx.hiWord = aChannel->id;
+            regLB.esi.dword = aChannel->cookieHigh;
+            regLB.edi.dword = aChannel->cookieLow;
+            //IN: Piece of message
 
-             //Beware in case we are not allowed to read extra bytes beyond the end of the buffer.
-             switch ( bufLen ) 
-             {
-                 case 1 :
-                     regLB.ebx.dword = buf[0];
-                     bufLen -= 1;
-                     break;
-                 case 2 :
-                     regLB.ebx.dword = buf[0] | buf[1] << 8;
-                     bufLen -= 2;
-                     break;
-                 case 3 :
-                     regLB.ebx.dword = buf[0] | buf[1] << 8 | buf[2] << 16;
-                     bufLen -= 3;
-                     break;
-                 default :
-                     regLB.ebx.dword = *( (UINT32 *)buf );
-                     bufLen -= 4;
-                     break;
-             }
+            //Beware in case we are not allowed to read extra bytes beyond the end of the buffer.
+            switch ( bufLen )
+            {
+                case 1:
+                    regLB.ebx.dword = buf[0];
+                    bufLen -= 1;
+                    break;
+                case 2:
+                    regLB.ebx.dword = buf[0] | buf[1] << 8;
+                    bufLen -= 2;
+                    break;
+                case 3:
+                    regLB.ebx.dword = buf[0] | buf[1] << 8 | buf[2] << 16;
+                    bufLen -= 3;
+                    break;
+                default:
+                    regLB.ebx.dword = *( (UINT32 *)buf );
+                    bufLen -= 4;
+                    break;
+            }
 
-             regLB.ecx.loWord = BDOOR_CMD_MESSAGE;
-             MagicLB( &regLB );
+            regLB.ecx.loWord = BDOOR_CMD_MESSAGE;
+            MagicLB( &regLB );
 
-             //OUT: Status
-             if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_SUCCESS ) == 0 )
-             {
-                 if ( (regLB.ecx.hiWord & MESSAGE_STATUS_CPT) != 0 )
-                 {
-                     //A checkpoint occurred. Retry the operation. --hpreg
-                     goto retry;
-                 }
-                 return FALSE;
-             }
+            //OUT: Status
+            if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_SUCCESS ) == 0 )
+            {
+                if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_CPT ) != 0 )
+                {
+                    //A checkpoint occurred. Retry the operation. --hpreg
+                    goto retry;
+                }
+                return FALSE;
+            }
 
-             buf += 4;
+            buf += 4;
         }
     }
 
     return TRUE;
 }
-BOOL CVMWare::MsgChannelReceive( MSG_CHANNEL * aChannel , UINT8 * aBuf , INT * aSizeReceived  )
+BOOL CVMWare::MsgChannelReceive( MSG_CHANNEL * aChannel, UINT8 * aBuf, INT * aSizeReceived )
 {
     BDOOR_REG_LB regLB;
     size_t sizeReceived;
     UINT8 * buf;
 
-retry : 
+retry:
 
     //Is there a message waiting for our retrieval?
 
@@ -380,12 +376,12 @@ retry :
     MagicLB( &regLB );
 
     //OUT: Status
-    if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_SUCCESS ) == 0 ) 
+    if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_SUCCESS ) == 0 )
     {
         return FALSE;
     }
 
-    if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_DORECV ) == 0 ) 
+    if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_DORECV ) == 0 )
     {
         //No message to retrieve
         *aSizeReceived = 0;
@@ -411,12 +407,12 @@ retry :
 
     if ( sizeReceived + 1 > aChannel->dataAlloc )
     {
-        buf = (UINT8 *)realloc( aChannel->data , sizeReceived + 1 );
+        buf = (UINT8 *)realloc( aChannel->data, sizeReceived + 1 );
         if ( buf == NULL )
         {
             goto error_quit;
         }
-        
+
         aChannel->data = buf;
         aChannel->dataAlloc = sizeReceived + 1;
     }
@@ -426,11 +422,11 @@ retry :
     if ( regLB.ecx.hiWord & MESSAGE_STATUS_HB )
     {
         //High-bandwidth backdoor port supported. Receive the message in one backdoor operation. --hpreg
-        
+
         if ( sizeReceived )
         {
             BDOOR_REG_HB regHB;
-            
+
             regHB.ebx.loWord = BDOORHB_CMD_MESSAGE;
             regHB.ebx.hiWord = MESSAGE_STATUS_SUCCESS;
             regHB.edx.hiWord = aChannel->id;
@@ -450,12 +446,12 @@ retry :
                 goto error_quit;
             }
         }
-    } 
-    else 
+    }
+    else
     {
         //High-bandwidth backdoor port not supported. Receive the message, 4 bytes at a time. --hpreg
-       
-        while ( sizeReceived > 0 ) 
+
+        while ( sizeReceived > 0 )
         {
             //IN: Type
             regLB.ecx.hiWord = MESSAGE_TYPE_RECVPAYLOAD;
@@ -470,9 +466,9 @@ retry :
             MagicLB( &regLB );
 
             //OUT: Status
-            if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_SUCCESS ) == 0 ) 
+            if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_SUCCESS ) == 0 )
             {
-                if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_CPT ) != 0 ) 
+                if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_CPT ) != 0 )
                 {
                     //A checkpoint occurred. Retry the operation. --hpreg
                     goto retry;
@@ -480,17 +476,17 @@ retry :
 
                 goto error_quit;
             }
-            
+
             //OUT: Type
-            if ( regLB.edx.hiWord != MESSAGE_TYPE_SENDPAYLOAD ) 
+            if ( regLB.edx.hiWord != MESSAGE_TYPE_SENDPAYLOAD )
             {
                 goto error_quit;
             }
 
             //OUT: Piece of message
-            
+
             //Beware in case we are not allowed to write extra bytes beyond the end of the buffer. --hpreg
-            switch ( sizeReceived ) 
+            switch ( sizeReceived )
             {
                 case 1:
                     buf[0] = regLB.ebx.byte1;
@@ -513,7 +509,7 @@ retry :
                     break;
             }
 
-             buf += 4;
+            buf += 4;
         }
     }
 
@@ -533,7 +529,7 @@ retry :
     MagicLB( &regLB );
 
     //OUT: Status
-    if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_SUCCESS ) == 0 ) 
+    if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_SUCCESS ) == 0 )
     {
         if ( ( regLB.ecx.hiWord & MESSAGE_STATUS_CPT ) != 0 )
         {
@@ -545,13 +541,13 @@ retry :
 
     return TRUE;
 
-error_quit :
+error_quit:
     //IN: Type
-    if ( sizeReceived == 0 ) 
+    if ( sizeReceived == 0 )
     {
         regLB.ecx.hiWord = MESSAGE_TYPE_RECVSTATUS;
-    } 
-    else 
+    }
+    else
     {
         regLB.ecx.hiWord = MESSAGE_TYPE_RECVPAYLOAD;
     }
@@ -592,7 +588,9 @@ BOOL CVMWare::MsgChannelClose( MSG_CHANNEL * aChannel )
     {
         return FALSE;
     }
-    else{}
+    else
+    {
+    }
 
     free( aChannel->data );
     aChannel->data = NULL;
@@ -602,7 +600,7 @@ BOOL CVMWare::MsgChannelClose( MSG_CHANNEL * aChannel )
     return TRUE;
 }
 
-INT CVMWare::CastMagic( INT aMagicNum , TCHAR * aParam1 , TCHAR * aParam2 , TCHAR * aOutput )
+INT CVMWare::CastMagic( INT aMagicNum, TCHAR * aParam1, TCHAR * aParam2, TCHAR * aOutput )
 {
     BDOOR_REG_LB regLB;
     regLB.ecx.loWord = aMagicNum;
@@ -611,30 +609,31 @@ INT CVMWare::CastMagic( INT aMagicNum , TCHAR * aParam1 , TCHAR * aParam2 , TCHA
 
     switch ( aMagicNum )
     {
-        case BDOOR_CMD_GETMHZ :
+        case BDOOR_CMD_GETMHZ:
             break;
-        case BDOOR_CMD_APMFUNCTION :
+        case BDOOR_CMD_APMFUNCTION:
             break;
-        case BDOOR_CMD_GETDISKGEO :
+        case BDOOR_CMD_GETDISKGEO:
             break;
-        case BDOOR_CMD_GETPTRLOCATION :
+        case BDOOR_CMD_GETPTRLOCATION:
             break;
-        case BDOOR_CMD_SETPTRLOCATION :
+        case BDOOR_CMD_SETPTRLOCATION:
             break;
-        case BDOOR_CMD_GETSELLENGTH :
+        case BDOOR_CMD_GETSELLENGTH:
             if ( MagicLB( &regLB ) )
-                _stprintf( aOutput , _T("Left length: %d\r\n") , regLB.eax );
+                _stprintf( aOutput, _T("Left length: %d\r\n"), regLB.eax );
             break;
-        case BDOOR_CMD_GETNEXTPIECE :
+        case BDOOR_CMD_GETNEXTPIECE:
             if ( MagicLB( &regLB ) && regLB.eax.dword != 0 )
-                _stprintf( aOutput , _T("Content: %#x %#x %#x %#x\r\n") , regLB.eax.byte1 , regLB.eax.byte2 , regLB.eax.byte3 , regLB.eax.byte4 );
+                _stprintf( aOutput, _T("Content: %#x %#x %#x %#x\r\n"), regLB.eax.byte1, regLB.eax.byte2,
+                           regLB.eax.byte3, regLB.eax.byte4 );
             break;
-        case BDOOR_CMD_SETSELLENGTH :    //Need to read all bytes left in clipboard at first
+        case BDOOR_CMD_SETSELLENGTH:      //Need to read all bytes left in clipboard at first
             regLB.ebx.dword = nParam1;    //Text length
             if ( MagicLB( &regLB ) )
-                _stprintf( aOutput , _T("Set length to: %d\r\n") , regLB.ebx );
+                _stprintf( aOutput, _T("Set length to: %d\r\n"), regLB.ebx );
             break;
-        case BDOOR_CMD_SETNEXTPIECE :
+        case BDOOR_CMD_SETNEXTPIECE:
             if ( aParam1[0] != 0 )
             {
                 regLB.ebx.byte1 = aParam1[0];
@@ -653,121 +652,122 @@ INT CVMWare::CastMagic( INT aMagicNum , TCHAR * aParam1 , TCHAR * aParam2 , TCHA
             }
 
             if ( MagicLB( &regLB ) )
-                _stprintf( aOutput , _T("Set %#x %#x %#x %#x\r\n") , regLB.ebx.byte1 , regLB.ebx.byte2 , regLB.ebx.byte3 , regLB.ebx.byte4 );
-            
+                _stprintf( aOutput, _T("Set %#x %#x %#x %#x\r\n"), regLB.ebx.byte1, regLB.ebx.byte2, regLB.ebx.byte3,
+                           regLB.ebx.byte4 );
+
             break;
-        case BDOOR_CMD_GETVERSION :    //10
+        case BDOOR_CMD_GETVERSION:    //10
             regLB.ebx.dword = ~BDOOR_MAGIC;
             if ( MagicLB( &regLB ) )
-                _stprintf( aOutput , _T("Version: %d, Product type: %d\r\n") , regLB.eax , regLB.ecx );
+                _stprintf( aOutput, _T("Version: %d, Product type: %d\r\n"), regLB.eax, regLB.ecx );
             break;
-        case BDOOR_CMD_GETDEVICELISTELEMENT :
+        case BDOOR_CMD_GETDEVICELISTELEMENT:
             break;
-        case BDOOR_CMD_TOGGLEDEVICE :
+        case BDOOR_CMD_TOGGLEDEVICE:
             break;
-        case BDOOR_CMD_GETGUIOPTIONS :
+        case BDOOR_CMD_GETGUIOPTIONS:
             break;
-        case BDOOR_CMD_SETGUIOPTIONS :
+        case BDOOR_CMD_SETGUIOPTIONS:
             break;
-        case BDOOR_CMD_GETSCREENSIZE :
+        case BDOOR_CMD_GETSCREENSIZE:
             break;
-        case BDOOR_CMD_MONITOR_CONTROL :
+        case BDOOR_CMD_MONITOR_CONTROL:
             break;
-        case BDOOR_CMD_GETHWVERSION :
+        case BDOOR_CMD_GETHWVERSION:
             break;
-        case BDOOR_CMD_OSNOTFOUND :
+        case BDOOR_CMD_OSNOTFOUND:
             break;
-        case BDOOR_CMD_GETUUID :
+        case BDOOR_CMD_GETUUID:
             break;
-        case BDOOR_CMD_GETMEMSIZE :    //20
+        case BDOOR_CMD_GETMEMSIZE:    //20
             break;
-        case BDOOR_CMD_HOSTCOPY : /* Devel only */
+        case BDOOR_CMD_HOSTCOPY: /* Devel only */
             break;
         /* BDOOR_CMD_GETOS2INTCURSOR, :, is very old and defunct. Reuse. */
-        case BDOOR_CMD_GETTIME : /* Deprecated. Use GETTIMEFULL. */
+        case BDOOR_CMD_GETTIME: /* Deprecated. Use GETTIMEFULL. */
             break;
-        case BDOOR_CMD_STOPCATCHUP :
+        case BDOOR_CMD_STOPCATCHUP:
             break;
-        case BDOOR_CMD_PUTCHR : /* Devel only */
+        case BDOOR_CMD_PUTCHR: /* Devel only */
             break;
-        case BDOOR_CMD_ENABLE_MSG : /* Devel only */
+        case BDOOR_CMD_ENABLE_MSG: /* Devel only */
             break;
-        case BDOOR_CMD_GOTO_TCL : /* Devel only */
+        case BDOOR_CMD_GOTO_TCL: /* Devel only */
             break;
-        case BDOOR_CMD_INITPCIOPROM :
+        case BDOOR_CMD_INITPCIOPROM:
             break;
-        case BDOOR_CMD_INT13 :
+        case BDOOR_CMD_INT13:
             break;
-        case BDOOR_CMD_MESSAGE :    //30
+        case BDOOR_CMD_MESSAGE:    //30
             break;
-        case BDOOR_CMD_RSVD0 :
+        case BDOOR_CMD_RSVD0:
             break;
-        case BDOOR_CMD_RSVD1 :
+        case BDOOR_CMD_RSVD1:
             break;
-        case BDOOR_CMD_RSVD2 :
+        case BDOOR_CMD_RSVD2:
             break;
-        case BDOOR_CMD_ISACPIDISABLED :
+        case BDOOR_CMD_ISACPIDISABLED:
             break;
-        case BDOOR_CMD_TOE : /* Not in use */
+        case BDOOR_CMD_TOE: /* Not in use */
             break;
         /* BDOOR_CMD_INITLSIOPROM, :, was merged with :. Reuse. */
-        case BDOOR_CMD_PATCH_SMBIOS_STRUCTS :
+        case BDOOR_CMD_PATCH_SMBIOS_STRUCTS:
             break;
-        case BDOOR_CMD_MAPMEM : /* Devel only */
+        case BDOOR_CMD_MAPMEM: /* Devel only */
             break;
-        case BDOOR_CMD_ABSPOINTER_DATA :
+        case BDOOR_CMD_ABSPOINTER_DATA:
             break;
-        case BDOOR_CMD_ABSPOINTER_STATUS :    //40
+        case BDOOR_CMD_ABSPOINTER_STATUS:    //40
             break;
-        case BDOOR_CMD_ABSPOINTER_COMMAND :
+        case BDOOR_CMD_ABSPOINTER_COMMAND:
             break;
-        case BDOOR_CMD_TIMER_SPONGE :
+        case BDOOR_CMD_TIMER_SPONGE:
             break;
-        case BDOOR_CMD_PATCH_ACPI_TABLES :
+        case BDOOR_CMD_PATCH_ACPI_TABLES:
             break;
         /* Catch-all to allow synchronous tests */
-        case BDOOR_CMD_DEVEL_FAKEHARDWARE : /* Debug only - needed in beta */
+        case BDOOR_CMD_DEVEL_FAKEHARDWARE: /* Debug only - needed in beta */
             break;
-        case BDOOR_CMD_GETHZ :
+        case BDOOR_CMD_GETHZ:
             break;
-        case BDOOR_CMD_GETTIMEFULL :
+        case BDOOR_CMD_GETTIMEFULL:
             break;
-        case BDOOR_CMD_STATELOGGER :
+        case BDOOR_CMD_STATELOGGER:
             break;
-        case BDOOR_CMD_CHECKFORCEBIOSSETUP :
+        case BDOOR_CMD_CHECKFORCEBIOSSETUP:
             break;
-        case BDOOR_CMD_LAZYTIMEREMULATION :
+        case BDOOR_CMD_LAZYTIMEREMULATION:
             break;
-        case BDOOR_CMD_BIOSBBS :    //50
+        case BDOOR_CMD_BIOSBBS:    //50
             break;
-        case BDOOR_CMD_VASSERT :
+        case BDOOR_CMD_VASSERT:
             break;
-        case BDOOR_CMD_ISGOSDARWIN :
+        case BDOOR_CMD_ISGOSDARWIN:
             break;
-        case BDOOR_CMD_DEBUGEVENT :
+        case BDOOR_CMD_DEBUGEVENT:
             break;
-        case BDOOR_CMD_OSNOTMACOSXSERVER :
+        case BDOOR_CMD_OSNOTMACOSXSERVER:
             break;
-        case BDOOR_CMD_MAX :    //55
+        case BDOOR_CMD_MAX:    //55
             break;
-        default :
+        default:
             return -1;
     }
     return 0;
 }
 
-BOOL CVMWare::TestMagic( INT aMagicNum , TCHAR * aOutput )
+BOOL CVMWare::TestMagic( INT aMagicNum, TCHAR * aOutput )
 {
-    BDOOR_REG_LB regLB;    
-    
+    BDOOR_REG_LB regLB;
+
     regLB.ecx.loWord = aMagicNum;    //Function number
 
     regLB.ebx.dword = ~BDOOR_MAGIC;    //Make sure ebx does not contain BDOOR_MAGIC
 
-    if( MagicLB( &regLB ) )
+    if ( MagicLB( &regLB ) )
     {
-        _stprintf( aOutput , _T("eax: %#x, ebx: %#x, ecx: %#x, edx: %#x, edi: %#x, esi: %#x\r\n") ,
-                   regLB.eax , regLB.ebx , regLB.ecx , regLB.edx , regLB.edi , regLB.esi );
+        _stprintf( aOutput, _T("eax: %#x, ebx: %#x, ecx: %#x, edx: %#x, edi: %#x, esi: %#x\r\n"), regLB.eax, regLB.ebx,
+                   regLB.ecx, regLB.edx, regLB.edi, regLB.esi );
         return TRUE;
     }
     return FALSE;
@@ -806,7 +806,7 @@ BOOL CVMWare::MagicLB( BDOOR_REG_LB * aBackdoorReg )
             mov        [edi + 20] , edi
         }
     }
-    __except( EXCEPTION_EXECUTE_HANDLER )
+    __except ( EXCEPTION_EXECUTE_HANDLER )
     {
         result = FALSE;
     }
@@ -847,10 +847,10 @@ BOOL CVMWare::MagicHBIn( BDOOR_REG_HB * aBackdoorRegHb )
             mov        [edi + 12] , edx
             mov        [edi + 16] , esi
             mov        [edi + 24] , ebp
-            mov        [edi + 20] , edi            
+            mov        [edi + 20] , edi
         }
     }
-    __except( EXCEPTION_EXECUTE_HANDLER )
+    __except ( EXCEPTION_EXECUTE_HANDLER )
     {
         result = FALSE;
     }
@@ -892,10 +892,10 @@ BOOL CVMWare::MagicHBOut( BDOOR_REG_HB * aBackdoorRegHb )
             mov        [edi + 12] , edx
             mov        [edi + 16] , esi
             mov        [edi + 24] , ebp
-            mov        [edi + 20] , edi            
+            mov        [edi + 20] , edi
         }
     }
-    __except( EXCEPTION_EXECUTE_HANDLER )
+    __except ( EXCEPTION_EXECUTE_HANDLER )
     {
         result = FALSE;
     }
@@ -906,7 +906,7 @@ BOOL CVMWare::MagicHBOut( BDOOR_REG_HB * aBackdoorRegHb )
 
 
 #ifdef __cplusplus
-    }
+}
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

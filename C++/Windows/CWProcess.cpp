@@ -9,84 +9,92 @@
 
 //#include "CWGeneralUtils.h""
 
-#pragma comment( lib , "Psapi.lib" )
+#pragma comment( lib, "Psapi.lib" )
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
-    extern "C" {
+extern "C" {
 #endif
 
-typedef NTSTATUS (WINAPI * PFN_NTCREATETHREADEX)( OUT PHANDLE hThread , IN ACCESS_MASK DesiredAccess , IN LPVOID ObjectAttributes , IN HANDLE ProcessHandle ,
-                                                  IN LPTHREAD_START_ROUTINE lpStartAddress , IN LPVOID lpParameter , IN BOOL CreateSuspended ,
-                                                  IN SIZE_T StackZeroBits , IN SIZE_T SizeOfStackCommit , IN SIZE_T SizeOfStackReserve , OUT LPVOID lpBytesBuffer );
+typedef NTSTATUS( WINAPI * PFN_NTCREATETHREADEX )( OUT PHANDLE hThread,
+                                                   IN ACCESS_MASK DesiredAccess,
+                                                   IN LPVOID ObjectAttributes,
+                                                   IN HANDLE ProcessHandle,
+                                                   IN LPTHREAD_START_ROUTINE lpStartAddress,
+                                                   IN LPVOID lpParameter,
+                                                   IN BOOL CreateSuspended,
+                                                   IN SIZE_T StackZeroBits,
+                                                   IN SIZE_T SizeOfStackCommit,
+                                                   IN SIZE_T SizeOfStackReserve,
+                                                   OUT LPVOID lpBytesBuffer );
 
 
 BOOL IsWin32Process( HANDLE aProcess )
 {
-    #ifdef _WIN64
-        BOOL bRet = FALSE;
-        if ( IsWow64Process( aProcess , &bRet ) )
-        {
-            return bRet;
-        }
-        return FALSE;
-    #else
-        UNREFERENCED_PARAMETER( aProcess );
-        return TRUE;
-    #endif
+#ifdef _WIN64
+    BOOL bRet = FALSE;
+    if ( IsWow64Process( aProcess, &bRet ) )
+    {
+        return bRet;
+    }
+    return FALSE;
+#else
+    UNREFERENCED_PARAMETER( aProcess );
+    return TRUE;
+#endif
 }
 
-BOOL ExecuteCommandLine( CONST WCHAR * aCmd , OPTIONAL IN BOOL aDisplay , OPTIONAL OUT DWORD * aExitCode )
+BOOL ExecuteCommandLine( CONST WCHAR * aCmd, OPTIONAL IN BOOL aDisplay, OPTIONAL OUT DWORD * aExitCode )
 {
     BOOL bRet = FALSE;
     DWORD dwCreationFlags = CREATE_UNICODE_ENVIRONMENT;    //CREATE_NEW_CONSOLE, DETACHED_PROCESS, CREATE_NO_WINDOW
     dwCreationFlags |= ( aDisplay ) ? CREATE_NEW_CONSOLE : CREATE_NO_WINDOW;
 
     STARTUPINFOW stStartupInfo = { 0 };
-    ZeroMemory( &stStartupInfo , sizeof(STARTUPINFO) );
-    stStartupInfo.cb = sizeof(STARTUPINFO);
+    ZeroMemory( &stStartupInfo, sizeof( STARTUPINFO ) );
+    stStartupInfo.cb = sizeof( STARTUPINFO );
     stStartupInfo.dwFlags = STARTF_USESHOWWINDOW;
     stStartupInfo.wShowWindow = ( aDisplay ) ? SW_SHOW : SW_HIDE;
 
     PROCESS_INFORMATION stProcInfo;
-    ZeroMemory( &stProcInfo , sizeof(PROCESS_INFORMATION) );
+    ZeroMemory( &stProcInfo, sizeof( PROCESS_INFORMATION ) );
 
-    DWORD dwRtnState = 0 , dwTimeOut = INFINITE , dwExitCode = 0;
+    DWORD dwRtnState = 0, dwTimeOut = INFINITE, dwExitCode = 0;
     WCHAR * wzCmd = NULL;
 
     if ( aCmd )
     {
         //wzCmd is needed because CreateProcessW() may modify the content of wzCmd
         size_t uCmdLen = wcslen( aCmd ) + 1;
-        wzCmd = new (std::nothrow) WCHAR[uCmdLen];
+        wzCmd = new ( std::nothrow ) WCHAR[uCmdLen];
         if ( NULL == wzCmd )
         {
             goto exit;
         }
 
-        wcsncpy_s( wzCmd , uCmdLen , aCmd , _TRUNCATE );
-        if ( ! CreateProcessW( NULL , wzCmd , NULL , NULL , FALSE , dwCreationFlags , NULL , NULL , &stStartupInfo , &stProcInfo ) )
+        wcsncpy_s( wzCmd, uCmdLen, aCmd, _TRUNCATE );
+        if ( !CreateProcessW( NULL, wzCmd, NULL, NULL, FALSE, dwCreationFlags, NULL, NULL, &stStartupInfo,
+                              &stProcInfo ) )
         {
             goto exit;
         }
 
-        dwRtnState = WaitForSingleObject( stProcInfo.hProcess , dwTimeOut );
+        dwRtnState = WaitForSingleObject( stProcInfo.hProcess, dwTimeOut );
 
         switch ( dwRtnState )
         {
-            case WAIT_OBJECT_0 :
-                if ( GetExitCodeProcess( stProcInfo.hProcess , &dwExitCode ) )
+            case WAIT_OBJECT_0:
+                if ( GetExitCodeProcess( stProcInfo.hProcess, &dwExitCode ) )
                 {
                     bRet = TRUE;
                 }
                 break;
 
-            case WAIT_TIMEOUT :
+            case WAIT_TIMEOUT:
                 break;
 
-            default :
+            default:
                 break;
         }
 
@@ -100,7 +108,7 @@ BOOL ExecuteCommandLine( CONST WCHAR * aCmd , OPTIONAL IN BOOL aDisplay , OPTION
 exit:
     if ( wzCmd )
     {
-        delete [] wzCmd;
+        delete[] wzCmd;
     }
     if ( aExitCode )
     {
@@ -112,7 +120,7 @@ exit:
 
 
 
-BOOL AdjustSelfPrivilege( CONST WCHAR * aPrivilege , BOOL aEnable )
+BOOL AdjustSelfPrivilege( CONST WCHAR * aPrivilege, BOOL aEnable )
 {
     BOOL bRet = FALSE;
     HANDLE hToken = INVALID_HANDLE_VALUE;
@@ -120,18 +128,18 @@ BOOL AdjustSelfPrivilege( CONST WCHAR * aPrivilege , BOOL aEnable )
     do
     {
         //Get handle to current process's access token
-        if ( ! OpenProcessToken( GetCurrentProcess() , TOKEN_QUERY | TOKEN_ADJUST_PRIVILEGES , &hToken ) )
+        if ( !OpenProcessToken( GetCurrentProcess(), TOKEN_QUERY | TOKEN_ADJUST_PRIVILEGES, &hToken ) )
         {
             //ShowDebugMsg( L"OpenProcessToken() failed" );
             break;
         }
 
-        CHAR tpOld[sizeof(TOKEN_PRIVILEGES) + sizeof(LUID_AND_ATTRIBUTES) * 32] = {};
+        CHAR tpOld[sizeof( TOKEN_PRIVILEGES ) + sizeof( LUID_AND_ATTRIBUTES ) * 32] = {};
         TOKEN_PRIVILEGES tpNew = {};
         DWORD dwTpSize;
 
         //Find the Luid(Local unique identifier) corresponding to aPrivilege, and set it to tpNew.Privilegesp[0].Luid
-        if ( ! LookupPrivilegeValue( NULL , aPrivilege , &tpNew.Privileges[0].Luid ) )
+        if ( !LookupPrivilegeValue( NULL, aPrivilege, &tpNew.Privileges[0].Luid ) )
         {
             //ShowDebugMsg( L"LookupPrivilegeValue() failed" );
             break;
@@ -139,45 +147,49 @@ BOOL AdjustSelfPrivilege( CONST WCHAR * aPrivilege , BOOL aEnable )
         tpNew.PrivilegeCount = 1;
 
         //Set privilege according to current privilege settings
-        if ( GetTokenInformation( hToken , TokenPrivileges , &tpOld , sizeof(tpOld) , &dwTpSize ) )
+        if ( GetTokenInformation( hToken, TokenPrivileges, &tpOld, sizeof( tpOld ), &dwTpSize ) )
         {
             TOKEN_PRIVILEGES * pOld = (TOKEN_PRIVILEGES *)tpOld;
-            for ( DWORD i = 0 ; i < pOld->PrivilegeCount ; i++ )
+            for ( DWORD i = 0; i < pOld->PrivilegeCount; i++ )
             {
                 if ( pOld->Privileges[i].Luid.HighPart == tpNew.Privileges[0].Luid.HighPart &&
-                     pOld->Privileges[i].Luid.LowPart == tpNew.Privileges[0].Luid.LowPart)
+                     pOld->Privileges[i].Luid.LowPart == tpNew.Privileges[0].Luid.LowPart )
                 {
-                    tpNew.Privileges[0].Attributes = ( aEnable ) ? ( pOld->Privileges[i].Attributes | SE_PRIVILEGE_ENABLED ) :
-                                                                   ( pOld->Privileges[i].Attributes ^ ( SE_PRIVILEGE_ENABLED & pOld->Privileges[i].Attributes ) );
+                    tpNew.Privileges[0].Attributes =
+                        ( aEnable ) ? ( pOld->Privileges[i].Attributes | SE_PRIVILEGE_ENABLED )
+                                    : ( pOld->Privileges[i].Attributes ^
+                                        ( SE_PRIVILEGE_ENABLED & pOld->Privileges[i].Attributes ) );
                     break;
                 }
             }
         }
         else if ( ERROR_INSUFFICIENT_BUFFER == GetLastError() )
         {
-            TOKEN_PRIVILEGES * pOld = (TOKEN_PRIVILEGES *)new (std::nothrow) CHAR[dwTpSize];
+            TOKEN_PRIVILEGES * pOld = (TOKEN_PRIVILEGES *)new ( std::nothrow ) CHAR[dwTpSize];
             if ( NULL == pOld )
             {
                 //ShowDebugMsg( L"Failed to allocate memory" );
                 break;
             }
-            ZeroMemory( pOld , dwTpSize );
-            if ( ! GetTokenInformation( hToken , TokenPrivileges , pOld , dwTpSize , &dwTpSize ) )
+            ZeroMemory( pOld, dwTpSize );
+            if ( !GetTokenInformation( hToken, TokenPrivileges, pOld, dwTpSize, &dwTpSize ) )
             {
                 //ShowDebugMsg( L"GetTokenInformation() failed to get current privilege" );
                 break;
             }
-            for ( DWORD i = 0 ; i < pOld->PrivilegeCount ; i++ )
+            for ( DWORD i = 0; i < pOld->PrivilegeCount; i++ )
             {
                 if ( pOld->Privileges[i].Luid.HighPart == tpNew.Privileges[0].Luid.HighPart &&
-                     pOld->Privileges[i].Luid.LowPart == tpNew.Privileges[0].Luid.LowPart)
+                     pOld->Privileges[i].Luid.LowPart == tpNew.Privileges[0].Luid.LowPart )
                 {
-                    tpNew.Privileges[0].Attributes = ( aEnable ) ? ( pOld->Privileges[i].Attributes | SE_PRIVILEGE_ENABLED ) :
-                                                                   ( pOld->Privileges[i].Attributes ^ ( SE_PRIVILEGE_ENABLED & pOld->Privileges[i].Attributes ) );
+                    tpNew.Privileges[0].Attributes =
+                        ( aEnable ) ? ( pOld->Privileges[i].Attributes | SE_PRIVILEGE_ENABLED )
+                                    : ( pOld->Privileges[i].Attributes ^
+                                        ( SE_PRIVILEGE_ENABLED & pOld->Privileges[i].Attributes ) );
                     break;
                 }
             }
-            delete [] pOld;
+            delete[] pOld;
         }
         else
         {
@@ -186,7 +198,7 @@ BOOL AdjustSelfPrivilege( CONST WCHAR * aPrivilege , BOOL aEnable )
         }
 
         //Change the privilege settings now
-        if ( ! AdjustTokenPrivileges( hToken , FALSE , &tpNew , 0 , NULL , NULL ) )
+        if ( !AdjustTokenPrivileges( hToken, FALSE, &tpNew, 0, NULL, NULL ) )
         {
             //WriteDebugMsg( "%hs_%lu AdjustTokenPrivileges() failed. GetLastError()=%lu" , __FILE__ , __LINE__ , GetLastError() );
             break;
@@ -196,7 +208,9 @@ BOOL AdjustSelfPrivilege( CONST WCHAR * aPrivilege , BOOL aEnable )
             //WriteDebugMsg( "%hs_%lu AdjustTokenPrivileges() only change partial privilege" , __FILE__ , __LINE__ );
             break;
         }
-        else {}
+        else
+        {
+        }
 
         //WriteDebugMsg( "%hs_%lu AdjustTokenPrivileges() succeed" , __FILE__ , __LINE__ );
         bRet = TRUE;
@@ -210,49 +224,56 @@ BOOL AdjustSelfPrivilege( CONST WCHAR * aPrivilege , BOOL aEnable )
     return bRet;
 }
 
-BOOL ChangeDaclPermission( CONST WCHAR * aObjName , SE_OBJECT_TYPE aObjType , 
-                           DWORD aPermission , ACCESS_MODE aMode , DWORD aInheritance ,
-                           CONST WCHAR * aTrustee , TRUSTEE_FORM aTrusteeForm , TRUSTEE_TYPE aTrusteeType ) 
+BOOL ChangeDaclPermission( CONST WCHAR * aObjName,
+                           SE_OBJECT_TYPE aObjType,
+                           DWORD aPermission,
+                           ACCESS_MODE aMode,
+                           DWORD aInheritance,
+                           CONST WCHAR * aTrustee,
+                           TRUSTEE_FORM aTrusteeForm,
+                           TRUSTEE_TYPE aTrusteeType )
 {
     BOOL bRet = FALSE;
-    PACL pOldDacl = NULL , pNewDacl = NULL;
+    PACL pOldDacl = NULL, pNewDacl = NULL;
 
     do
     {
-        if ( NULL == aObjName ) 
+        if ( NULL == aObjName )
         {
             SetLastError( ERROR_INVALID_PARAMETER );
             break;
         }
 
         //Get the existing DACL
-        DWORD dwRet = GetNamedSecurityInfoW( aObjName , aObjType , DACL_SECURITY_INFORMATION , NULL , NULL , &pOldDacl , NULL , NULL );
+        DWORD dwRet =
+            GetNamedSecurityInfoW( aObjName, aObjType, DACL_SECURITY_INFORMATION, NULL, NULL, &pOldDacl, NULL, NULL );
         if ( ERROR_SUCCESS != dwRet )
         {
             SetLastError( dwRet );
             break;
-        }  
+        }
 
         //Initialize an EXPLICIT_ACCESS structure for the new ACE
         EXPLICIT_ACCESSW ea = {};
         ea.grfAccessPermissions = aPermission;
         ea.grfAccessMode = aMode;
-        ea.grfInheritance= aInheritance;
+        ea.grfInheritance = aInheritance;
         ea.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
         ea.Trustee.TrusteeForm = aTrusteeForm;
         ea.Trustee.TrusteeType = aTrusteeType;
-        ea.Trustee.ptstrName = const_cast<WCHAR *>(aTrustee);
+        ea.Trustee.ptstrName = const_cast<WCHAR *>( aTrustee );
 
         //Create a new ACL that merges the new ACE into the existing DACL
-        dwRet = SetEntriesInAclW( 1 , &ea , pOldDacl , &pNewDacl );
+        dwRet = SetEntriesInAclW( 1, &ea, pOldDacl, &pNewDacl );
         if ( ERROR_SUCCESS != dwRet )
         {
             SetLastError( dwRet );
             break;
-        }  
+        }
 
         //Attach the new ACL as the object's DACL
-        dwRet = SetNamedSecurityInfoW( const_cast<WCHAR *>(aObjName) , aObjType , DACL_SECURITY_INFORMATION , NULL , NULL , pNewDacl , NULL );
+        dwRet = SetNamedSecurityInfoW( const_cast<WCHAR *>( aObjName ), aObjType, DACL_SECURITY_INFORMATION, NULL, NULL,
+                                       pNewDacl, NULL );
         if ( ERROR_SUCCESS != dwRet )
         {
             SetLastError( dwRet );
@@ -261,10 +282,10 @@ BOOL ChangeDaclPermission( CONST WCHAR * aObjName , SE_OBJECT_TYPE aObjType ,
 
         bRet = TRUE;
     } while ( 0 );
-    
+
     if ( NULL != pNewDacl )
     {
-        LocalFree((HLOCAL) pNewDacl); 
+        LocalFree( (HLOCAL)pNewDacl );
     }
     return bRet;
 }
@@ -272,27 +293,33 @@ BOOL ChangeDaclPermission( CONST WCHAR * aObjName , SE_OBJECT_TYPE aObjType ,
 
 
 
-HANDLE WINAPI TryCreateRemoteThread( IN HANDLE aProcess , OPTIONAL IN LPSECURITY_ATTRIBUTES aThreadAttributes , 
-                                     IN SIZE_T aStackSize , IN LPTHREAD_START_ROUTINE aStartAddress , OPTIONAL IN LPVOID aParameter ,
-                                     IN DWORD aCreationFlags , OPTIONAL OUT LPDWORD aThreadId )
+HANDLE WINAPI TryCreateRemoteThread( IN HANDLE aProcess,
+                                     OPTIONAL IN LPSECURITY_ATTRIBUTES aThreadAttributes,
+                                     IN SIZE_T aStackSize,
+                                     IN LPTHREAD_START_ROUTINE aStartAddress,
+                                     OPTIONAL IN LPVOID aParameter,
+                                     IN DWORD aCreationFlags,
+                                     OPTIONAL OUT LPDWORD aThreadId )
 {
     //Create remote thread to load our DLL
-    if ( FALSE == CWUtils::AdjustSelfPrivilege( SE_DEBUG_NAME , TRUE ) )
+    if ( FALSE == CWUtils::AdjustSelfPrivilege( SE_DEBUG_NAME, TRUE ) )
     {
         //DbgOut( ERRO , DBG_UTILS , "AdjustSelfPrivilege() failed. GetLastError()=%!WINERROR!" , GetLastError() );
         //Don't break and try to create thread
     }
 
-    HANDLE hRemoteThread = CreateRemoteThread( aProcess , aThreadAttributes , aStackSize , aStartAddress , aParameter , aCreationFlags , aThreadId );
+    HANDLE hRemoteThread = CreateRemoteThread( aProcess, aThreadAttributes, aStackSize, aStartAddress, aParameter,
+                                               aCreationFlags, aThreadId );
     if ( NULL == hRemoteThread )
     {
         //DbgOut( WARN , DBG_UTILS , "CreateRemoteThread() failed, trying NtCreateThreadEx(). hProcess=0x%p, GetLastError()=%!WINERROR!" , aProcess , GetLastError() );
-        
-        do 
+
+        do
         {
-            PFN_NTCREATETHREADEX NtCreateThreadEx = (PFN_NTCREATETHREADEX)GetProcAddress( GetModuleHandleW(L"ntdll.dll") , "NtCreateThreadEx" );
+            PFN_NTCREATETHREADEX NtCreateThreadEx =
+                (PFN_NTCREATETHREADEX)GetProcAddress( GetModuleHandleW( L"ntdll.dll" ), "NtCreateThreadEx" );
             if ( NULL == NtCreateThreadEx )
-            {  
+            {
                 //DbgOut( ERRO , DBG_UTILS , "Failed to get address of NtCreateThreadEx. GetLastError()=%!WINERROR!" , GetLastError() );
                 break;
             }
@@ -305,8 +332,9 @@ HANDLE WINAPI TryCreateRemoteThread( IN HANDLE aProcess , OPTIONAL IN LPSECURITY
             //+-+-------------+---------------+-------------------------------+
             ACCESS_MASK mask = STANDARD_RIGHTS_ALL | SPECIFIC_RIGHTS_ALL;
 
-            NTSTATUS ntStatus = NtCreateThreadEx( &hRemoteThread , mask , NULL , aProcess , aStartAddress , aParameter , FALSE , 0 , 0 , 0 , NULL );
-            if ( ! NT_SUCCESS(ntStatus) )
+            NTSTATUS ntStatus = NtCreateThreadEx( &hRemoteThread, mask, NULL, aProcess, aStartAddress, aParameter,
+                                                  FALSE, 0, 0, 0, NULL );
+            if ( !NT_SUCCESS( ntStatus ) )
             {
                 //DbgOut( ERRO , DBG_UTILS , "NtCreateThreadEx() failed. ntStatus=%!STATUS!, GetLastError()=%!WINERROR!" , ntStatus , GetLastError() );
                 break;
@@ -318,7 +346,7 @@ HANDLE WINAPI TryCreateRemoteThread( IN HANDLE aProcess , OPTIONAL IN LPSECURITY
 }
 
 #ifdef __cplusplus
-    }
+}
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

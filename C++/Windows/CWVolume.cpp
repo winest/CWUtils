@@ -5,9 +5,8 @@ using std::wstring;
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
-    extern "C" {
+extern "C" {
 #endif
 
 
@@ -21,9 +20,9 @@ DWORD GetVolumes()
 //Return how many logical drives are found
 INT GetVolumesPath( std::wstring & aBuf )
 {
-    WCHAR wzBuf[(4 * 26) + 1] = { 0 };
-    DWORD written = GetLogicalDriveStringsW( _countof(wzBuf) - 1 , wzBuf );
-    aBuf.assign( wzBuf , written );
+    WCHAR wzBuf[( 4 * 26 ) + 1] = { 0 };
+    DWORD written = GetLogicalDriveStringsW( _countof( wzBuf ) - 1, wzBuf );
+    aBuf.assign( wzBuf, written );
     return written / 4;
 }
 
@@ -38,25 +37,27 @@ INT GetVolumesGuidPath( std::wstring & aBuf )
     WCHAR name[50];
     aBuf.clear();
 
-    HANDLE hFind = FindFirstVolumeW( name , 50 );
+    HANDLE hFind = FindFirstVolumeW( name, 50 );
     if ( hFind == INVALID_HANDLE_VALUE )
     {
         ShowDebugMsg( L"FindFirstVolumeW() failed when CWVolume->GetVolumesGuidPath()" );
         return 0;
     }
 
-    do 
+    do
     {
-        aBuf.append( name , 50 );
+        aBuf.append( name, 50 );
         count++;
-    } while ( FindNextVolumeW( hFind , name , MAX_PATH ) );
+    } while ( FindNextVolumeW( hFind, name, MAX_PATH ) );
 
     DWORD err = GetLastError();
     if ( err != ERROR_NO_MORE_FILES )
     {
         ShowDebugMsg( L"FindNextVolumeW() failed when CWVolume->GetVolumesGuidPath()" );
     }
-    else{}
+    else
+    {
+    }
 
     FindVolumeClose( hFind );
 
@@ -71,13 +72,13 @@ INT GetVolumesGuidPath( std::wstring & aBuf )
 //Retrieves a list of drive paths for the specified volume
 //aVolumePath will look like "C:\(NULL)D:\(NULL)"
 //Return number of drive letters found if successful, 0 otherwise
-INT GetVolumePathFromGuidPath( CONST WCHAR * aVolumeGuidPath , std::wstring & aVolumePath )
+INT GetVolumePathFromGuidPath( CONST WCHAR * aVolumeGuidPath, std::wstring & aVolumePath )
 {
     DWORD writtenLen;
-    WCHAR wzVolumePath[(4 * 26) + 1] = { 0 };
-    if ( GetVolumePathNamesForVolumeNameW( aVolumeGuidPath , wzVolumePath , _countof(wzVolumePath) , &writtenLen ) )
+    WCHAR wzVolumePath[( 4 * 26 ) + 1] = { 0 };
+    if ( GetVolumePathNamesForVolumeNameW( aVolumeGuidPath, wzVolumePath, _countof( wzVolumePath ), &writtenLen ) )
     {
-        aVolumePath.assign( wzVolumePath , _countof(wzVolumePath) );
+        aVolumePath.assign( wzVolumePath, _countof( wzVolumePath ) );
         return writtenLen / 4;
     }
     else
@@ -90,10 +91,10 @@ INT GetVolumePathFromGuidPath( CONST WCHAR * aVolumeGuidPath , std::wstring & aV
 //aMountPath can be drive letter, GUID path, or mounted folder path, all of them must end with backslash
 //aGuidPath will look like "\\?\Volume{183263e9-5394-11df-a364-806d6172696f}\(NULL)"
 //Return TRUE if successful, FALSE otherwise
-BOOL GetGuidPathFromMountPath( CONST WCHAR * aMountPath , std::wstring & aGuidPath )
+BOOL GetGuidPathFromMountPath( CONST WCHAR * aMountPath, std::wstring & aGuidPath )
 {
     WCHAR wzGuidPath[50] = { 0 };
-    if ( GetVolumeNameForVolumeMountPointW( aMountPath , wzGuidPath , 50 ) )
+    if ( GetVolumeNameForVolumeMountPointW( aMountPath, wzGuidPath, 50 ) )
     {
         aGuidPath = wzGuidPath;
         return TRUE;
@@ -110,10 +111,10 @@ BOOL GetGuidPathFromMountPath( CONST WCHAR * aMountPath , std::wstring & aGuidPa
 //aMountPath will be written as the path where aFileOrDirPath is mounted
 //aMountPathLen is the length of aMountPath excluding terminating null
 //Return TRUE if successful, FALSE otherwise
-BOOL GetMountPathFromFileOrDirPath( CONST WCHAR * aFileOrDirPath , std::wstring & aMountPath )
+BOOL GetMountPathFromFileOrDirPath( CONST WCHAR * aFileOrDirPath, std::wstring & aMountPath )
 {
     WCHAR wzMountPath[MAX_PATH] = { 0 };
-    if ( GetVolumePathNameW( aFileOrDirPath , wzMountPath , _countof(wzMountPath) ) )
+    if ( GetVolumePathNameW( aFileOrDirPath, wzMountPath, _countof( wzMountPath ) ) )
     {
         aMountPath = wzMountPath;
         return TRUE;
@@ -121,7 +122,7 @@ BOOL GetMountPathFromFileOrDirPath( CONST WCHAR * aFileOrDirPath , std::wstring 
     else
     {
         ShowDebugMsg( L"GetVolumePathNameW() failed when CWVolume->GetMountPathFromFileOrDirPath()" );
-        return FALSE;        
+        return FALSE;
     }
 }
 
@@ -129,12 +130,12 @@ BOOL GetMountPathFromFileOrDirPath( CONST WCHAR * aFileOrDirPath , std::wstring 
 //aMountedFolders will be the name of mounted folders on the specified volume
 //aMountedFolders should have enough space([row][column] = [count of folders][MAX_PATH+1] WCHARs)
 //Return how many folders mounted on the specific volume if successful, 0 otherwise
-INT GetMountedFoldersFromGuidPath( CONST WCHAR * aVolumeGuidPath , WCHAR ** aMountedFolders )
+INT GetMountedFoldersFromGuidPath( CONST WCHAR * aVolumeGuidPath, WCHAR ** aMountedFolders )
 {
     int count = 0;
     DWORD err;
 
-    HANDLE hFindMount = FindFirstVolumeMountPointW( aVolumeGuidPath , aMountedFolders[count] , MAX_PATH );
+    HANDLE hFindMount = FindFirstVolumeMountPointW( aVolumeGuidPath, aMountedFolders[count], MAX_PATH );
     if ( hFindMount == INVALID_HANDLE_VALUE )
     {
         ShowDebugMsg( L"FindFirstVolumeMountPointW() failed when CWVolume->GetMountedFoldersFromGuidPath()" );
@@ -144,7 +145,7 @@ INT GetMountedFoldersFromGuidPath( CONST WCHAR * aVolumeGuidPath , WCHAR ** aMou
     {
         count++;
 
-        while ( FindNextVolumeMountPointW( hFindMount , aMountedFolders[count] , MAX_PATH ) )
+        while ( FindNextVolumeMountPointW( hFindMount, aMountedFolders[count], MAX_PATH ) )
         {
             count++;
         }
@@ -152,13 +153,14 @@ INT GetMountedFoldersFromGuidPath( CONST WCHAR * aVolumeGuidPath , WCHAR ** aMou
         err = GetLastError();
         if ( err != ERROR_NO_MORE_FILES )
         {
-
-                ShowDebugMsg( L"FindNextVolumeMountPointW failed when CWVolume->GetMountedFoldersFromGuidPath()" );
+            ShowDebugMsg( L"FindNextVolumeMountPointW failed when CWVolume->GetMountedFoldersFromGuidPath()" );
         }
-        else{}
+        else
+        {
+        }
 
         FindVolumeMountPointClose( hFindMount );
-    }        
+    }
 
     return count;
 }
@@ -168,51 +170,50 @@ INT GetMountedFoldersFromGuidPath( CONST WCHAR * aVolumeGuidPath , WCHAR ** aMou
 
 
 
-
 //aDrivePath should be like "C:\" or "\\?\C:\"
 //The type will be written to aVolumeType is it's not NULL, therefore it show have enough space
 //Return the type in UINT defined in WinBase.h
-UINT GetVolumeType( CONST WCHAR * aVolumePath , std::wstring & aVolumeType )
+UINT GetVolumeType( CONST WCHAR * aVolumePath, std::wstring & aVolumeType )
 {
     UINT type = GetDriveTypeW( aVolumePath );
     switch ( type )
     {
-        case DRIVE_UNKNOWN :    //The drive type cannot be determined
+        case DRIVE_UNKNOWN:    //The drive type cannot be determined
         {
             aVolumeType = L"Unknown";
             break;
         }
-        case DRIVE_NO_ROOT_DIR ://The root path is invalid; for example, there is no volume mounted at the specified path
+        case DRIVE_NO_ROOT_DIR:    //The root path is invalid; for example, there is no volume mounted at the specified path
         {
             aVolumeType = L"Invalid path";
             break;
         }
-        case DRIVE_REMOVABLE :    //The drive has removable media; for example, a floppy drive, thumb drive, or flash card reader
+        case DRIVE_REMOVABLE:    //The drive has removable media; for example, a floppy drive, thumb drive, or flash card reader
         {
             aVolumeType = L"Removable media";
             break;
         }
-        case DRIVE_FIXED :        //The drive has fixed media; for example, a hard drive or flash drive
+        case DRIVE_FIXED:    //The drive has fixed media; for example, a hard drive or flash drive
         {
             aVolumeType = L"Fixed media";
             break;
         }
-        case DRIVE_REMOTE :        //The drive is a remote (network) drive
+        case DRIVE_REMOTE:    //The drive is a remote (network) drive
         {
             aVolumeType = L"Remote drive";
             break;
         }
-        case DRIVE_CDROM :        //The drive is a CD-ROM drive
+        case DRIVE_CDROM:    //The drive is a CD-ROM drive
         {
             aVolumeType = L"CD-ROM";
             break;
         }
-        case DRIVE_RAMDISK :    //The drive is a RAM disk
+        case DRIVE_RAMDISK:    //The drive is a RAM disk
         {
             aVolumeType = L"RAM disk";
             break;
         }
-        default :
+        default:
         {
             aVolumeType = L"Error";
             break;
@@ -229,14 +230,17 @@ UINT GetVolumeType( CONST WCHAR * aVolumePath , std::wstring & aVolumeType )
 //aMaxFileLen is the max filename length this drive support, filename is the one between backslashes
 //aFsFlag, aSerial, and aMaxFileLen are optional
 //Return TRUE if successful, FALSE otherwise
-BOOL GetVolumeInfo( CONST WCHAR * aVolumePath , std::wstring & aVolumeName ,
-                    std::wstring & aFs , DWORD * aFsFlag , 
-                    DWORD * aSerial , DWORD * aMaxFileLen )
+BOOL GetVolumeInfo( CONST WCHAR * aVolumePath,
+                    std::wstring & aVolumeName,
+                    std::wstring & aFs,
+                    DWORD * aFsFlag,
+                    DWORD * aSerial,
+                    DWORD * aMaxFileLen )
 {
     WCHAR wzVolumeName[MAX_PATH] = { 0 };
     WCHAR wzFs[MAX_PATH] = { 0 };
-    if ( GetVolumeInformationW( aVolumePath , wzVolumeName , _countof(wzVolumeName) ,
-                                aSerial , aMaxFileLen , aFsFlag , wzFs , _countof(wzFs) ) )
+    if ( GetVolumeInformationW( aVolumePath, wzVolumeName, _countof( wzVolumeName ), aSerial, aMaxFileLen, aFsFlag,
+                                wzFs, _countof( wzFs ) ) )
     {
         aVolumeName = wzVolumeName;
         aFs = wzFs;
@@ -277,9 +281,12 @@ BOOL GetVolumeInfo( HANDLE hFile , WCHAR * aVolumeName , DWORD aVolumeNameLen ,
 //Get free space, total space for all users, or available free space for current user on the specific disk in bytes
 //You can simply get one space information by setting others to NULL
 //Return TRUE if successful, FALSE otherwise
-BOOL GetVolumeSpace( CONST WCHAR * aVolumePath , ULARGE_INTEGER * aFree , ULARGE_INTEGER * aTotal , ULARGE_INTEGER * aCurrAvailable )
+BOOL GetVolumeSpace( CONST WCHAR * aVolumePath,
+                     ULARGE_INTEGER * aFree,
+                     ULARGE_INTEGER * aTotal,
+                     ULARGE_INTEGER * aCurrAvailable )
 {
-    if ( GetDiskFreeSpaceExW( aVolumePath , aCurrAvailable , aTotal , aFree ) )
+    if ( GetDiskFreeSpaceExW( aVolumePath, aCurrAvailable, aTotal, aFree ) )
     {
         return TRUE;
     }
@@ -295,9 +302,9 @@ BOOL GetVolumeSpace( CONST WCHAR * aVolumePath , ULARGE_INTEGER * aFree , ULARGE
 
 //aVolumePath can be "C:\" or "C:\Windows\" that must end with backslash
 //Return TRUE if successful, FALSE otherwise
-BOOL SetVolumeName( WCHAR * aVolumePath , WCHAR * aNewName )
+BOOL SetVolumeName( WCHAR * aVolumePath, WCHAR * aNewName )
 {
-    if ( SetVolumeLabelW( aVolumePath , aNewName ) )
+    if ( SetVolumeLabelW( aVolumePath, aNewName ) )
     {
         return TRUE;
     }
@@ -312,4 +319,4 @@ BOOL SetVolumeName( WCHAR * aVolumePath , WCHAR * aNewName )
 }
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils
