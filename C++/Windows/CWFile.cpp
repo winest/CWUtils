@@ -848,7 +848,7 @@ BOOL CreateFileDir( CONST wstring & aFileFullPath )
 
 
 
-BOOL CFile::Open( CONST CHAR * aPath, UINT32 aOpenAttr, CONST std::string & aLineSep )
+BOOL CFile::Open( CONST CHAR * aPath, UINT32 aOpenAttr, CONST std::string aLineSep )
 {
     string strPath = aPath;
     wstring wstrPath;
@@ -856,7 +856,7 @@ BOOL CFile::Open( CONST CHAR * aPath, UINT32 aOpenAttr, CONST std::string & aLin
     return this->Open( wstrPath.c_str(), aOpenAttr, aLineSep );
 }
 
-BOOL CFile::Open( CONST WCHAR * aPath, UINT32 aOpenAttr, CONST std::string & aLineSep )
+BOOL CFile::Open( CONST WCHAR * aPath, UINT32 aOpenAttr, CONST std::string aLineSep )
 {
     BOOL bRet = FALSE;
 

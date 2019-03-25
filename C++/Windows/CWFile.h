@@ -18,29 +18,28 @@
 #include <Psapi.h>
 #include <VersionHelpers.h>
 
-#pragma comment( lib , "Version.lib" )
+#pragma comment( lib, "Version.lib" )
 #if ( _WIN32_WINNT_VISTA > _WIN32_WINNT )
-    #pragma comment( lib , "Psapi.lib" )
+#    pragma comment( lib, "Psapi.lib" )
 #endif
 
 
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef enum _VERSION_COMPARE
 {
-    VERSION_UNAVAILABLE = -2 ,
-    VERSION_OLDER ,
-    VERSION_EQUAL ,
+    VERSION_UNAVAILABLE = -2,
+    VERSION_OLDER,
+    VERSION_EQUAL,
     VERSION_NEWER
 } VERSION_COMPARE;
 
-BOOL RelativeToFullPath( CONST WCHAR * aRelativePath , std::wstring & aFullPath );
+BOOL RelativeToFullPath( CONST WCHAR * aRelativePath, std::wstring & aFullPath );
 
 BOOL IsPathExist( CONST WCHAR * aFullPath );
 
@@ -48,21 +47,21 @@ BOOL IsFileExist( CONST WCHAR * aFullPath );
 
 UINT64 GetFileSizeByPath( IN CONST WCHAR * aFullPath );
 
-BOOL GetFileContent( IN CONST WCHAR * aFullPath , IN OUT std::string & aContent );
+BOOL GetFileContent( IN CONST WCHAR * aFullPath, IN OUT std::string & aContent );
 
-BOOL SaveToFile( IN CONST WCHAR * aSavePath , BOOL aAppend , IN CONST BYTE * aData , IN DWORD aDataSize );
-BOOL SaveToFileEx( IN CONST WCHAR * aSavePath , BOOL aAppend , IN CONST CHAR * aFormat , ... );
+BOOL SaveToFile( IN CONST WCHAR * aSavePath, BOOL aAppend, IN CONST BYTE * aData, IN DWORD aDataSize );
+BOOL SaveToFileEx( IN CONST WCHAR * aSavePath, BOOL aAppend, IN CONST CHAR * aFormat, ... );
 
-BOOL ForceCopyFile( CONST WCHAR * aSrcPath , CONST WCHAR * aDstPath , BOOL aRemoveSrc = FALSE );
-BOOL ForceMoveFile( CONST WCHAR * aSrcPath , CONST WCHAR * aDstPath );
+BOOL ForceCopyFile( CONST WCHAR * aSrcPath, CONST WCHAR * aDstPath, BOOL aRemoveSrc = FALSE );
+BOOL ForceMoveFile( CONST WCHAR * aSrcPath, CONST WCHAR * aDstPath );
 
-VOID CreateTempFile( OUT std::wstring & aFilePath , IN CONST WCHAR * aPreferFolderPath = NULL );
+VOID CreateTempFile( OUT std::wstring & aFilePath, IN CONST WCHAR * aPreferFolderPath = NULL );
 
-BOOL GetFileVersion( CONST WCHAR * aFullPath , WORD * aMajor , WORD * aMinor , WORD * aRevision , WORD * aBuildNumber );
-VERSION_COMPARE CompareFileVersion( CONST WCHAR * aNewFilePath , CONST WCHAR * aExistFilePath );
+BOOL GetFileVersion( CONST WCHAR * aFullPath, WORD * aMajor, WORD * aMinor, WORD * aRevision, WORD * aBuildNumber );
+VERSION_COMPARE CompareFileVersion( CONST WCHAR * aNewFilePath, CONST WCHAR * aExistFilePath );
 
-BOOL DevicePathToDrivePath( IN CONST WCHAR * aDevicePath , OUT std::wstring & aDrivePath );
-BOOL GetFilePathFromHandle( IN HANDLE aFile , OUT std::wstring & aFilePath );
+BOOL DevicePathToDrivePath( IN CONST WCHAR * aDevicePath, OUT std::wstring & aDrivePath );
+BOOL GetFilePathFromHandle( IN HANDLE aFile, OUT std::wstring & aFilePath );
 BOOL GetCurrentProcessPath( OUT std::wstring & aProcPath );
 
 
@@ -72,9 +71,9 @@ BOOL IsEmptyDir( CONST WCHAR * aDirPath );
 
 BOOL GetWindowsDir( std::wstring & aWinDir );
 
-BOOL GetModuleDir( HMODULE aModule , std::wstring & aFolder );
+BOOL GetModuleDir( HMODULE aModule, std::wstring & aFolder );
 
-BOOL GetFileDir( IN CONST WCHAR * aSearchPath , IN CONST WCHAR * aFindingFile , OUT std::wstring & aResult );
+BOOL GetFileDir( IN CONST WCHAR * aSearchPath, IN CONST WCHAR * aFindingFile, OUT std::wstring & aResult );
 
 //Create the folder if it's not exists
 BOOL CreateDir( CONST std::wstring & aDir );
@@ -93,54 +92,54 @@ BOOL CreateFileDir( CONST std::wstring & aFileFullPath );
 
 
 
-CONST UINT32 FILE_OPEN_ATTR_NONE =                0x00000000;   //Nothing
-CONST UINT32 FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST = 0x00000001;   //Open if exists, create if not exists
-CONST UINT32 FILE_OPEN_ATTR_CREATE_ALWAYS =       0x00000002;   //Always create new file
-CONST UINT32 FILE_OPEN_ATTR_OPEN_EXISTING =       0x00000004;   //Open if exists
+CONST UINT32 FILE_OPEN_ATTR_NONE = 0x00000000;                   //Nothing
+CONST UINT32 FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST = 0x00000001;    //Open if exists, create if not exists
+CONST UINT32 FILE_OPEN_ATTR_CREATE_ALWAYS = 0x00000002;          //Always create new file
+CONST UINT32 FILE_OPEN_ATTR_OPEN_EXISTING = 0x00000004;          //Open if exists
 
-CONST UINT32 FILE_OPEN_ATTR_BINARY =              0x00000008;   //Open the raw file directly
-CONST UINT32 FILE_OPEN_ATTR_MOVE_TO_END =         0x00000010;   //Move file pointer to the end of file
-CONST UINT32 FILE_OPEN_ATTR_READ =                0x00000020;   //Open for read
-CONST UINT32 FILE_OPEN_ATTR_WRITE =               0x00000040;   //Open for write
+CONST UINT32 FILE_OPEN_ATTR_BINARY = 0x00000008;         //Open the raw file directly
+CONST UINT32 FILE_OPEN_ATTR_MOVE_TO_END = 0x00000010;    //Move file pointer to the end of file
+CONST UINT32 FILE_OPEN_ATTR_READ = 0x00000020;           //Open for read
+CONST UINT32 FILE_OPEN_ATTR_WRITE = 0x00000040;          //Open for write
 
 class CFile
 {
-    public :
-        CFile() : m_hFile(NULL) {}
-        virtual ~CFile() { this->Close(); }
+    public:
+    CFile() : m_hFile( NULL ) {}
+    virtual ~CFile() { this->Close(); }
 
-    public :
-        BOOL Open( CONST CHAR * aPath , UINT32 aOpenAttr , CONST std::string & aLineSep );
-        BOOL Open( CONST WCHAR * aPath , UINT32 aOpenAttr , CONST std::string & aLineSep );
-        BOOL Write( CONST UCHAR * aData , SIZE_T aDataSize );
-        BOOL WriteLine();
-        BOOL WriteLine( CONST UCHAR * aData , SIZE_T aDataSize );
+    public:
+    BOOL Open( CONST CHAR * aPath, UINT32 aOpenAttr, CONST std::string aLineSep );
+    BOOL Open( CONST WCHAR * aPath, UINT32 aOpenAttr, CONST std::string aLineSep );
+    BOOL Write( CONST UCHAR * aData, SIZE_T aDataSize );
+    BOOL WriteLine();
+    BOOL WriteLine( CONST UCHAR * aData, SIZE_T aDataSize );
 
-        BOOL Read( std::string & aData , SIZE_T aDataSize , BOOL aAppend = FALSE );
-        BOOL ReadLine( std::string & aData , BOOL aAppend = FALSE );
-        VOID Flush();
-        VOID Close();
+    BOOL Read( std::string & aData, SIZE_T aDataSize, BOOL aAppend = FALSE );
+    BOOL ReadLine( std::string & aData, BOOL aAppend = FALSE );
+    VOID Flush();
+    VOID Close();
 
-        HANDLE GetFileHandle() { return m_hFile; }
+    HANDLE GetFileHandle() { return m_hFile; }
 
-    protected :
-        HANDLE m_hFile;
-        std::string m_strLineSep;
-        std::string m_strReadBuf;
+    protected:
+    HANDLE m_hFile;
+    std::string m_strLineSep;
+    std::string m_strReadBuf;
 };
 
 class CCsv : public CFile
 {
-    public :
-        CCsv() {}
-        virtual ~CCsv() { this->Close(); }
+    public:
+    CCsv() {}
+    virtual ~CCsv() { this->Close(); }
 
-    public :
-        BOOL WriteRow( CONST std::vector<std::string> & aColData , BOOL aAddQuote );
+    public:
+    BOOL WriteRow( CONST std::vector<std::string> & aColData, BOOL aAddQuote );
 };
 
 #ifdef __cplusplus
 }
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "CWTime.h"
-using std::string;
 
 namespace CWUtils
 {
@@ -8,36 +7,42 @@ namespace CWUtils
 extern "C" {
 #endif
 
-BOOL CDECL _FormatStringA( OUT string & aOutString, IN CONST CHAR * aFormat, ... )
+BOOL CDECL _FormatStringA( OUT std::string & aOutString, IN CONST CHAR * aFormat, ... )
 {
     BOOL bRet = FALSE;
     aOutString.clear();
     CHAR szBuf[4096];
     CHAR * pBuf = szBuf;
+    SIZE_T uBufLen = _countof( szBuf );
+    INT nCopiedLen = 0;
 
-    if ( NULL != aFormat )
+    if ( nullptr != aFormat )
     {
         va_list args;
         va_start( args, aFormat );
-        SIZE_T len = vsnprintf( NULL, 0, aFormat, args ) +
-                     1;    // Get formatted string length and adding one for null-terminator
 
-        if ( _countof( szBuf ) < len )
+        do
         {
-            pBuf = new ( std::nothrow ) CHAR[len];
-        }
-        if ( NULL != pBuf )
-        {
-            if ( 0 < vsnprintf( pBuf, len, aFormat, args ) )
+            nCopiedLen = vsnprintf( pBuf, uBufLen, aFormat, args ) +
+                         1;    //Get formatted string length and adding one for null-terminator
+
+            if ( 0 < nCopiedLen && nCopiedLen < uBufLen )
             {
-                aOutString = pBuf;
+                aOutString.assign( pBuf, (SIZE_T)nCopiedLen );
+                break;
             }
 
             if ( pBuf != szBuf )
             {
                 delete[] pBuf;
             }
-            bRet = TRUE;
+            uBufLen = uBufLen * 2;
+            pBuf = new ( std::nothrow ) CHAR[uBufLen];
+        } while ( pBuf );
+
+        if ( pBuf != szBuf )
+        {
+            delete[] pBuf;
         }
 
         va_end( args );
@@ -50,7 +55,55 @@ BOOL CDECL _FormatStringA( OUT string & aOutString, IN CONST CHAR * aFormat, ...
     return bRet;
 }
 
-VOID FormatTime( UINT64 aMilli, string & aTimeString )
+BOOL CDECL _FormatStringW( OUT std::wstring & aOutString, IN CONST WCHAR * aFormat, ... )
+{
+    BOOL bRet = FALSE;
+    aOutString.clear();
+    WCHAR wzBuf[4096];
+    WCHAR * pBuf = wzBuf;
+    SIZE_T uBufLen = _countof( wzBuf );
+    INT nCopiedLen = 0;
+
+    if ( nullptr != aFormat )
+    {
+        va_list args;
+        va_start( args, aFormat );
+
+        do
+        {
+            nCopiedLen = vswprintf( pBuf, uBufLen, aFormat, args ) +
+                         1;    //Get formatted string length and adding one for null-terminator
+
+            if ( 0 < nCopiedLen && nCopiedLen < uBufLen )
+            {
+                aOutString.assign( pBuf, (SIZE_T)nCopiedLen );
+                break;
+            }
+
+            if ( pBuf != wzBuf )
+            {
+                delete[] pBuf;
+            }
+            uBufLen = uBufLen * 2;
+            pBuf = new ( std::nothrow ) WCHAR[uBufLen];
+        } while ( pBuf );
+
+        if ( pBuf != wzBuf )
+        {
+            delete[] pBuf;
+        }
+
+        va_end( args );
+    }
+    else
+    {
+        errno = EINVAL;
+    }
+
+    return bRet;
+}
+
+VOID FormatTime( UINT64 aMilli, std::string & aTimeString )
 {
     UINT uMilli = ( UINT )( aMilli % MS_PER_SEC );
     aMilli /= MS_PER_SEC;
@@ -63,6 +116,21 @@ VOID FormatTime( UINT64 aMilli, string & aTimeString )
 
     UINT uSec = ( UINT )( aMilli % 60 );
     _FormatStringA( aTimeString, "%02u:%02u:%02u.%03u", uHour, uMin, uSec, uMilli );
+}
+
+VOID FormatTimeW( UINT64 aMilli, std::wstring & aTimeString )
+{
+    UINT uMilli = ( UINT )( aMilli % MS_PER_SEC );
+    aMilli /= MS_PER_SEC;
+
+    UINT uHour = ( UINT )( aMilli / HOUR_PER_SEC );
+    aMilli -= uHour * ( HOUR_PER_SEC );
+
+    UINT uMin = ( UINT )( aMilli / MINUTE_PER_SEC );
+    aMilli -= uMin * MINUTE_PER_SEC;
+
+    UINT uSec = ( UINT )( aMilli % 60 );
+    _FormatStringW( aTimeString, L"%02u:%02u:%02u.%03u", uHour, uMin, uSec, uMilli );
 }
 
 BOOL GetCurrTimeStringA( std::string & aTimeString, CONST CHAR * aTimeFormat )

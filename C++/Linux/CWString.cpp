@@ -10,7 +10,7 @@ extern "C" {
 
 BOOL StringToWString( IN CONST std::string & aString, OUT std::wstring & aWString, DWORD aCodePage )
 {
-    UNREFERENCED_PARAMETER( aCodePage );    //Linux will use the locale in setlocale( LC_CTYPE , NULL )
+    UNREFERENCED_PARAMETER( aCodePage );    //Linux will use the locale in setlocale( LC_CTYPE , nullptr )
 
     BOOL bRet = FALSE;
     aWString.clear();
@@ -27,7 +27,7 @@ BOOL StringToWString( IN CONST std::string & aString, OUT std::wstring & aWStrin
     {
         uBufSize = aString.length() * 2;
         WCHAR * wzNewBuf = new ( std::nothrow ) WCHAR[uBufSize];
-        if ( NULL != wzNewBuf )
+        if ( nullptr != wzNewBuf )
         {
             uBufCopied = mbstowcs( wzNewBuf, aString.c_str(), uBufSize );
             if ( uBufCopied < uBufSize )
@@ -43,7 +43,7 @@ BOOL StringToWString( IN CONST std::string & aString, OUT std::wstring & aWStrin
 
 BOOL WStringToString( IN CONST std::wstring & aWString, OUT std::string & aString, DWORD aCodePage )
 {
-    UNREFERENCED_PARAMETER( aCodePage );    //Linux will use the locale in setlocale( LC_CTYPE , NULL )
+    UNREFERENCED_PARAMETER( aCodePage );    //Linux will use the locale in setlocale( LC_CTYPE , nullptr )
 
     BOOL bRet = FALSE;
     aString.clear();
@@ -60,7 +60,7 @@ BOOL WStringToString( IN CONST std::wstring & aWString, OUT std::string & aStrin
     {
         uBufSize = aWString.length() * 4;
         CHAR * szNewBuf = new ( std::nothrow ) CHAR[uBufSize];
-        if ( NULL != szNewBuf )
+        if ( nullptr != szNewBuf )
         {
             uBufCopied = wcstombs( szNewBuf, aWString.c_str(), uBufSize );
             if ( uBufCopied < uBufSize )
@@ -76,6 +76,7 @@ BOOL WStringToString( IN CONST std::wstring & aWString, OUT std::string & aStrin
 
 VOID SplitStringA( CONST string & aSrcString, vector<string> & aOutput, CONST CHAR * aDelimiter )
 {
+    aOutput.clear();
     string::size_type lastPos = aSrcString.find_first_not_of( aDelimiter, 0 );    //Skip delimiters at beginning
     string::size_type pos = aSrcString.find_first_of( aDelimiter, lastPos );      //Find first "non-delimiter"
 
@@ -89,6 +90,7 @@ VOID SplitStringA( CONST string & aSrcString, vector<string> & aOutput, CONST CH
 
 VOID SplitStringW( CONST wstring & aSrcString, vector<wstring> & aOutput, CONST WCHAR * aDelimiter )
 {
+    aOutput.clear();
     wstring::size_type lastPos = aSrcString.find_first_not_of( aDelimiter, 0 );    //Skip delimiters at beginning
     wstring::size_type pos = aSrcString.find_first_of( aDelimiter, lastPos );      //Find first "non-delimiter"
 
@@ -109,7 +111,7 @@ BOOL CDECL FormatStringA( OUT string & aOutString, IN CONST CHAR * aFormat, ... 
     SIZE_T uBufLen = _countof( szBuf );
     INT nCopiedLen = 0;
 
-    if ( NULL != aFormat )
+    if ( nullptr != aFormat )
     {
         va_list args;
         va_start( args, aFormat );
@@ -157,7 +159,7 @@ BOOL CDECL FormatStringW( OUT wstring & aOutString, IN CONST WCHAR * aFormat, ..
     SIZE_T uBufLen = _countof( wzBuf );
     INT nCopiedLen = 0;
 
-    if ( NULL != aFormat )
+    if ( nullptr != aFormat )
     {
         va_list args;
         va_start( args, aFormat );
@@ -204,6 +206,26 @@ VOID ToLower( IN OUT std::string & aString )
 VOID ToUpper( IN OUT std::string & aString )
 {
     std::transform( aString.begin(), aString.end(), aString.begin(), (int ( * )( int ))std::toupper );
+}
+
+INT ToInt( CONST CHAR * aStr, SIZE_T aStrLen )
+{
+    INT nRet = 0;
+    for ( SIZE_T i = 0; i < aStrLen; ++i )
+    {
+        nRet = ( nRet * 10 ) + ( aStr[i] - '0' );
+    }
+    return nRet;
+}
+
+INT64 ToInt64( CONST CHAR * aStr, SIZE_T aStrLen )
+{
+    INT64 nRet = 0;
+    for ( SIZE_T i = 0; i < aStrLen; ++i )
+    {
+        nRet = ( nRet * 10 ) + ( aStr[i] - '0' );
+    }
+    return nRet;
 }
 
 VOID ToHexString( CONST UCHAR * aInput, SIZE_T aInputSize, string & aOutput, CONST CHAR * aSplitter )
@@ -298,30 +320,31 @@ VOID ToHexDump( CONST UCHAR * aInput,
     }
 }
 
-INT ToInt( CONST CHAR * aStr, SIZE_T aStrLen )
+VOID JoinStringA( CONST IN std::vector<std::string> aVec,
+                  std::string & aOutput,
+                  CONST CHAR * aSplitter,
+                  size_t aStartIndex,
+                  size_t aEndIndex )
 {
-    INT nRet = 0;
-    for ( SIZE_T i = 0; i < aStrLen; ++i )
+    size_t uEnd = min( aVec.size() - 1, aEndIndex );
+    std::stringstream ss;
+    for ( size_t i = aStartIndex; i <= uEnd; ++i )
     {
-        nRet = ( nRet * 10 ) + ( aStr[i] - '0' );
+        if ( i != aStartIndex )
+        {
+            ss << aSplitter;
+        }
+        ss << aVec[i];
     }
-    return nRet;
-}
-
-INT64 ToInt64( CONST CHAR * aStr, SIZE_T aStrLen )
-{
-    INT64 nRet = 0;
-    for ( SIZE_T i = 0; i < aStrLen; ++i )
-    {
-        nRet = ( nRet * 10 ) + ( aStr[i] - '0' );
-    }
-    return nRet;
+    aOutput = ss.str();
 }
 
 VOID ReplaceStringW( IN OUT std::wstring & aString, IN CONST WCHAR * aOldString, IN CONST WCHAR * aNewString )
 {
-    if ( NULL == aOldString || NULL == aNewString )
+    if ( nullptr == aOldString || nullptr == aNewString )
+    {
         return;
+    }
 
     std::wstring::size_type sizeOld = ::wcslen( aOldString );
     std::wstring::size_type sizeNew = ::wcslen( aNewString );
@@ -471,7 +494,7 @@ StringType GetStringTypeA( CONST CHAR * aStr, SIZE_T aStrLen )
                     {
                         type = STRING_TYPE_ALPHANUM;
                     }
-                    else if ( IsBase64SpecialCharA( c ) )
+                    else if ( IsBase64SpecialCharA( static_cast<CHAR>( c ) ) )
                     {
                         type = STRING_TYPE_BASE64;
                     }
@@ -499,7 +522,7 @@ StringType GetStringTypeA( CONST CHAR * aStr, SIZE_T aStrLen )
                     {
                         type = STRING_TYPE_ALPHANUM;
                     }
-                    else if ( IsBase64SpecialCharA( c ) )
+                    else if ( IsBase64SpecialCharA( static_cast<CHAR>( c ) ) )
                     {
                         type = STRING_TYPE_BASE64;
                     }
@@ -523,7 +546,7 @@ StringType GetStringTypeA( CONST CHAR * aStr, SIZE_T aStrLen )
             {
                 if ( false == isalnum( c ) )
                 {
-                    if ( IsBase64SpecialCharA( c ) )
+                    if ( IsBase64SpecialCharA( static_cast<CHAR>( c ) ) )
                     {
                         type = STRING_TYPE_BASE64;
                     }
@@ -545,7 +568,7 @@ StringType GetStringTypeA( CONST CHAR * aStr, SIZE_T aStrLen )
             }
             case STRING_TYPE_BASE64:
             {
-                if ( false == IsBase64CharA( c ) )
+                if ( false == IsBase64CharA( static_cast<CHAR>( c ) ) )
                 {
                     if ( isprint( c ) )
                     {
@@ -598,7 +621,7 @@ StringType GetStringTypeA( CONST CHAR * aStr, SIZE_T aStrLen )
                 {
                     type = STRING_TYPE_ALPHA;
                 }
-                else if ( IsBase64SpecialCharA( c ) )
+                else if ( IsBase64SpecialCharA( static_cast<CHAR>( c ) ) )
                 {
                     type = STRING_TYPE_BASE64;
                 }
@@ -644,7 +667,7 @@ BOOL WildcardMatchW( IN CONST WCHAR * aString, IN CONST WCHAR * aWildcardPattern
         AnyRepeat    //*
     } state = Exact;
 
-    CONST WCHAR * wzTmp = NULL;
+    CONST WCHAR * wzTmp = nullptr;
 
     BOOL bMatch = TRUE;
 
@@ -758,7 +781,7 @@ BOOL EncodeUrlA( IN CONST std::string & aOldUrl, OUT std::string & aNewUrl )
 
 VOID CUrlStringPtr::Clean()
 {
-    m_pUrl = NULL;
+    m_pUrl = nullptr;
     m_uUrlLen = 0;
 
     m_ulScheme = INTERNET_SCHEME_HTTP;
@@ -785,7 +808,7 @@ BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl )
 
 BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl, SIZE_T uLen )
 {
-    if ( NULL == pUrl )
+    if ( nullptr == pUrl )
     {
         return FALSE;
     }
@@ -813,7 +836,7 @@ BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl, SIZE_T uLen )
 
     //Parse relative URI
     CONST CHAR * pUri = strchr( pHostStart, '/' );
-    if ( NULL == pUri )
+    if ( nullptr == pUri )
     {
         m_uUriOffset = m_uUrlLen;
         pUri = m_pUrl + m_uUriOffset;
@@ -826,7 +849,7 @@ BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl, SIZE_T uLen )
 
     //Parse query parameters
     CONST CHAR * pParams = strchr( pUri, '?' );
-    if ( NULL == pParams )
+    if ( nullptr == pParams )
     {
         m_uParamsOffset = m_uUrlLen;
         pParams = m_pUrl + m_uParamsOffset;
@@ -841,7 +864,7 @@ BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl, SIZE_T uLen )
 
     //Parse fragment
     CONST CHAR * pFrag = strchr( pParams, '#' );
-    if ( NULL == pFrag )
+    if ( nullptr == pFrag )
     {
         m_uFragOffset = m_uUrlLen;
         pFrag = m_pUrl + m_uFragOffset;
@@ -869,7 +892,7 @@ BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl, SIZE_T uLen )
             {
                 if ( pPortStart < pUri )
                 {
-                    CHAR * pPortEnd = NULL;
+                    CHAR * pPortEnd = nullptr;
                     m_ulPort = strtoul( pPortStart, &pPortEnd, 10 );
                     m_uPortOffset = pPortStart - m_pUrl;
                     m_uPortLen = pPortEnd - pPortStart;
@@ -883,6 +906,104 @@ BOOL CUrlStringPtr::SetUrl( CONST CHAR * pUrl, SIZE_T uLen )
     return TRUE;
 }
 
+
+CString::CString() : m_nLen( 0 ), m_szData( nullptr ) {}
+
+CString::CString( const CHAR * aData, INT aLen )
+{
+    m_nLen = ( aLen < 0 ) ? strlen( aData ) : aLen;
+    m_szData = new CHAR[m_nLen + 1];
+    memcpy( m_szData, aData, m_nLen );
+    m_szData[m_nLen] = 0;
+}
+
+CString::CString( const CString & aRhs ) : m_nLen( 0 ), m_szData( nullptr )
+{
+    this->Copy( aRhs );
+}
+
+CString::CString( CString && aRhs ) : m_nLen( 0 ), m_szData( nullptr )
+{
+    //Use std::swap() because of noexcept
+    std::swap( m_nLen, aRhs.m_nLen );
+    std::swap( m_szData, aRhs.m_szData );
+}
+
+CString::~CString()
+{
+    if ( m_szData != nullptr )
+    {
+        delete[] m_szData;
+    }
+}
+
+std::ostream & operator<<( std::ostream & aOutput, const CString & aRhs )
+{
+    aOutput << aRhs.m_szData;
+    return aOutput;
+}
+
+CString CString::operator+( const CString & aRhs ) const
+{
+    return std::move( CString( *this ) += aRhs );
+}
+
+CString & CString::operator=( const CString & aRhs )
+{
+    this->Copy( aRhs );
+    return *this;
+}
+
+CString & CString::operator=( CString && aRhs )
+{
+    std::swap( m_nLen, aRhs.m_nLen );
+    std::swap( m_szData, aRhs.m_szData );
+    return *this;
+}
+
+CString & CString::operator+=( const CString & aRhs )
+{
+    CString str;
+    str.m_nLen = m_nLen + aRhs.m_nLen;
+    str.m_szData = new CHAR[str.m_nLen + 1];
+    memcpy( str.m_szData, m_szData, m_nLen );
+    memcpy( &str.m_szData[m_nLen], aRhs.m_szData, aRhs.m_nLen );
+    str.m_szData[str.m_nLen] = 0;
+
+    *this = std::move( str );
+    return *this;
+}
+
+CHAR & CString::operator[]( const INT aIdx )
+{
+    return m_szData[aIdx];
+}
+
+const CHAR & CString::operator[]( const INT aIdx ) const
+{
+    return m_szData[aIdx];
+}
+
+INT CString::Size() const
+{
+    return m_nLen;
+}
+
+void CString::Copy( const CString & aRhs )
+{
+    if ( this != &aRhs )    //Prevent self assignment
+    {
+        if ( m_szData != nullptr )
+        {
+            delete[] this->m_szData;
+        }
+
+        this->m_nLen = aRhs.m_nLen;
+        this->m_szData = new CHAR[m_nLen + 1];
+        memcpy( m_szData, aRhs.m_szData, m_nLen );
+        m_szData[m_nLen] = 0;
+    }
+}
 
 #ifdef __cplusplus
 }

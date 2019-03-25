@@ -186,8 +186,7 @@ BOOL CCmdArgsParser::ParseArgs( vector<string> & aArgs, BOOL aHasBinaryPath )
         goto exit;
     }
     //Check necessary parameters are parsed
-    for ( map<string, CmdArgProperty>::iterator itProp = m_mapNamedArgsProp.begin(); itProp != m_mapNamedArgsProp.end();
-          itProp++ )
+    for ( auto itProp = m_mapNamedArgsProp.begin(); itProp != m_mapNamedArgsProp.end(); itProp++ )
     {
         if ( TRUE == itProp->second.bMustExists && m_mapNamedArgs.end() == m_mapNamedArgs.find( itProp->first ) )
         {
@@ -283,6 +282,25 @@ BOOL CCmdArgsParser::GetArg( CONST CHAR * aName, UINT64 & aValue, UINT64 aDefaul
     return GetArg( aName, (INT64 &)aValue, (INT64)aDefaultVal );
 }
 
+BOOL CCmdArgsParser::GetArg( CONST CHAR * aName, DOUBLE & aValue, DOUBLE aDefaultVal )
+{
+    _ASSERT( NULL != aName );
+    aValue = aDefaultVal;
+
+    auto it = m_mapNamedArgs.find( aName );
+    if ( it != m_mapNamedArgs.end() )
+    {
+        DOUBLE fVal = strtod( it->second.c_str(), NULL );
+        if ( ERANGE != errno )
+        {
+            aValue = (DOUBLE)fVal;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 
 
 
@@ -346,6 +364,23 @@ BOOL CCmdArgsParser::GetUnnamedArg( size_t aIndex, INT64 & aValue, INT64 aDefaul
 BOOL CCmdArgsParser::GetUnnamedArg( size_t aIndex, UINT64 & aValue, UINT64 aDefaultVal )
 {
     return GetUnnamedArg( aIndex, (INT64 &)aValue, (INT64)aDefaultVal );
+}
+
+BOOL CCmdArgsParser::GetUnnamedArg( size_t aIndex, DOUBLE & aValue, DOUBLE aDefaultVal )
+{
+    aValue = aDefaultVal;
+
+    if ( aIndex < m_vecUnnamedArgs.size() )
+    {
+        DOUBLE fVal = strtod( m_vecUnnamedArgs[aIndex].c_str(), NULL );
+        if ( ERANGE != errno )
+        {
+            aValue = (DOUBLE)fVal;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 }
 
 
