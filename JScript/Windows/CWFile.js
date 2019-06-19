@@ -104,7 +104,7 @@ CWUtils.SelectFile = CWUtils.SelectFile || function( aMsg , aCheckExist )
         if ( null == strFile || ( aCheckExist && false == CWUtils.WshFileSystem.FileExists(strFile) ) )
         {
             WScript.Echo( aMsg );
-            strFile = CWUtils.WshFileSystem.GetAbsolutePathName( WScript.StdIn.ReadLine() );
+            strFile = CWUtils.WshFileSystem.GetAbsolutePathName( WScript.StdIn.ReadLine().replace( /^"(.*)"$/ , "$1" ) );
         }
         else
         {
@@ -122,7 +122,7 @@ CWUtils.SelectFolder = CWUtils.SelectFolder || function( aMsg , aCheckExist )
         if ( null == strFolder || ( aCheckExist && false == CWUtils.WshFileSystem.FolderExists(strFolder) ) )
         {
             WScript.Echo( aMsg );
-            strFolder = CWUtils.WshFileSystem.GetAbsolutePathName( WScript.StdIn.ReadLine() );
+            strFolder = CWUtils.WshFileSystem.GetAbsolutePathName( WScript.StdIn.ReadLine().replace( /^"(.*)"$/ , "$1" ) );
         }
         else
         {
@@ -136,8 +136,8 @@ CWUtils.ComputeRelativePath = CWUtils.ComputeRelativePath || function( aSrcPath 
 {
     var strRelativePath = "";
 
-    aSrcPath = CWUtils.WshFileSystem.GetAbsolutePathName( aSrcPath );
-    aDstPath = CWUtils.WshFileSystem.GetAbsolutePathName( aDstPath );
+    aSrcPath = CWUtils.WshFileSystem.GetAbsolutePathName( aSrcPath ).replace( /^"(.*)"$/ , "$1" );
+    aDstPath = CWUtils.WshFileSystem.GetAbsolutePathName( aDstPath ).replace( /^"(.*)"$/ , "$1" );
     WScript.Echo( "aSrcPath=" + aSrcPath + "\taDstPath=" + aDstPath );
     //Considering the case like C:\\Window123 and C:\\Windows456
     var nCommonPrefix = -1;

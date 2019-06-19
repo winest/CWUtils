@@ -150,7 +150,7 @@ BOOL CFile::Open( CONST WCHAR * aPath, UINT32 aOpenAttr, std::string aLineSep )
 
 BOOL CFile::Write( CONST UCHAR * aData, SIZE_T aDataSize )
 {
-    BOOL bRet;
+    BOOL bRet = FALSE;;
     size_t uWritten;
 
     do

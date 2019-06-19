@@ -113,6 +113,7 @@ class CFile
     BOOL Open( CONST WCHAR * aPath, UINT32 aOpenAttr, CONST std::string aLineSep );
     BOOL Write( CONST UCHAR * aData, SIZE_T aDataSize );
     BOOL WriteLine();
+    BOOL WriteLine( CONST CHAR * aData, SIZE_T aDataSize );
     BOOL WriteLine( CONST UCHAR * aData, SIZE_T aDataSize );
 
     BOOL Read( std::string & aData, SIZE_T aDataSize, BOOL aAppend = FALSE );
@@ -131,11 +132,19 @@ class CFile
 class CCsv : public CFile
 {
     public:
-    CCsv() {}
+    CCsv() : m_strColSep( "," ) {}
+    CCsv( std::string aColSep ) : m_strColSep( aColSep ) {}
     virtual ~CCsv() { this->Close(); }
 
     public:
     BOOL WriteRow( CONST std::vector<std::string> & aColData, BOOL aAddQuote );
+    BOOL ReadRow( std::vector<std::string> & aColData, BOOL aAppend = FALSE );
+    BOOL ReadRow( std::vector<int> & aColData, BOOL aAppend = FALSE );
+    BOOL ReadRow( std::vector<float> & aColData, BOOL aAppend = FALSE );
+    BOOL ReadRow( std::vector<double> & aColData, BOOL aAppend = FALSE );
+
+    protected:
+    std::string m_strColSep;
 };
 
 #ifdef __cplusplus
