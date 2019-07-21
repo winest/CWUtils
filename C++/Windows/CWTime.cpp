@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CWTime.h"
+#include "CWString.h"
 
 #include <cassert>
 #include <algorithm>
@@ -9,90 +10,6 @@ namespace CWUtils
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-BOOL CDECL _FormatStringA( OUT std::string & aOutString, IN CONST CHAR * aFormat, ... )
-{
-    BOOL bRet = FALSE;
-    aOutString.clear();
-    CHAR szBuf[4096];
-    CHAR * pBuf = szBuf;
-
-    if ( nullptr != aFormat )
-    {
-        va_list args = nullptr;
-        va_start( args, aFormat );
-        SIZE_T len =
-            _vscprintf( aFormat, args ) + 1;    //Get formatted string length and adding one for null-terminator
-
-        if ( _countof( szBuf ) < len )
-        {
-            pBuf = new ( std::nothrow ) CHAR[len];
-        }
-        if ( nullptr != pBuf )
-        {
-            if ( 0 < _vsnprintf_s( pBuf, len, _TRUNCATE, aFormat, args ) )
-            {
-                aOutString = pBuf;
-            }
-
-            if ( pBuf != szBuf )
-            {
-                delete[] pBuf;
-            }
-            bRet = TRUE;
-        }
-
-        va_end( args );
-    }
-    else
-    {
-        SetLastError( ERROR_INVALID_PARAMETER );
-    }
-
-    return bRet;
-}
-
-BOOL CDECL _FormatStringW( OUT std::wstring & aOutString, IN CONST WCHAR * aFormat, ... )
-{
-    BOOL bRet = FALSE;
-    aOutString.clear();
-    WCHAR wzBuf[4096];
-    WCHAR * pBuf = wzBuf;
-
-    if ( nullptr != aFormat )
-    {
-        va_list args = nullptr;
-        va_start( args, aFormat );
-        SIZE_T len =
-            _vscwprintf( aFormat, args ) + 1;    //Get formatted string length and adding one for null-terminator
-
-        if ( _countof( wzBuf ) < len )
-        {
-            pBuf = new ( std::nothrow ) WCHAR[len];
-        }
-        if ( nullptr != pBuf )
-        {
-            if ( 0 < _vsnwprintf_s( pBuf, len, _TRUNCATE, aFormat, args ) )
-            {
-                aOutString = pBuf;
-            }
-
-            if ( pBuf != wzBuf )
-            {
-                delete[] pBuf;
-            }
-            bRet = TRUE;
-        }
-
-        va_end( args );
-    }
-    else
-    {
-        SetLastError( ERROR_INVALID_PARAMETER );
-    }
-
-    return bRet;
-}
 
 VOID FormatTimeA( UINT64 aMilli, std::string & aTimeString )
 {
@@ -106,7 +23,7 @@ VOID FormatTimeA( UINT64 aMilli, std::string & aTimeString )
     aMilli -= uMin * MINUTE_PER_SEC;
 
     UINT uSec = ( UINT )( aMilli % 60 );
-    _FormatStringA( aTimeString, "%02u:%02u:%02u.%03u", uHour, uMin, uSec, uMilli );
+    CWUtils::FormatStringA( aTimeString, "%02u:%02u:%02u.%03u", uHour, uMin, uSec, uMilli );
 }
 
 VOID FormatTimeW( UINT64 aMilli, std::wstring & aTimeString )
@@ -121,7 +38,7 @@ VOID FormatTimeW( UINT64 aMilli, std::wstring & aTimeString )
     aMilli -= uMin * MINUTE_PER_SEC;
 
     UINT uSec = ( UINT )( aMilli % 60 );
-    _FormatStringW( aTimeString, L"%02u:%02u:%02u.%03u", uHour, uMin, uSec, uMilli );
+    CWUtils::FormatStringW( aTimeString, L"%02u:%02u:%02u.%03u", uHour, uMin, uSec, uMilli );
 }
 
 BOOL GetCurrTimeStringA( std::string & aTimeString, CONST CHAR * aTimeFormat )

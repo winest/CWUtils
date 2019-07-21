@@ -26,7 +26,7 @@ VOID TestFile()
     do
     {
         CWUtils::CFile file;
-        if ( FALSE == file.Open( L"456.txt", CWUtils::FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST, "\n" ) )
+        if ( FALSE == file.Open( L"456.txt", CWUtils::FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST | CWUtils::FILE_OPEN_ATTR_WRITE, "\n" ) )
         {
             wprintf_s( L"Open() failed\n" );
             break;
@@ -47,7 +47,7 @@ VOID TestCsv()
     do
     {
         CWUtils::CCsv file;
-        if ( FALSE == file.Open( L"123.csv", CWUtils::FILE_OPEN_ATTR_CREATE_ALWAYS, "\r\n" ) )
+        if ( FALSE == file.Open( L"123.csv", CWUtils::FILE_OPEN_ATTR_CREATE_ALWAYS | CWUtils::FILE_OPEN_ATTR_WRITE, "\r\n" ) )
         {
             wprintf_s( L"Open() failed\n" );
             break;

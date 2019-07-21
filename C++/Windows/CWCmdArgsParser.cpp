@@ -1,47 +1,11 @@
 #include "stdafx.h"
 #include "CWCmdArgsParser.h"
+#include "CWString.h"
 using namespace std;
 
 namespace CWUtils
 {
 CCmdArgsParser * CCmdArgsParser::m_self = NULL;
-
-BOOL _WStringToString( IN CONST std::wstring & aWString, OUT std::string & aString, DWORD aCodePage )
-{
-    BOOL bRet = FALSE;
-    DWORD dwFlag = ( CP_UTF8 == aCodePage ) ? MB_ERR_INVALID_CHARS : 0;
-    CHAR szBuf[4096];
-    INT nBuf = _countof( szBuf );
-    INT nBufCopied =
-        WideCharToMultiByte( aCodePage, 0, aWString.c_str(), (INT)aWString.length(), szBuf, nBuf, NULL, NULL );
-    if ( 0 != nBufCopied )
-    {
-        aString.assign( szBuf, nBufCopied );
-        bRet = TRUE;
-    }
-    else if ( ERROR_INSUFFICIENT_BUFFER == GetLastError() )
-    {
-        nBuf = WideCharToMultiByte( aCodePage, 0, aWString.c_str(), (INT)aWString.length(), NULL, 0, NULL, NULL );
-        CHAR * szNewBuf = new ( std::nothrow ) CHAR[nBuf];
-        if ( NULL != szNewBuf )
-        {
-            nBufCopied = WideCharToMultiByte( aCodePage, 0, aWString.c_str(), (INT)aWString.length(), szNewBuf, nBuf,
-                                              NULL, NULL );
-            if ( 0 != nBufCopied )
-            {
-                aString.assign( szNewBuf, nBufCopied );
-                bRet = TRUE;
-            }
-            delete[] szNewBuf;
-        }
-    }
-    else
-    {
-    }
-    return bRet;
-}
-
-
 
 
 
@@ -257,7 +221,7 @@ BOOL CCmdArgsParser::GetArg( CONST WCHAR * aName, string & aValue, CONST CHAR * 
     BOOL bRet = GetArg( aName, wstrValue, NULL );
     if ( FALSE != bRet )
     {
-        bRet = _WStringToString( wstrValue, aValue, CP_ACP );
+        bRet = CWUtils::WStringToString( wstrValue, aValue, CP_ACP );
         if ( FALSE == bRet && NULL != aDefaultVal )
         {
             aValue = aDefaultVal;
@@ -363,7 +327,7 @@ BOOL CCmdArgsParser::GetUnnamedArg( size_t aIndex, string & aValue, CONST CHAR *
     BOOL bRet = GetUnnamedArg( aIndex, wstrValue, NULL );
     if ( FALSE != bRet )
     {
-        bRet = _WStringToString( wstrValue, aValue, CP_ACP );
+        bRet = CWUtils::WStringToString( wstrValue, aValue, CP_ACP );
         if ( FALSE == bRet && NULL != aDefaultVal )
         {
             aValue = aDefaultVal;

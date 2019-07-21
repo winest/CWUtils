@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CWCrypto.h"
+#include "CWString.h"
 
 #include <string>
 using std::string;
@@ -10,33 +11,6 @@ namespace CWUtils
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-BOOL _GetLastErrorStringW( IN OUT std::wstring & aString, WORD aLang = MAKELANGID( LANG_ENGLISH, SUBLANG_ENGLISH_US ) )
-{
-    BOOL bRet = FALSE;
-    WCHAR * wzMsgBuf;
-    SIZE_T sizeLen = (SIZE_T)FormatMessageW( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL,
-                                             GetLastError(), aLang, (WCHAR *)&wzMsgBuf, 0, NULL );
-    if ( 0 < sizeLen )
-    {
-        //Remove \r\n at the end of the message
-        CONST SIZE_T sizeCRLF = _countof( L"\r\n" ) - 1;
-        if ( sizeCRLF <= sizeLen && 0 == wcsncmp( &wzMsgBuf[sizeLen - sizeCRLF], L"\r\n", sizeCRLF ) )
-        {
-            sizeLen -= sizeCRLF;
-        }
-
-        aString.assign( wzMsgBuf, sizeLen );
-        LocalFree( wzMsgBuf );    //Free the buffer
-        bRet = TRUE;
-    }
-    return bRet;
-}
-
-
-
-
-
 
 VOID Base64Encode( CONST UCHAR * aInput, SIZE_T aInputSize, std::string & aOutput, CONST CHAR * aEncodeTable )
 {
@@ -171,7 +145,7 @@ BOOL CRsa::CreateAndUseKey( CONST WCHAR * aContainer, CONST WCHAR * aProvider )
         {
             if ( NTE_BAD_KEYSET != GetLastError() )
             {
-                _GetLastErrorStringW( wstrErr );
+                CWUtils::GetLastErrorStringW( wstrErr );
                 wprintf_s( L"CryptAcquireContextW() failed. GetLastError()=0x%08X (%ws)\n", GetLastError(),
                            wstrErr.c_str() );
                 break;
@@ -179,7 +153,7 @@ BOOL CRsa::CreateAndUseKey( CONST WCHAR * aContainer, CONST WCHAR * aProvider )
 
             if ( FALSE == CryptAcquireContextW( &m_hProvider, aContainer, aProvider, PROV_RSA_FULL, CRYPT_NEWKEYSET ) )
             {
-                _GetLastErrorStringW( wstrErr );
+                CWUtils::GetLastErrorStringW( wstrErr );
                 wprintf_s( L"CryptAcquireContextW() failed. GetLastError()=0x%08X (%ws)\n", GetLastError(),
                            wstrErr.c_str() );
                 break;
@@ -190,7 +164,7 @@ BOOL CRsa::CreateAndUseKey( CONST WCHAR * aContainer, CONST WCHAR * aProvider )
         if ( FALSE ==
              CryptGenKey( m_hProvider, CALG_RSA_KEYX, /*( 2048 << 16 )*/ RSA1024BIT_KEY | CRYPT_EXPORTABLE, &m_hKey ) )
         {
-            _GetLastErrorStringW( wstrErr );
+            CWUtils::GetLastErrorStringW( wstrErr );
             wprintf_s( L"CryptGenKey() failed. GetLastError()=0x%08X (%ws)\n", GetLastError(), wstrErr.c_str() );
             break;
         }
@@ -217,7 +191,7 @@ BOOL CRsa::ImportAndUseKey( CONST UCHAR * aKeyBlob,
         {
             if ( NTE_BAD_KEYSET != GetLastError() )
             {
-                _GetLastErrorStringW( wstrErr );
+                CWUtils::GetLastErrorStringW( wstrErr );
                 wprintf_s( L"CryptAcquireContextW() failed. GetLastError()=0x%08X (%ws)\n", GetLastError(),
                            wstrErr.c_str() );
                 break;
@@ -226,7 +200,7 @@ BOOL CRsa::ImportAndUseKey( CONST UCHAR * aKeyBlob,
             if ( FALSE == CryptAcquireContextW( &m_hProvider, aContainer, aProvider, PROV_RSA_FULL,
                                                 CRYPT_NEWKEYSET | CRYPT_VERIFYCONTEXT | CRYPT_SILENT ) )
             {
-                _GetLastErrorStringW( wstrErr );
+                CWUtils::GetLastErrorStringW( wstrErr );
                 wprintf_s( L"CryptAcquireContextW() failed. GetLastError()=0x%08X (%ws)\n", GetLastError(),
                            wstrErr.c_str() );
                 break;
@@ -236,7 +210,7 @@ BOOL CRsa::ImportAndUseKey( CONST UCHAR * aKeyBlob,
         if ( FALSE ==
              CryptImportKey( m_hProvider, (CONST BYTE *)aKeyBlob, aKeyBlobSize, NULL, CRYPT_NO_SALT, &m_hKey ) )
         {
-            _GetLastErrorStringW( wstrErr );
+            CWUtils::GetLastErrorStringW( wstrErr );
             wprintf_s( L"CryptImportKey() failed. GetLastError()=0x%08X (%ws)\n", GetLastError(), wstrErr.c_str() );
             break;
         }
@@ -262,7 +236,7 @@ BOOL CRsa::DeleteKey( CONST WCHAR * aContainer, CONST WCHAR * aProvider )
     if ( FALSE == bRet )
     {
         wstring wstrErr;
-        _GetLastErrorStringW( wstrErr );
+        CWUtils::GetLastErrorStringW( wstrErr );
         wprintf_s( L"CryptAcquireContextW() failed. GetLastError()=0x%08X (%ws)\n", GetLastError(), wstrErr.c_str() );
     }
     return bRet;
@@ -303,7 +277,7 @@ BOOL CRsa::Encrypt( IN OUT UCHAR * aBuf, IN DWORD aBufSize, IN OUT DWORD * aData
         if ( FALSE == CryptEncrypt( m_hKey, NULL, TRUE, 0 /*CRYPT_OAEP*/, aBuf, aDataSize, aBufSize ) )
         {
             wstring wstrErr;
-            _GetLastErrorStringW( wstrErr );
+            CWUtils::GetLastErrorStringW( wstrErr );
             wprintf_s( L"CryptEncrypt() failed. GetLastError()=0x%08X (%ws)\n", GetLastError(), wstrErr.c_str() );
             break;
         }
@@ -335,7 +309,7 @@ BOOL CRsa::Decrypt( UCHAR * aBuf, DWORD * aBufSize )
         if ( FALSE == CryptDecrypt( m_hKey, NULL, TRUE, 0 /*CRYPT_OAEP*/, aBuf, aBufSize ) )
         {
             wstring wstrErr;
-            _GetLastErrorStringW( wstrErr );
+            CWUtils::GetLastErrorStringW( wstrErr );
             wprintf_s( L"CryptDecrypt() failed. GetLastError()=0x%08X (%ws)\n", GetLastError(), wstrErr.c_str() );
             break;
         }

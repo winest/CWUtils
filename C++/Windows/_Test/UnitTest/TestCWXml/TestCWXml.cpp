@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <clocale>
 #include <Windows.h>
 #include <string>
 using namespace std;

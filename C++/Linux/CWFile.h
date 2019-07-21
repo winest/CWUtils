@@ -33,6 +33,9 @@ BOOL IsDirExist( CONST CHAR * aDirPath );
 
 SIZE_T GetFileSize( CONST CHAR * aFilePath );
 
+#ifndef FILE_LINE_SEP
+    #define FILE_LINE_SEP "\n"
+#endif
 CONST SIZE_T FILE_BUF_SIZE = 4096;
 
 CONST UINT32 FILE_OPEN_ATTR_NONE = 0x00000000;                   // Nothing
@@ -53,8 +56,8 @@ class CFile
     virtual ~CFile() { this->Close(); }
 
     public:
-    BOOL Open( CONST CHAR * aPath, UINT32 aOpenAttr, std::string aLineSep );
-    BOOL Open( CONST WCHAR * aPath, UINT32 aOpenAttr, std::string aLineSep );
+    BOOL Open( CONST CHAR * aPath, UINT32 aOpenAttr = FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST | FILE_OPEN_ATTR_READ, std::string aLineSep = FILE_LINE_SEP );
+    BOOL Open( CONST WCHAR * aPath, UINT32 aOpenAttr = FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST | FILE_OPEN_ATTR_READ, std::string aLineSep = FILE_LINE_SEP );
     BOOL Write( CONST UCHAR * aData, SIZE_T aDataSize );
     BOOL WriteLine();
     BOOL WriteLine( CONST CHAR * aData, SIZE_T aDataSize );

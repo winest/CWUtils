@@ -148,6 +148,11 @@ BOOL CFile::Open( CONST WCHAR * aPath, UINT32 aOpenAttr, std::string aLineSep )
     return this->Open( strPath.c_str(), aOpenAttr, aLineSep );
 }
 
+BOOL CFile::Write( CONST CHAR * aData, SIZE_T aDataSize )
+{
+    return this->Write( reinterpret_cast<CONST UCHAR *>( aData ), aDataSize );
+}
+
 BOOL CFile::Write( CONST UCHAR * aData, SIZE_T aDataSize )
 {
     BOOL bRet = FALSE;;
@@ -257,7 +262,7 @@ BOOL CFile::ReadLine( std::string & aData, BOOL aAppend )
             }
         }
 
-        BYTE byBuf[4096];
+        BYTE byBuf[FILE_BUF_SIZE];
         dwRead = fread( byBuf, 1, sizeof( byBuf ), m_hFile );
         if ( 0 < dwRead )
         {
@@ -291,6 +296,10 @@ VOID CFile::Close()
     m_strReadBuf.clear();
     m_strLineSep.clear();
 }
+
+
+
+
 
 BOOL CCsv::WriteRow( CONST std::vector<std::string> & aColData, BOOL aAddQuote )
 {

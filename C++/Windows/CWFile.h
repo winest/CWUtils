@@ -89,8 +89,10 @@ BOOL CreateFileDir( CONST std::wstring & aFileFullPath );
 
 
 
-
-
+#ifndef FILE_LINE_SEP
+    #define FILE_LINE_SEP "\r\n"
+#endif
+CONST SIZE_T FILE_BUF_SIZE = 4096;
 
 CONST UINT32 FILE_OPEN_ATTR_NONE = 0x00000000;                   //Nothing
 CONST UINT32 FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST = 0x00000001;    //Open if exists, create if not exists
@@ -105,12 +107,13 @@ CONST UINT32 FILE_OPEN_ATTR_WRITE = 0x00000040;          //Open for write
 class CFile
 {
     public:
-    CFile() : m_hFile( NULL ) {}
+    CFile() : m_hFile( NULL ) , m_uReadPos(0) { m_strReadBuf.reserve( FILE_BUF_SIZE * 2 ); }
     virtual ~CFile() { this->Close(); }
 
     public:
-    BOOL Open( CONST CHAR * aPath, UINT32 aOpenAttr, CONST std::string aLineSep );
-    BOOL Open( CONST WCHAR * aPath, UINT32 aOpenAttr, CONST std::string aLineSep );
+    BOOL Open( CONST CHAR * aPath, UINT32 aOpenAttr = FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST | FILE_OPEN_ATTR_READ, CONST std::string aLineSep = FILE_LINE_SEP );
+    BOOL Open( CONST WCHAR * aPath, UINT32 aOpenAttr = FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST | FILE_OPEN_ATTR_READ, CONST std::string aLineSep = FILE_LINE_SEP );
+    BOOL Write( CONST CHAR * aData, SIZE_T aDataSize );
     BOOL Write( CONST UCHAR * aData, SIZE_T aDataSize );
     BOOL WriteLine();
     BOOL WriteLine( CONST CHAR * aData, SIZE_T aDataSize );
@@ -127,6 +130,9 @@ class CFile
     HANDLE m_hFile;
     std::string m_strLineSep;
     std::string m_strReadBuf;
+    size_t m_uReadPos;
+
+    std::string m_strTmp;
 };
 
 class CCsv : public CFile

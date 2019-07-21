@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #pragma warning( disable : 4127 )
 #include "CWFile.h"
+#include "CWString.h"
 
 using std::vector;
 using std::string;
@@ -11,56 +12,6 @@ namespace CWUtils
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-VOID _SplitStringW( CONST wstring & aSrcString, vector<wstring> & aOutput, CONST wstring & aDelimiter )
-{
-    wstring::size_type lastPos = aSrcString.find_first_not_of( aDelimiter, 0 );    //Skip delimiters at beginning
-    wstring::size_type pos = aSrcString.find_first_of( aDelimiter, lastPos );      //Find first "non-delimiter"
-
-    while ( wstring::npos != pos || wstring::npos != lastPos )
-    {
-        aOutput.push_back( aSrcString.substr( lastPos, pos - lastPos ) );    //Found a token, add it to the vector
-        lastPos = aSrcString.find_first_not_of( aDelimiter, pos );           //Skip delimiters. Note the "not_of"
-        pos = aSrcString.find_first_of( aDelimiter, lastPos );               //Find next "non-delimiter"
-    }
-}
-
-BOOL _StringToWString( IN CONST std::string & aString, OUT std::wstring & aWString, DWORD aCodePage )
-{
-    BOOL bRet = FALSE;
-    aWString.clear();
-
-    DWORD dwFlag = ( CP_UTF8 == aCodePage ) ? MB_ERR_INVALID_CHARS : 0;
-    WCHAR wzBuf[4096];
-    INT nBuf = _countof( wzBuf );
-    INT nBufCopied = MultiByteToWideChar( aCodePage, dwFlag, aString.c_str(), (INT)aString.size(), wzBuf, nBuf );
-    if ( 0 != nBufCopied )
-    {
-        aWString.assign( wzBuf, nBufCopied );
-        bRet = TRUE;
-    }
-    else if ( ERROR_INSUFFICIENT_BUFFER == GetLastError() )
-    {
-        nBuf = MultiByteToWideChar( aCodePage, dwFlag, aString.c_str(), (INT)aString.size(), NULL, 0 );
-        WCHAR * wzNewBuf = new ( std::nothrow ) WCHAR[nBuf];
-        if ( NULL != wzNewBuf )
-        {
-            nBufCopied = MultiByteToWideChar( aCodePage, dwFlag, aString.c_str(), (INT)aString.size(), wzNewBuf, nBuf );
-            if ( 0 != nBufCopied )
-            {
-                aWString.assign( wzNewBuf, nBufCopied );
-                bRet = TRUE;
-            }
-            delete[] wzNewBuf;
-        }
-    }
-    else
-    {
-    }
-    return bRet;
-}
-
-
 
 BOOL RelativeToFullPath( CONST WCHAR * aRelativePath, std::wstring & aFullPath )
 {
@@ -726,7 +677,7 @@ BOOL CreateDir( CONST wstring & aDir )
 
     //Create from the root directory
     vector<wstring> tokens;
-    _SplitStringW( aDir, tokens, L"\\" );
+    CWUtils::SplitStringW( aDir, tokens, L"\\" );
     wstring path;
     UINT i;
     for ( i = 0; i < tokens.size(); i++ )
@@ -852,7 +803,7 @@ BOOL CFile::Open( CONST CHAR * aPath, UINT32 aOpenAttr, CONST std::string aLineS
 {
     string strPath = aPath;
     wstring wstrPath;
-    _StringToWString( strPath, wstrPath, CP_ACP );
+    CWUtils::StringToWString( strPath, wstrPath, CP_ACP );
     return this->Open( wstrPath.c_str(), aOpenAttr, aLineSep );
 }
 
@@ -914,6 +865,11 @@ BOOL CFile::Open( CONST WCHAR * aPath, UINT32 aOpenAttr, CONST std::string aLine
     } while ( 0 );
 
     return bRet;
+}
+
+BOOL CFile::Write( CONST CHAR * aData, SIZE_T aDataSize )
+{
+    return this->Write( reinterpret_cast<CONST UCHAR *>( aData ), aDataSize );
 }
 
 BOOL CFile::Write( CONST UCHAR * aData, SIZE_T aDataSize )
@@ -996,44 +952,50 @@ BOOL CFile::ReadLine( std::string & aData, BOOL aAppend )
 {
     BOOL bRet = FALSE;
 
-    if ( FALSE == aAppend )
-    {
-        aData.clear();
-    }
-
+    DWORD dwRead = 0;
     do
     {
-        if ( m_strReadBuf.size() )
+        if ( m_strReadBuf.size() > 0 )
         {
-            size_t uPos = m_strReadBuf.find( m_strLineSep );
-            if ( uPos != string::npos )
+            size_t uLineEnd = m_strReadBuf.find( m_strLineSep, m_uReadPos );
+            if ( uLineEnd != string::npos )
             {
-                aData = m_strReadBuf.substr( 0, uPos );
-                m_strReadBuf.erase( 0, uPos + m_strLineSep.size() );
+                size_t uLineSizeWithoutEnd = (size_t)uLineEnd - m_uReadPos;
+                if ( FALSE == aAppend )
+                {
+                    aData.assign( &m_strReadBuf[m_uReadPos], uLineSizeWithoutEnd );
+                }
+                else
+                {
+                    aData.append( &m_strReadBuf[m_uReadPos], uLineSizeWithoutEnd );
+                }
+                if ( uLineEnd < FILE_BUF_SIZE )
+                {
+                    m_uReadPos = uLineEnd + m_strLineSep.size();
+                }
+                else
+                {
+                    m_strReadBuf.erase( 0, uLineEnd + m_strLineSep.size() );
+                    m_uReadPos = 0;
+                }
                 bRet = TRUE;
                 break;
             }
         }
 
-        BYTE byBuf[8192];
-        DWORD dwRead = 0;
-        while ( FALSE != ReadFile( m_hFile, byBuf, sizeof( byBuf ), &dwRead, NULL ) && 0 < dwRead )
+        BYTE byBuf[FILE_BUF_SIZE];
+        if ( FALSE != ReadFile( m_hFile, byBuf, sizeof( byBuf ), &dwRead, NULL ) && 0 < dwRead )
         {
             m_strReadBuf.append( (CONST CHAR *)byBuf, dwRead );
-            size_t uPos = m_strReadBuf.find( m_strLineSep );
-            if ( uPos != string::npos )
-            {
-                aData = m_strReadBuf.substr( 0, uPos );
-                m_strReadBuf.erase( 0, uPos + m_strLineSep.size() );
-                bRet = TRUE;
-                break;
-            }
         }
-    } while ( 0 );
+        else
+        {
+            break;
+        }
+    } while ( true );
 
     return bRet;
 }
-
 
 VOID CFile::Flush()
 {
@@ -1051,6 +1013,7 @@ VOID CFile::Close()
         CloseHandle( m_hFile );
         m_hFile = NULL;
     }
+    m_strReadBuf.clear();
     m_strLineSep.clear();
 }
 
