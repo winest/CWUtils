@@ -11,10 +11,12 @@
  * The latest version can be found at https://github.com/winest/CWUtils
  */
 
+#pragma warning( push, 0 )
 #include <Windows.h>
 #include <time.h>
 #include <string>
 #include <vector>
+#pragma warning( pop )
 
 #include "CWGeneralUtils.h"
 

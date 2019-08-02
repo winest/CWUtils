@@ -7,7 +7,7 @@ on different languages and platforms.
 
 
 
-###Main features:
+### Main features:
 - Wrap all frequently-used functions in a single file.
 - Almost the same APIs provided for different programming languages and platforms.
 - Most functions are optimized for Windows and focus on platforms since Windows 7,
@@ -16,10 +16,10 @@ on different languages and platforms.
 
 
 
-###Coding convention:
-- Please refer to [Coding Convention] (https://github.com/winest/CWUtils/blob/master/CodingConvention.md)
+### Coding convention:
+- Please refer to [Coding Convention](https://github.com/winest/CWUtils/blob/master/CodingConvention.md)
 
 
 
 ## Author
-[ChienWei Hung] (https://www.linkedin.com/profile/view?id=351402223)
+[ChienWei Hung](https://www.linkedin.com/profile/view?id=351402223)

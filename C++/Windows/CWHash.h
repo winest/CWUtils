@@ -11,28 +11,29 @@
  * The latest version can be found at https://github.com/winest/CWUtils
  */
 
+#pragma warning( push, 0 )
 #include <Windows.h>
 #include <Wincrypt.h>
 #include <string>
+#pragma warning( pop )
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
-    extern "C" {
+extern "C" {
 #endif
 
-BOOL GetCrc32( CONST UCHAR * aBuf , SIZE_T aBufSize , UINT32 & aCrc32 );
-BOOL GetFileMd5( IN CONST WCHAR * aFilePath , OUT std::string & aMd5 );
+BOOL GetCrc32( CONST UCHAR * aBuf, SIZE_T aBufSize, UINT32 & aCrc32 );
+BOOL GetFileMd5( IN CONST WCHAR * aFilePath, OUT std::string & aMd5 );
 
 //Refer to https://code.google.com/p/smhasher/w/list
-VOID MurmurHash2_x64_64( CONST VOID * aMem , size_t aMemSize , UINT64 aSeed , UINT64 * a64BitsOutput );
-VOID MurmurHash3_x86_32( CONST VOID * aMem , size_t aMemSize , UINT32 aSeed , UINT32 * a32BitsOutput );
-VOID MurmurHash3_x86_128( CONST VOID * aMem , size_t aMemSize , UINT32 aSeed , VOID * a128BitsOutput );
-VOID MurmurHash3_x64_128( CONST VOID * aMem , size_t aMemSize , UINT64 aSeed , VOID * a128BitsOutput );
+VOID MurmurHash2_x64_64( CONST VOID * aMem, size_t aMemSize, UINT64 aSeed, UINT64 * a64BitsOutput );
+VOID MurmurHash3_x86_32( CONST VOID * aMem, size_t aMemSize, UINT32 aSeed, UINT32 * a32BitsOutput );
+VOID MurmurHash3_x86_128( CONST VOID * aMem, size_t aMemSize, UINT32 aSeed, VOID * a128BitsOutput );
+VOID MurmurHash3_x64_128( CONST VOID * aMem, size_t aMemSize, UINT64 aSeed, VOID * a128BitsOutput );
 
 #ifdef __cplusplus
-    }
+}
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

@@ -32,14 +32,15 @@
  * Some other functions not implemented are: SetVolumeMountPoint() and Win32_PhysicalMedia().
  */
 
+#pragma warning( push, 0 )
 #include <Windows.h>
 #include <string>
+#pragma warning( pop )
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
-    extern "C" {
+extern "C" {
 #endif
 
 //Return the bitmap of logical drives, the least significant bit represents drive A
@@ -61,23 +62,23 @@ INT GetVolumesGuidPath( std::wstring & aBuf );
 //Retrieves a list of drive paths for the specified volume
 //aVolumePath will look like "C:\(NULL)D:\(NULL)"
 //Return number of drive letters found if successful, 0 otherwise
-INT GetVolumePathFromGuidPath( CONST WCHAR * aVolumeGuidPath , std::wstring & aVolumePath );
+INT GetVolumePathFromGuidPath( CONST WCHAR * aVolumeGuidPath, std::wstring & aVolumePath );
 //aMountPath can be drive letter, GUID path, or mounted folder path, all of them must end with backslash
 //aGuidPath will look like "\\?\Volume{183263e9-5394-11df-a364-806d6172696f}\(NULL)"
 //aGuidPath should have enough space(>=50 WCHARs)
 //Return TRUE if successful, FALSE otherwise
-BOOL GetGuidPathFromMountPath( CONST WCHAR * aMountPath , std::wstring & aGuidPath );
+BOOL GetGuidPathFromMountPath( CONST WCHAR * aMountPath, std::wstring & aGuidPath );
 //Retrieves the volume mount point where aFileOrDirPath is mounted
 //aFileOrDirPath can be absolute or relative path
 //aMountPath will be written as the path where aFileOrDirPath is mounted
 //aMountPathLen is the length of aMountPath excluding terminating null
 //Return TRUE if successful, FALSE otherwise
-BOOL GetMountPathFromFileOrDirPath( CONST WCHAR * aFileOrDirPath , std::wstring & aMountPath );        
+BOOL GetMountPathFromFileOrDirPath( CONST WCHAR * aFileOrDirPath, std::wstring & aMountPath );
 //Retrieves the name of a mounted folder on the specified volume
 //aMountedFolders will be the name of mounted folders on the specified volume
 //aMountedFolders should have enough space([row][column] = [count of folders][MAX_PATH+1] WCHARs)
 //Return how many folders mounted on the specific volume if successful, 0 otherwise
-INT GetMountedFoldersFromGuidPath( CONST WCHAR * aVolumeGuidPath , WCHAR ** aMountedFolders );
+INT GetMountedFoldersFromGuidPath( CONST WCHAR * aVolumeGuidPath, WCHAR ** aMountedFolders );
 
 
 
@@ -85,7 +86,7 @@ INT GetMountedFoldersFromGuidPath( CONST WCHAR * aVolumeGuidPath , WCHAR ** aMou
 //aDrivePath should be like "C:\" or "\\?\C:\"
 //The type will be written to aVolumeType if it's not NULL, therefore it show have enough space
 //Return the type in UINT defined in WinBase.h
-UINT GetVolumeType( CONST WCHAR * aVolumePath , std::wstring & aVolumeType );
+UINT GetVolumeType( CONST WCHAR * aVolumePath, std::wstring & aVolumeType );
 //aVolumePath should be like "C:\" or "\\?\C:\"
 //aVolumeName will be written by drive's name
 //aFs will be written by file system format, aFsLen is the buffer length excluding '\0', aFsFlag show the privilege
@@ -93,9 +94,12 @@ UINT GetVolumeType( CONST WCHAR * aVolumePath , std::wstring & aVolumeType );
 //aMaxFileLen is the max filename length this drive support, filename is the one between backslashes
 //aFsFlag, aSerial, and aMaxFileLen are optional
 //Return TRUE if successful, FALSE otherwise
-BOOL GetVolumeInfo( CONST WCHAR * aVolumePath , std::wstring & aVolumeName ,
-                    std::wstring & aFs , DWORD * aFsFlag = NULL , 
-                    DWORD * aSerial = NULL , DWORD * aMaxFileLen = NULL );
+BOOL GetVolumeInfo( CONST WCHAR * aVolumePath,
+                    std::wstring & aVolumeName,
+                    std::wstring & aFs,
+                    DWORD * aFsFlag = NULL,
+                    DWORD * aSerial = NULL,
+                    DWORD * aMaxFileLen = NULL );
 
 //Support from Windows Vista
 //aVolumeName will be written by drive's name, aVolumeNameLen is the buffer length excluding '\0'
@@ -105,13 +109,16 @@ BOOL GetVolumeInfo( CONST WCHAR * aVolumePath , std::wstring & aVolumeName ,
 //aFsFlag, aSerial, and aMaxFileLen are optional
 //Return TRUE if successful, FALSE otherwise
 //BOOL GetVolumeInfo( HANDLE hFile , WCHAR * aVolumeName , DWORD aVolumeNameLen ,
-//                           WCHAR * aFs , DWORD aFsLen , DWORD & aFsFlag , 
+//                           WCHAR * aFs , DWORD aFsLen , DWORD & aFsFlag ,
 //                           DWORD & aSerial , DWORD & aMaxFileLen );
 
 //Get free space, total space for all users, or available free space for current user on the specific disk in bytes
 //You can simply get one space information by setting others to NULL
 //Return TRUE if successful, FALSE otherwise
-BOOL GetVolumeSpace( CONST WCHAR * aVolumePath , ULARGE_INTEGER * aFree = NULL , ULARGE_INTEGER * aTotal = NULL , ULARGE_INTEGER * aCurrAvailable = NULL );
+BOOL GetVolumeSpace( CONST WCHAR * aVolumePath,
+                     ULARGE_INTEGER * aFree = NULL,
+                     ULARGE_INTEGER * aTotal = NULL,
+                     ULARGE_INTEGER * aCurrAvailable = NULL );
 
 
 
@@ -120,10 +127,10 @@ BOOL GetVolumeSpace( CONST WCHAR * aVolumePath , ULARGE_INTEGER * aFree = NULL ,
 
 //aVolumePath can be "C:\" or "C:\Windows\" that must end with backslash
 //Return TRUE if successful, FALSE otherwise
-BOOL SetVolumeName( WCHAR * aVolumePath , WCHAR * aNewName );
+BOOL SetVolumeName( WCHAR * aVolumePath, WCHAR * aNewName );
 
 #ifdef __cplusplus
 }
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

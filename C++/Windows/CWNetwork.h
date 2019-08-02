@@ -11,72 +11,71 @@
  * The latest version can be found at https://github.com/winest/CWUtils
  */
 
-#include <stdint.h>
-#include <cstdint>
-
+#pragma warning( push, 0 )
 #include <Windows.h>
+#include <cstdint>
 #include <string>
 #include <list>
 #include <Process.h>
 #include <WS2tcpip.h>
 #include <mstcpip.h>
 #include <IPHlpApi.h>
+#pragma warning( pop )
 
 //Link with IPHlpApi.lib
-#pragma comment( lib , "ntdll.lib" )
-#pragma comment( lib , "IPHlpApi.lib" )
+#pragma comment( lib, "ntdll.lib" )
+#pragma comment( lib, "IPHlpApi.lib" )
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #ifndef CP_UTF16LE
-    #define CP_UTF16LE  1200
+#    define CP_UTF16LE 1200
 #endif
-    
-#pragma pack( push , 1 )
+
+#pragma pack( push, 1 )
 #ifndef MAC_ADDR_SIZE
-    #define MAC_ADDR_SIZE    6
+#    define MAC_ADDR_SIZE 6
 #endif
 typedef union _MacAddress
 {
-    uint8_t  u8[MAC_ADDR_SIZE / sizeof(uint8_t)];
-    uint16_t u16[MAC_ADDR_SIZE / sizeof(uint16_t)];
+    uint8_t u8[MAC_ADDR_SIZE / sizeof( uint8_t )];
+    uint16_t u16[MAC_ADDR_SIZE / sizeof( uint16_t )];
 } MacAddress;
 
 #ifndef ETHERNET_TYPE_IPV4
-    #define ETHERNET_TYPE_IPV4    0x0800
+#    define ETHERNET_TYPE_IPV4 0x0800
 #endif
 #ifndef ETHERNET_TYPE_IPV6
-    #define ETHERNET_TYPE_IPV6    0x86DD
+#    define ETHERNET_TYPE_IPV6 0x86DD
 #endif
 #ifndef ETHERNET_TYPE_VLAN
-    #define ETHERNET_TYPE_VLAN    0x8100
+#    define ETHERNET_TYPE_VLAN 0x8100
 #endif
 #ifndef ETHERNET_TYPE_ARP
-    #define ETHERNET_TYPE_ARP     0x0806
+#    define ETHERNET_TYPE_ARP 0x0806
 #endif
 #ifndef ETHERNET_TYPE_REVARP
-    #define ETHERNET_TYPE_REVARP  0x8035
+#    define ETHERNET_TYPE_REVARP 0x8035
 #endif
 #ifndef ETHERNET_TYPE_WOL
-    #define ETHERNET_TYPE_WOL     0x0842
+#    define ETHERNET_TYPE_WOL 0x0842
 #endif
 #ifndef ETHERNET_TYPE_PPPOE_SESSION
-    #define ETHERNET_TYPE_PPPOE_SESSION  0x8864
+#    define ETHERNET_TYPE_PPPOE_SESSION 0x8864
 #endif
-typedef struct _EthernetHdr     //Ethernet Header ( 14 bytes )
+typedef struct _EthernetHdr    //Ethernet Header ( 14 bytes )
 {
     MacAddress DstMacAddr;
     MacAddress SrcMacAddr;
-    uint16_t   EtherType;
+    uint16_t EtherType;
 } EthernetHdr;
 
 
-typedef struct _PppoeSessionHdr     //PPPoE Session Header ( 2 bytes )
+typedef struct _PppoeSessionHdr    //PPPoE Session Header ( 2 bytes )
 {
 #ifdef CWUTILS_BIG_ENDIAN
     uint8_t Ver : 4;
@@ -91,75 +90,66 @@ typedef struct _PppoeSessionHdr     //PPPoE Session Header ( 2 bytes )
 } PppoeSessionHdr;
 
 #ifndef PPP_TYPE_IPV4
-    #define PPP_TYPE_IPV4  0x0021
+#    define PPP_TYPE_IPV4 0x0021
 #endif
 #ifndef PPP_TYPE_IPV6
-    #define PPP_TYPE_IPV6  0x0057
+#    define PPP_TYPE_IPV6 0x0057
 #endif
 #ifndef PPP_TYPE_ICMP
-    #define PPP_TYPE_ICMP  0x8021
+#    define PPP_TYPE_ICMP 0x8021
 #endif
 
-typedef struct _PppHdr     //PPPoE Session Header ( 2 bytes )
+typedef struct _PppHdr    //PPPoE Session Header ( 2 bytes )
 {
-    uint16_t   PppType;
+    uint16_t PppType;
 } PppHdr;
 
 
 #ifndef IPV4_ADDR_SIZE
-    #define IPV4_ADDR_SIZE 4
+#    define IPV4_ADDR_SIZE 4
 #endif
-typedef union _Ipv4Address      //IPv4 Header ( 20 bytes )
+typedef union _Ipv4Address    //IPv4 Header ( 20 bytes )
 {
-    BOOL operator==( const _Ipv4Address & aAddr ) const
-    {
-        return ( this->u32 == aAddr.u32 );
-    }
-    BOOL operator!=( const _Ipv4Address & aAddr ) const
-    {
-        return !( this->u32 == aAddr.u32 );
-    }
-    BOOL operator<( const _Ipv4Address & aAddr ) const
-    {
-        return ( this->u32 < aAddr.u32 );
-    }
-    uint8_t  u8[IPV4_ADDR_SIZE / sizeof(uint8_t)];
+    BOOL operator==( const _Ipv4Address & aAddr ) const { return ( this->u32 == aAddr.u32 ); }
+    BOOL operator!=( const _Ipv4Address & aAddr ) const { return !( this->u32 == aAddr.u32 ); }
+    BOOL operator<( const _Ipv4Address & aAddr ) const { return ( this->u32 < aAddr.u32 ); }
+    uint8_t u8[IPV4_ADDR_SIZE / sizeof( uint8_t )];
     uint32_t u32;
 } Ipv4Address;
 typedef struct _Ipv4Hdr
 {
 #ifdef CWUTILS_BIG_ENDIAN
-    uint8_t      Ver : 4;       //Version ( 4 bits ) + Header length ( 4 bits )
-    uint8_t      HdrLen : 4;    
+    uint8_t Ver : 4;    //Version ( 4 bits ) + Header length ( 4 bits )
+    uint8_t HdrLen : 4;
 #else
-    uint8_t      HdrLen : 4;    //Version ( 4 bits ) + Header length ( 4 bits )
-    uint8_t      Ver : 4;       
+    uint8_t HdrLen : 4;    //Version ( 4 bits ) + Header length ( 4 bits )
+    uint8_t Ver : 4;
 #endif
-    uint8_t      Tos;           //Type of service ( 8 bits )
-    uint16_t     TotalLen;      //Total length ( 16 bits )
-    uint16_t     Id;            //Identifier ( 16 bits )
+    uint8_t Tos;          //Type of service ( 8 bits )
+    uint16_t TotalLen;    //Total length ( 16 bits )
+    uint16_t Id;          //Identifier ( 16 bits )
 #ifdef CWUTILS_BIG_ENDIAN
-    uint16_t     Flags : 3;     //Flags ( 3 bits) + Fragment offset ( 13 bits )
-    uint16_t     Offset : 13;   
+    uint16_t Flags : 3;    //Flags ( 3 bits) + Fragment offset ( 13 bits )
+    uint16_t Offset : 13;
 #else
-    uint16_t     Offset : 13;   //Flags ( 3 bits) + Fragment offset ( 13 bits )
-    uint16_t     Flags : 3;
+    uint16_t Offset : 13;    //Flags ( 3 bits) + Fragment offset ( 13 bits )
+    uint16_t Flags : 3;
 #endif
-    uint8_t      Ttl;           //Time to live ( 8 bits )
-    uint8_t      Proto;         //Protocol ( 8 bits )
-    uint16_t     Chksum;        //Header checksum ( 16 bits )
-    Ipv4Address  SrcAddr;       //Source address ( 32 bits )
-    Ipv4Address  DstAddr;       //Destination address ( 32 bits )
+    uint8_t Ttl;            //Time to live ( 8 bits )
+    uint8_t Proto;          //Protocol ( 8 bits )
+    uint16_t Chksum;        //Header checksum ( 16 bits )
+    Ipv4Address SrcAddr;    //Source address ( 32 bits )
+    Ipv4Address DstAddr;    //Destination address ( 32 bits )
 } Ipv4Hdr;
 
 #ifndef IPV6_ADDR_SIZE
-    #define IPV6_ADDR_SIZE   16
+#    define IPV6_ADDR_SIZE 16
 #endif
 typedef union _Ipv6Address
 {
     BOOL operator==( const _Ipv6Address & aAddr ) const
     {
-        for ( SIZE_T i = 0 ; i < _countof(u32) ; i++ )
+        for ( SIZE_T i = 0; i < _countof( u32 ); i++ )
         {
             if ( this->u32[i] != aAddr.u32[i] )
             {
@@ -168,13 +158,10 @@ typedef union _Ipv6Address
         }
         return TRUE;
     }
-    BOOL operator!=( const _Ipv6Address & aAddr ) const
-    {
-        return !( *this == aAddr );
-    }
+    BOOL operator!=( const _Ipv6Address & aAddr ) const { return !( *this == aAddr ); }
     BOOL operator<( const _Ipv6Address & aAddr ) const
     {
-        for ( SIZE_T i = 0 ; i < _countof(u32) ; i++ )
+        for ( SIZE_T i = 0; i < _countof( u32 ); i++ )
         {
             if ( this->u32[i] < aAddr.u32[i] )
             {
@@ -183,77 +170,77 @@ typedef union _Ipv6Address
         }
         return FALSE;
     }
-    uint8_t  u8[IPV6_ADDR_SIZE / sizeof(uint8_t)];
-    uint16_t u16[IPV6_ADDR_SIZE / sizeof(uint16_t)];
-    uint32_t u32[IPV6_ADDR_SIZE / sizeof(uint32_t)];
+    uint8_t u8[IPV6_ADDR_SIZE / sizeof( uint8_t )];
+    uint16_t u16[IPV6_ADDR_SIZE / sizeof( uint16_t )];
+    uint32_t u32[IPV6_ADDR_SIZE / sizeof( uint32_t )];
 } Ipv6Address;
-typedef struct _Ipv6Hdr         //IPv6 Header ( 40 bytes )
+typedef struct _Ipv6Hdr    //IPv6 Header ( 40 bytes )
 {
-    uint32_t    VerPrioLabel;   //Version ( 4 bits ) + Priority ( 8 bits ) + Flow Label ( 20 bits )
-    uint16_t    PayLen;         //Payload length ( 16 bits )
-    uint8_t     NextHdr;        //Next header ( 8 bits )
-    uint8_t     HopLimit;       //Hop Limit ( 8 bits )
-    Ipv6Address SrcAddr;        //Source address ( 128 bits )
-    Ipv6Address DstAddr;        //Destination address ( 128 bits )
+    uint32_t VerPrioLabel;    //Version ( 4 bits ) + Priority ( 8 bits ) + Flow Label ( 20 bits )
+    uint16_t PayLen;          //Payload length ( 16 bits )
+    uint8_t NextHdr;          //Next header ( 8 bits )
+    uint8_t HopLimit;         //Hop Limit ( 8 bits )
+    Ipv6Address SrcAddr;      //Source address ( 128 bits )
+    Ipv6Address DstAddr;      //Destination address ( 128 bits )
 } Ipv6Hdr;
 
 
 
 #ifndef TCP_UDP_PORT_SIZE
-    #define TCP_UDP_PORT_SIZE   2
+#    define TCP_UDP_PORT_SIZE 2
 #endif
-typedef struct _TcpHdr          //TCP Header ( 20 bytes )
+typedef struct _TcpHdr    //TCP Header ( 20 bytes )
 {
-    uint16_t SrcPort;           //Source port ( 16 bits )
-    uint16_t DstPort;           //Destination port ( 16 bits )
-    uint32_t SeqNum;            //Sequence number ( 32 bits )
-    uint32_t AckNum;            //Acknowledgement number ( 32 bits )
+    uint16_t SrcPort;    //Source port ( 16 bits )
+    uint16_t DstPort;    //Destination port ( 16 bits )
+    uint32_t SeqNum;     //Sequence number ( 32 bits )
+    uint32_t AckNum;     //Acknowledgement number ( 32 bits )
 #ifdef CWUTILS_BIG_ENDIAN
-    uint8_t  HdrLen : 4;        //Header length ( 4 bits ) + Reserved ( 6 bits )
-    uint8_t  Reserved : 4;
+    uint8_t HdrLen : 4;    //Header length ( 4 bits ) + Reserved ( 6 bits )
+    uint8_t Reserved : 4;
 #else
-    uint8_t  Reserved : 4;      //Header length ( 4 bits ) + Reserved ( 6 bits )
-    uint8_t  HdrLen : 4;        
+    uint8_t Reserved : 4;    //Header length ( 4 bits ) + Reserved ( 6 bits )
+    uint8_t HdrLen : 4;
 #endif
     //uint8_t  Flags;             //Flags ( 8 bits )
-    union 
+    union
     {
         struct
         {
 #ifdef CWUTILS_BIG_ENDIAN
-            uint8_t CWR : 1;          //Congestion Window Reduced Flag
-            uint8_t ECN : 1;          //ECN-Echo Flag
-            uint8_t URG : 1;          //Urgent Flag
-            uint8_t ACK : 1;          //Acknowledgement Flag
-            uint8_t PSH : 1;          //Push Flag
-            uint8_t RST : 1;          //Reset Flag
-            uint8_t SYN : 1;          //Synchronize Flag
-            uint8_t FIN : 1;          //Finish Flag
+            uint8_t CWR : 1;    //Congestion Window Reduced Flag
+            uint8_t ECN : 1;    //ECN-Echo Flag
+            uint8_t URG : 1;    //Urgent Flag
+            uint8_t ACK : 1;    //Acknowledgement Flag
+            uint8_t PSH : 1;    //Push Flag
+            uint8_t RST : 1;    //Reset Flag
+            uint8_t SYN : 1;    //Synchronize Flag
+            uint8_t FIN : 1;    //Finish Flag
 #else
-            uint8_t FIN : 1;          //Finish Flag
-            uint8_t SYN : 1;          //Synchronize Flag
-            uint8_t RST : 1;          //Reset Flag
-            uint8_t PSH : 1;          //Push Flag
-            uint8_t ACK : 1;          //Acknowledgement Flag
-            uint8_t URG : 1;          //Urgent Flag
-            uint8_t ECN : 1;          //ECN-Echo Flag
-            uint8_t CWR : 1;          //Congestion Window Reduced Flag
+            uint8_t FIN : 1;    //Finish Flag
+            uint8_t SYN : 1;    //Synchronize Flag
+            uint8_t RST : 1;    //Reset Flag
+            uint8_t PSH : 1;    //Push Flag
+            uint8_t ACK : 1;    //Acknowledgement Flag
+            uint8_t URG : 1;    //Urgent Flag
+            uint8_t ECN : 1;    //ECN-Echo Flag
+            uint8_t CWR : 1;    //Congestion Window Reduced Flag
 #endif
         };
         uint8_t u8;
-    } Flags;    
+    } Flags;
 
-    uint16_t RecvWindow;        //Receive window ( 16 bits )
-    uint16_t Chksum;            //Checksum ( 16 bits )
-    uint16_t Urg;               //Urg data pointer ( 16 bits )
+    uint16_t RecvWindow;    //Receive window ( 16 bits )
+    uint16_t Chksum;        //Checksum ( 16 bits )
+    uint16_t Urg;           //Urg data pointer ( 16 bits )
 } TcpHdr;
 
-typedef struct _UdpHdr          //UDP Header ( 8 bytes )
+typedef struct _UdpHdr    //UDP Header ( 8 bytes )
 {
-    uint16_t SrcPort;           //Source port ( 16 bits )
-    uint16_t DstPort;           //Destination port ( 16 bits )
-    uint16_t SegLen;            //UDP segment length ( 16 bits )
-    uint16_t Chksum;            //Checksum ( 16 bits )
+    uint16_t SrcPort;    //Source port ( 16 bits )
+    uint16_t DstPort;    //Destination port ( 16 bits )
+    uint16_t SegLen;     //UDP segment length ( 16 bits )
+    uint16_t Chksum;     //Checksum ( 16 bits )
 } UdpHdr;
 
 #pragma pack( pop )
@@ -263,11 +250,16 @@ typedef struct _UdpHdr          //UDP Header ( 8 bytes )
 
 
 
-
-
-typedef struct _CW_NETWORK_INTERFACE_INFO {
-    _CW_NETWORK_INTERFACE_INFO() : ulIfType(IF_TYPE_OTHER) , nOperStatus(IfOperStatusUnknown) , u64UploadSpeed(0) , u64DownloadSpeed(0)
-                                   { ZeroMemory(&byMacAddr,sizeof(byMacAddr)); }
+typedef struct _CW_NETWORK_INTERFACE_INFO
+{
+    _CW_NETWORK_INTERFACE_INFO() :
+        ulIfType( IF_TYPE_OTHER ),
+        nOperStatus( IfOperStatusUnknown ),
+        u64UploadSpeed( 0 ),
+        u64DownloadSpeed( 0 )
+    {
+        ZeroMemory( &byMacAddr, sizeof( byMacAddr ) );
+    }
     std::string strGuid;
     std::wstring wstrName;
     std::wstring wstrDescription;
@@ -277,7 +269,7 @@ typedef struct _CW_NETWORK_INTERFACE_INFO {
     IF_OPER_STATUS nOperStatus;
     ULONG64 u64UploadSpeed;
     ULONG64 u64DownloadSpeed;
-    
+
     std::list<sockaddr_in> lsUnicastIp4;
     std::list<sockaddr_in6> lsUnicastIp6;
     std::list<sockaddr_in> lsAnycastIp4;
@@ -294,10 +286,7 @@ typedef struct _CW_NETWORK_INTERFACE_INFO {
     std::list<sockaddr_in6> lsDnsIp6;
 } CW_NETWORK_INTERFACE_INFO;
 
-BOOL GetNetworkInterfaceInfo( DWORD aFamily , std::list<CW_NETWORK_INTERFACE_INFO> & aInfos );
-
-
-
+BOOL GetNetworkInterfaceInfo( DWORD aFamily, std::list<CW_NETWORK_INTERFACE_INFO> & aInfos );
 
 
 
@@ -305,74 +294,105 @@ BOOL GetNetworkInterfaceInfo( DWORD aFamily , std::list<CW_NETWORK_INTERFACE_INF
 
 
 //Return ERROR_SUCCESS if no error happen. Other return code will cause the server to stop the connection
-typedef DWORD (CALLBACK *SocketRecvCbk)( IN DWORD aSkt , IN VOID * aUserCtx , CONST CHAR * aRecvBuf , INT aRecvSize );
+typedef DWORD( CALLBACK * SocketRecvCbk )( IN DWORD aSkt, IN VOID * aUserCtx, CONST CHAR * aRecvBuf, INT aRecvSize );
 
 class CClientSock
 {
-    public :
-        CClientSock() : m_bWsaStarted(FALSE) , m_dwCodePage(CP_ACP) , m_hEvtExit(NULL) ,
-                        m_skt(INVALID_SOCKET) , m_hReceiverThread(NULL) , m_cbkRecv(NULL) , m_pUserCtx(NULL) {}
-        ~CClientSock() {}
-    public :
-        BOOL Init( SocketRecvCbk aRecvCbk , VOID * aUserCtx , DWORD aCodePage = CP_ACP );
-        BOOL CloseSockets();
-        BOOL UnInit();
+    public:
+    CClientSock() :
+        m_bWsaStarted( FALSE ),
+        m_dwCodePage( CP_ACP ),
+        m_hEvtExit( NULL ),
+        m_skt( INVALID_SOCKET ),
+        m_hReceiverThread( NULL ),
+        m_cbkRecv( NULL ),
+        m_pUserCtx( NULL )
+    {
+    }
+    ~CClientSock() {}
 
-        BOOL Connect( CONST WCHAR * aIp , USHORT aPort , DWORD aFamily = AF_INET , DWORD aType = SOCK_STREAM , DWORD aProto = IPPROTO_TCP );
-        BOOL SendRawData( CONST CHAR * aBuf , INT aBufSize );
-        BOOL SendString( CONST WCHAR * aString , INT aStringLen , BOOL aUnEscapeChar );   //Will convert to the corresponding codepage before sent
-        SOCKET GetSocket() { return m_skt; }
-        HANDLE GetExitEvent() { return m_hEvtExit; }
+    public:
+    BOOL Init( SocketRecvCbk aRecvCbk, VOID * aUserCtx, DWORD aCodePage = CP_ACP );
+    BOOL CloseSockets();
+    BOOL UnInit();
 
-    protected :
-        static UINT CALLBACK ReceiverThread( VOID * aArgs );
-        UINT CALLBACK DoReceiver();
+    BOOL Connect( CONST WCHAR * aIp,
+                  USHORT aPort,
+                  DWORD aFamily = AF_INET,
+                  DWORD aType = SOCK_STREAM,
+                  DWORD aProto = IPPROTO_TCP );
+    BOOL SendRawData( CONST CHAR * aBuf, INT aBufSize );
+    BOOL SendString( CONST WCHAR * aString,
+                     INT aStringLen,
+                     BOOL aUnEscapeChar );    //Will convert to the corresponding codepage before sent
+    SOCKET GetSocket() { return m_skt; }
+    HANDLE GetExitEvent() { return m_hEvtExit; }
 
-    private :
-        BOOL m_bWsaStarted;
-        DWORD m_dwCodePage;
-        HANDLE m_hEvtExit;
-        SOCKET m_skt;
-        HANDLE m_hReceiverThread;
-        SocketRecvCbk m_cbkRecv;
-        VOID * m_pUserCtx;
+    protected:
+    static UINT CALLBACK ReceiverThread( VOID * aArgs );
+    UINT CALLBACK DoReceiver();
+
+    private:
+    BOOL m_bWsaStarted;
+    DWORD m_dwCodePage;
+    HANDLE m_hEvtExit;
+    SOCKET m_skt;
+    HANDLE m_hReceiverThread;
+    SocketRecvCbk m_cbkRecv;
+    VOID * m_pUserCtx;
 };
 
 
 
 class CServerSock
 {
-    public :
-        CServerSock() : m_bWsaStarted(FALSE) , m_dwCodePage(CP_ACP) , m_hEvtExit(NULL) ,
-                        m_sktListen(INVALID_SOCKET) , m_sktAccpet(INVALID_SOCKET) ,
-                        m_hSenderThread(NULL) , m_hReceiverThread(NULL) , m_cbkRecv(NULL) , m_pUserCtx(NULL) {}
-        ~CServerSock() {}
-    public :
-        BOOL Init( SocketRecvCbk aRecvCbk , VOID * aUserCtx , DWORD aCodePage = CP_ACP );
-        BOOL CloseSockets();
-        BOOL UnInit();
+    public:
+    CServerSock() :
+        m_bWsaStarted( FALSE ),
+        m_dwCodePage( CP_ACP ),
+        m_hEvtExit( NULL ),
+        m_sktListen( INVALID_SOCKET ),
+        m_sktAccpet( INVALID_SOCKET ),
+        m_hSenderThread( NULL ),
+        m_hReceiverThread( NULL ),
+        m_cbkRecv( NULL ),
+        m_pUserCtx( NULL )
+    {
+    }
+    ~CServerSock() {}
 
-        BOOL BindListen( CONST WCHAR * aIp , USHORT aPort , DWORD aFamily = AF_INET , DWORD aType = SOCK_STREAM , DWORD aProto = IPPROTO_TCP );
-        BOOL Accept();
-        BOOL SendRawData( CONST CHAR * aBuf , INT aBufSize );
-        BOOL SendString( CONST WCHAR * aString , INT aStringLen , BOOL aUnEscapeChar );   //Will convert to the corresponding codepage before sent
-        SOCKET GetAcceptSocket() { return m_sktAccpet; }
-        HANDLE GetExitEvent() { return m_hEvtExit; }
+    public:
+    BOOL Init( SocketRecvCbk aRecvCbk, VOID * aUserCtx, DWORD aCodePage = CP_ACP );
+    BOOL CloseSockets();
+    BOOL UnInit();
 
-    protected :
-        static UINT CALLBACK SenderThread( VOID * aArgs );
-        UINT CALLBACK DoSender();
-        static UINT CALLBACK ReceiverThread( VOID * aArgs );
-        UINT CALLBACK DoReceiver();
+    BOOL BindListen( CONST WCHAR * aIp,
+                     USHORT aPort,
+                     DWORD aFamily = AF_INET,
+                     DWORD aType = SOCK_STREAM,
+                     DWORD aProto = IPPROTO_TCP );
+    BOOL Accept();
+    BOOL SendRawData( CONST CHAR * aBuf, INT aBufSize );
+    BOOL SendString( CONST WCHAR * aString,
+                     INT aStringLen,
+                     BOOL aUnEscapeChar );    //Will convert to the corresponding codepage before sent
+    SOCKET GetAcceptSocket() { return m_sktAccpet; }
+    HANDLE GetExitEvent() { return m_hEvtExit; }
 
-    private :
-        BOOL m_bWsaStarted;
-        DWORD m_dwCodePage;
-        HANDLE m_hEvtExit;
-        SOCKET m_sktListen , m_sktAccpet;
-        HANDLE m_hSenderThread , m_hReceiverThread;
-        SocketRecvCbk m_cbkRecv;
-        VOID * m_pUserCtx;
+    protected:
+    static UINT CALLBACK SenderThread( VOID * aArgs );
+    UINT CALLBACK DoSender();
+    static UINT CALLBACK ReceiverThread( VOID * aArgs );
+    UINT CALLBACK DoReceiver();
+
+    private:
+    BOOL m_bWsaStarted;
+    DWORD m_dwCodePage;
+    HANDLE m_hEvtExit;
+    SOCKET m_sktListen, m_sktAccpet;
+    HANDLE m_hSenderThread, m_hReceiverThread;
+    SocketRecvCbk m_cbkRecv;
+    VOID * m_pUserCtx;
 };
 
 
@@ -380,4 +400,4 @@ class CServerSock
 }
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

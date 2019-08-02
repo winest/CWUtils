@@ -6,13 +6,23 @@
 
 //#define _WIN32_WINNT   0x0501
 
+#pragma warning( push, 0 )
 #include <SDKDDKVer.h>
-
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
-
+#define WIN32_LEAN_AND_MEAN    // Exclude rarely-used stuff from Windows headers
 #include <Windows.h>
 #include <WTypesbase.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
 #include <string>
-using namespace std;
+#include <sstream>
+#include <algorithm>
+#include <vector>
+#include <list>
+#include <deque>
+#include <set>
+#include <unordered_set>
+#include <map>
+#include <unordered_map>
+#pragma warning( pop )

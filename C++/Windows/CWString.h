@@ -11,6 +11,7 @@
  * The latest version can be found at https://github.com/winest/CWUtils
  */
 
+#pragma warning( push, 0 )
 #include <Windows.h>
 #include <cstring>
 #include <cctype>
@@ -21,6 +22,7 @@
 #include <algorithm>
 #include <Wininet.h>
 #include <Shlwapi.h>
+#pragma warning( pop )
 
 #pragma comment( lib, "Shlwapi.lib" )
 

@@ -11,23 +11,26 @@
  * The latest version can be found at https://github.com/winest/CWUtils
  */
 
+#pragma warning( push, 0 )
 #include <Windows.h>
 #include <string>
 #include <list>
 #include <map>
+#pragma warning( pop )
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-BOOL GetIniSectionNames( CONST WCHAR * aIniPath , std::list<std::wstring> & aSectionNames );
-BOOL GetIniSectionValues( const WCHAR * aIniPath , const WCHAR * aSectionName , std::map<std::wstring,std::wstring> & aKeyVal );
+BOOL GetIniSectionNames( CONST WCHAR * aIniPath, std::list<std::wstring> & aSectionNames );
+BOOL GetIniSectionValues( const WCHAR * aIniPath,
+                          const WCHAR * aSectionName,
+                          std::map<std::wstring, std::wstring> & aKeyVal );
 
 #ifdef __cplusplus
 }
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

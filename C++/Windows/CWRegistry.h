@@ -11,37 +11,50 @@
  * The latest version can be found at https://github.com/winest/CWUtils
  */
 
-#include "Windows.h"
+#pragma warning( push, 0 )
+#include <Windows.h>
 #include <string>
 #include <vector>
 using std::wstring;
 using std::vector;
+#pragma warning( pop )
 
 namespace CWUtils
 {
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 BOOL IsRegKeyExists( HKEY aRegKey, CONST WCHAR * aSection );
 
-BOOL IsRegValueExists( HKEY aRegKey , CONST WCHAR * aSection , CONST WCHAR * aValueName );
+BOOL IsRegValueExists( HKEY aRegKey, CONST WCHAR * aSection, CONST WCHAR * aValueName );
 
-BOOL DeleteRegValue( HKEY aRegKey , CONST WCHAR * aSection , CONST WCHAR * aValueName );
+BOOL DeleteRegValue( HKEY aRegKey, CONST WCHAR * aSection, CONST WCHAR * aValueName );
 
-BOOL SetRegString( HKEY aRegKey , CONST WCHAR * aSection , CONST WCHAR * aValueName , CONST WCHAR * aValue , DWORD dwOption = REG_OPTION_NON_VOLATILE );
-
-
-
-BOOL SetRegMultiString( HKEY aRegKey , CONST WCHAR * aSection , CONST WCHAR * aValueName , vector<wstring> & aValues , DWORD dwOption = REG_OPTION_NON_VOLATILE );
-
-BOOL GetRegMultiString( HKEY aRegKey , CONST WCHAR * aSection , CONST WCHAR * aValueName , vector<wstring> & aValues );
+BOOL SetRegString( HKEY aRegKey,
+                   CONST WCHAR * aSection,
+                   CONST WCHAR * aValueName,
+                   CONST WCHAR * aValue,
+                   DWORD dwOption = REG_OPTION_NON_VOLATILE );
 
 
 
-BOOL SetRegFlag( HKEY aRegKey , CONST WCHAR * aSection , CONST WCHAR * pszFlagName , DWORD dwFlag, DWORD dwOption = REG_OPTION_NON_VOLATILE );
-BOOL GetRegFlag( HKEY aRegKey , CONST WCHAR * aSection , CONST WCHAR * pszFlagName , DWORD& dwFlag );
+BOOL SetRegMultiString( HKEY aRegKey,
+                        CONST WCHAR * aSection,
+                        CONST WCHAR * aValueName,
+                        vector<wstring> & aValues,
+                        DWORD dwOption = REG_OPTION_NON_VOLATILE );
+
+BOOL GetRegMultiString( HKEY aRegKey, CONST WCHAR * aSection, CONST WCHAR * aValueName, vector<wstring> & aValues );
+
+
+
+BOOL SetRegFlag( HKEY aRegKey,
+                 CONST WCHAR * aSection,
+                 CONST WCHAR * pszFlagName,
+                 DWORD dwFlag,
+                 DWORD dwOption = REG_OPTION_NON_VOLATILE );
+BOOL GetRegFlag( HKEY aRegKey, CONST WCHAR * aSection, CONST WCHAR * pszFlagName, DWORD & dwFlag );
 
 BOOL RemoveRegPendingFileRename( CONST vector<wstring> & aFilenames );
 
@@ -49,4 +62,4 @@ BOOL RemoveRegPendingFileRename( CONST vector<wstring> & aFilenames );
 }
 #endif
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils

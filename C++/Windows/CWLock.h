@@ -12,7 +12,9 @@
  * The latest version can be found at https://github.com/winest/CWUtils
  */
 
+#pragma warning( push, 0 )
 #include <Windows.h>
+#pragma warning( pop )
 
 namespace CWUtils
 {

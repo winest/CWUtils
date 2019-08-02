@@ -11,12 +11,15 @@
  * The latest version can be found at https://github.com/winest/CWUtils
  */
 
+#pragma warning( push, 0 )
 #include <cerrno>
 #include <cctype>
+#include <cwctype>
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <algorithm>
+#pragma warning( pop )
 
 namespace CWUtils
 {
@@ -94,16 +97,16 @@ class CCmdArgsParser
         std::size_t operator()( const std::wstring & aRhs ) const
         {
             std::wstring rhs = aRhs;
-            std::transform( rhs.begin(), rhs.end(), rhs.begin(), std::tolower );
+            std::transform( rhs.begin(), rhs.end(), rhs.begin(), std::towlower );
 
             return std::hash<std::wstring>()( rhs );
         }
         bool operator()( const std::wstring & aLhs, const std::wstring & aRhs ) const
         {
             std::wstring lhs = aLhs;
-            std::transform( lhs.begin(), lhs.end(), lhs.begin(), std::tolower );
+            std::transform( lhs.begin(), lhs.end(), lhs.begin(), std::towlower );
             std::wstring rhs = aRhs;
-            std::transform( rhs.begin(), rhs.end(), rhs.begin(), std::tolower );
+            std::transform( rhs.begin(), rhs.end(), rhs.begin(), std::towlower );
             return lhs < rhs;
         }
     };

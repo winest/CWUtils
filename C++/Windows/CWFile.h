@@ -11,12 +11,14 @@
  * The latest version can be found at https://github.com/winest/CWUtils
  */
 
+#pragma warning( push, 0 )
 #include <Windows.h>
 #include <string>
 #include <vector>
 #include <string>
 #include <Psapi.h>
 #include <VersionHelpers.h>
+#pragma warning( pop )
 
 #pragma comment( lib, "Version.lib" )
 #if ( _WIN32_WINNT_VISTA > _WIN32_WINNT )
@@ -90,7 +92,7 @@ BOOL CreateFileDir( CONST std::wstring & aFileFullPath );
 
 
 #ifndef FILE_LINE_SEP
-    #define FILE_LINE_SEP "\r\n"
+#    define FILE_LINE_SEP "\r\n"
 #endif
 CONST SIZE_T FILE_BUF_SIZE = 4096;
 
@@ -107,12 +109,16 @@ CONST UINT32 FILE_OPEN_ATTR_WRITE = 0x00000040;          //Open for write
 class CFile
 {
     public:
-    CFile() : m_hFile( NULL ) , m_uReadPos(0) { m_strReadBuf.reserve( FILE_BUF_SIZE * 2 ); }
+    CFile() : m_hFile( NULL ), m_uReadPos( 0 ) { m_strReadBuf.reserve( FILE_BUF_SIZE * 2 ); }
     virtual ~CFile() { this->Close(); }
 
     public:
-    BOOL Open( CONST CHAR * aPath, UINT32 aOpenAttr = FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST | FILE_OPEN_ATTR_READ, CONST std::string aLineSep = FILE_LINE_SEP );
-    BOOL Open( CONST WCHAR * aPath, UINT32 aOpenAttr = FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST | FILE_OPEN_ATTR_READ, CONST std::string aLineSep = FILE_LINE_SEP );
+    BOOL Open( CONST CHAR * aPath,
+               UINT32 aOpenAttr = FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST | FILE_OPEN_ATTR_READ,
+               CONST std::string aLineSep = FILE_LINE_SEP );
+    BOOL Open( CONST WCHAR * aPath,
+               UINT32 aOpenAttr = FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST | FILE_OPEN_ATTR_READ,
+               CONST std::string aLineSep = FILE_LINE_SEP );
     BOOL Write( CONST CHAR * aData, SIZE_T aDataSize );
     BOOL Write( CONST UCHAR * aData, SIZE_T aDataSize );
     BOOL WriteLine();

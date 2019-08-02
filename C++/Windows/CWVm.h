@@ -14,40 +14,42 @@
  * Used to test whether current process is running in virtual machine.
  */
 
+#pragma warning( push, 0 )
 #include <Windows.h>
+#pragma warning( pop )
+
 #include "CWGeneralUtils.h"
 
 namespace CWUtils
 {
-
 class CDetectVm
 {
-    public :
-        CDetectVm();
-        ~CDetectVm();
+    public:
+    CDetectVm();
+    ~CDetectVm();
 
-    public :
-        static INT GetProcessorNumber();
-        static BOOL InVM();
-        static BOOL InVMWare();
-        static BOOL InVirtualPC();
+    public:
+    static INT GetProcessorNumber();
+    static BOOL InVM();
+    static BOOL InVMWare();
+    static BOOL InVirtualPC();
 
-    public :
-        static BOOL TestStr( TCHAR * aInfo = NULL );
-        static BOOL TestSgdt( TCHAR * aInfo = NULL );
-        static BOOL TestSidt( TCHAR * aInfo = NULL );
-        static BOOL TestSldt( TCHAR * aInfo = NULL );
+    public:
+    static BOOL TestStr( TCHAR * aInfo = NULL );
+    static BOOL TestSgdt( TCHAR * aInfo = NULL );
+    static BOOL TestSidt( TCHAR * aInfo = NULL );
+    static BOOL TestSldt( TCHAR * aInfo = NULL );
 
-        static BOOL TestVMWareMagicNumber( TCHAR * aInfo = NULL );
-        static BOOL TestVirtualPCException();
+    static BOOL TestVMWareMagicNumber( TCHAR * aInfo = NULL );
+    static BOOL TestVirtualPCException();
 
-    private :
-        static DWORD __forceinline VirtualPCExceptionFilter( EXCEPTION_POINTERS * aException );
+    private:
+    static DWORD __forceinline VirtualPCExceptionFilter( EXCEPTION_POINTERS * aException );
 
-    private :
-        INT processorNum;
+    private:
+    INT processorNum;
 };
 
 
 
-}   //End of namespace CWUtils
+}    //End of namespace CWUtils
