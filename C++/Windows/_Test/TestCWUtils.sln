@@ -51,6 +51,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCWWmiEventMonitor", "Un
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCWHash", "UnitTest\TestCWHash\TestCWHash.vcxproj", "{03430776-7954-4F42-881D-385A95396185}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCWSharedMemWriter", "UnitTest\TestCWSharedMem\TestCWSharedMemWriter\TestCWSharedMemWriter.vcxproj", "{9DC88A25-D691-475A-89DD-3B7535E188C4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCWSharedMemReader", "UnitTest\TestCWSharedMem\TestCWSharedMemReader\TestCWSharedMemReader.vcxproj", "{12134378-FA69-4A2D-9CF8-CF2362E4FCFA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -341,6 +345,30 @@ Global
 		{03430776-7954-4F42-881D-385A95396185}.Release|Win32.ActiveCfg = Release|Win32
 		{03430776-7954-4F42-881D-385A95396185}.Release|Win32.Build.0 = Release|Win32
 		{03430776-7954-4F42-881D-385A95396185}.Release|x64.ActiveCfg = Release|Win32
+		{9DC88A25-D691-475A-89DD-3B7535E188C4}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{9DC88A25-D691-475A-89DD-3B7535E188C4}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{9DC88A25-D691-475A-89DD-3B7535E188C4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9DC88A25-D691-475A-89DD-3B7535E188C4}.Debug|Win32.Build.0 = Debug|Win32
+		{9DC88A25-D691-475A-89DD-3B7535E188C4}.Debug|x64.ActiveCfg = Debug|x64
+		{9DC88A25-D691-475A-89DD-3B7535E188C4}.Debug|x64.Build.0 = Debug|x64
+		{9DC88A25-D691-475A-89DD-3B7535E188C4}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{9DC88A25-D691-475A-89DD-3B7535E188C4}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{9DC88A25-D691-475A-89DD-3B7535E188C4}.Release|Win32.ActiveCfg = Release|Win32
+		{9DC88A25-D691-475A-89DD-3B7535E188C4}.Release|Win32.Build.0 = Release|Win32
+		{9DC88A25-D691-475A-89DD-3B7535E188C4}.Release|x64.ActiveCfg = Release|x64
+		{9DC88A25-D691-475A-89DD-3B7535E188C4}.Release|x64.Build.0 = Release|x64
+		{12134378-FA69-4A2D-9CF8-CF2362E4FCFA}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{12134378-FA69-4A2D-9CF8-CF2362E4FCFA}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{12134378-FA69-4A2D-9CF8-CF2362E4FCFA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{12134378-FA69-4A2D-9CF8-CF2362E4FCFA}.Debug|Win32.Build.0 = Debug|Win32
+		{12134378-FA69-4A2D-9CF8-CF2362E4FCFA}.Debug|x64.ActiveCfg = Debug|x64
+		{12134378-FA69-4A2D-9CF8-CF2362E4FCFA}.Debug|x64.Build.0 = Debug|x64
+		{12134378-FA69-4A2D-9CF8-CF2362E4FCFA}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{12134378-FA69-4A2D-9CF8-CF2362E4FCFA}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{12134378-FA69-4A2D-9CF8-CF2362E4FCFA}.Release|Win32.ActiveCfg = Release|Win32
+		{12134378-FA69-4A2D-9CF8-CF2362E4FCFA}.Release|Win32.Build.0 = Release|Win32
+		{12134378-FA69-4A2D-9CF8-CF2362E4FCFA}.Release|x64.ActiveCfg = Release|x64
+		{12134378-FA69-4A2D-9CF8-CF2362E4FCFA}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

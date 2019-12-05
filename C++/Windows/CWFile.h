@@ -15,7 +15,7 @@
 #include <Windows.h>
 #include <string>
 #include <vector>
-#include <string>
+#include <algorithm>
 #include <Psapi.h>
 #include <VersionHelpers.h>
 #pragma warning( pop )
@@ -33,7 +33,7 @@ namespace CWUtils
 extern "C" {
 #endif
 
-typedef enum _VERSION_COMPARE
+typedef enum class _VERSION_COMPARE
 {
     VERSION_UNAVAILABLE = -2,
     VERSION_OLDER,
@@ -49,7 +49,8 @@ BOOL IsFileExist( CONST WCHAR * aFullPath );
 
 UINT64 GetFileSizeByPath( IN CONST WCHAR * aFullPath );
 
-BOOL GetFileContent( IN CONST WCHAR * aFullPath, IN OUT std::string & aContent );
+BOOL GetFileContentA( IN CONST CHAR * aFullPath, IN OUT std::string & aContent );
+BOOL GetFileContentW( IN CONST WCHAR * aFullPath, IN OUT std::string & aContent );
 
 BOOL SaveToFile( IN CONST WCHAR * aSavePath, BOOL aAppend, IN CONST BYTE * aData, IN DWORD aDataSize );
 BOOL SaveToFileEx( IN CONST WCHAR * aSavePath, BOOL aAppend, IN CONST CHAR * aFormat, ... );

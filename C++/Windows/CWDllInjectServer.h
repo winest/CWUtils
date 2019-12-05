@@ -79,8 +79,8 @@ typedef struct _DllInjectServerUserCfg
 
 #define DLL_INJECT_SERVER_ENABLE_DEFAULT FALSE
 #define DLL_INJECT_SERVER_WORKER_COUNT_DEFAULT 2
-#define DLL_INJECT_SERVER_WORKER_COUNT_MIN 1
-#define DLL_INJECT_SERVER_WORKER_COUNT_MAX 10
+#define DLL_INJECT_SERVER_WORKER_COUNT_MIN 1ul
+#define DLL_INJECT_SERVER_WORKER_COUNT_MAX 10ul
 
 class CDllInjectServer
 {
@@ -264,7 +264,7 @@ class CDllInjectServer
     PDLL_INJECT_SERVER_SM_DATA_HEADER m_pPerServerSm
         [PER_SERVER_SM_COUNT];    //Per-server share memory address. Used for data exchange (DLL_INJECT_SERVER_SM_DATA_HEADER_HEADER_HEADER). R2L is protected by mutex and L2R is protected by critical section
     CRITICAL_SECTION
-        m_csSmL2R;    //Per-server critical section. Used to ensure L2R(Local to Remote)'s share memory integrity
+    m_csSmL2R;    //Per-server critical section. Used to ensure L2R(Local to Remote)'s share memory integrity
 
     volatile LONG m_lJobThreadCnt;
     HANDLE m_hEvtNewJob;

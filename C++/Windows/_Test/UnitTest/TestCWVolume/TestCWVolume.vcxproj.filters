@@ -27,9 +27,6 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TestCWVolume.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\..\..\CWUi\C++\Windows\CWButton.h">
       <Filter>Header Files\CWUi</Filter>
     </ClInclude>

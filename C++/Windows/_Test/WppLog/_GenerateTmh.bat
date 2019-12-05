@@ -51,9 +51,9 @@ ECHO WppExtraConfigHeader=%WppExtraConfigHeader%
 ECHO WppExtraConfigIni=%WppExtraConfigIni%
 IF NOT EXIST "%ProjectDir%\_tmh" ( MKDIR "%ProjectDir%\_tmh" )
 FOR %%d IN ( %* ) DO (
-    FOR /F %%f IN ('DIR /B "%%~d\*.c" OR "%%~d\*.cpp"') DO (
+    FOR /F %%f IN ('DIR /B "%%~d\*.c" OR "%%~d\*.cpp" OR "%%~d\*.h"') DO (
         ECHO Handling %%~d\%%f
-        "%WppTools%\tracewpp.exe" -dll -func:"DbgOut(LEVEL,FLAGS,MSG,...)" -scan:"%WppExtraConfigHeader%" -ini:"%WppExtraConfigIni%" -cfgdir:"%WppTools%\WppConfig-WDK7" -odir:"%ProjectDir%\_tmh" "%%~d\%%f"
+        "%WppTools%\tracewpp.exe" -dll -func:"DbgOut(LEVEL,FLAGS,MSG,...)" -scan:"%WppExtraConfigHeader%" -ini:"%WppExtraConfigIni%" -cfgdir:"%WppTools%\WppConfig-WDK10" -odir:"%ProjectDir%\_tmh" -ext:".c.cpp.h" "%%~d\%%f"
     )
 )
 

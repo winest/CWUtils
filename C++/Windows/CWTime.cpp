@@ -229,7 +229,7 @@ UINT64 CStopWatch::Get1QIntervalInNano()
         return 0;
     }
 
-    INT nFirstQuartilePos = m_vecAllInt.size() / 4;
+    size_t nFirstQuartilePos = m_vecAllInt.size() / 4;
     std::nth_element( m_vecAllInt.begin(), m_vecAllInt.begin() + nFirstQuartilePos, m_vecAllInt.end() );
     return m_vecAllInt[nFirstQuartilePos];
 }
@@ -259,7 +259,7 @@ UINT64 CStopWatch::Get3QIntervalInNano()
         return 0;
     }
 
-    INT nThirdQuartilePos = m_vecAllInt.size() * 3 / 4;
+    size_t nThirdQuartilePos = m_vecAllInt.size() * 3 / 4;
     std::nth_element( m_vecAllInt.begin(), m_vecAllInt.begin() + nThirdQuartilePos, m_vecAllInt.end() );
     return m_vecAllInt[nThirdQuartilePos];
 }

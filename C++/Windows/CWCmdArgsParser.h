@@ -107,7 +107,7 @@ class CCmdArgsParser
             std::transform( lhs.begin(), lhs.end(), lhs.begin(), std::towlower );
             std::wstring rhs = aRhs;
             std::transform( rhs.begin(), rhs.end(), rhs.begin(), std::towlower );
-            return lhs < rhs;
+            return lhs == rhs;
         }
     };
 

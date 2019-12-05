@@ -93,7 +93,14 @@ UINT64 GetFileSizeByPath( IN CONST WCHAR * aFullPath )
     return uRet;
 }
 
-BOOL GetFileContent( IN CONST WCHAR * aFullPath, IN OUT std::string & aContent )
+BOOL GetFileContentA( IN CONST CHAR * aFullPath, IN OUT std::string & aContent )
+{
+    std::wstring wstrFullPath;
+    CWUtils::StringToWString( std::string( aFullPath ), wstrFullPath );
+    return GetFileContentW( wstrFullPath.c_str(), aContent );
+}
+
+BOOL GetFileContentW( IN CONST WCHAR * aFullPath, IN OUT std::string & aContent )
 {
     HANDLE hFile =
         CreateFileW( aFullPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
@@ -311,7 +318,7 @@ BOOL GetFileVersion( CONST WCHAR * aFullPath, WORD * aMajor, WORD * aMinor, WORD
 
 VERSION_COMPARE CompareFileVersion( CONST WCHAR * aNewFilePath, CONST WCHAR * aExistFilePath )
 {
-    VERSION_COMPARE vcRet = VERSION_UNAVAILABLE;
+    VERSION_COMPARE vcRet = VERSION_COMPARE::VERSION_UNAVAILABLE;
     WORD wNewMajor = 0, wNewMinor = 0, wNewRev = 0, wNewBuild = 0;
     WORD wExistMajor = 0, wExistMinor = 0, wExistRev = 0, wExistBuild = 0;
 
@@ -328,17 +335,17 @@ VERSION_COMPARE CompareFileVersion( CONST WCHAR * aNewFilePath, CONST WCHAR * aE
         wExist[2] = wExistRev;
         wExist[3] = wExistBuild;
 
-        vcRet = VERSION_EQUAL;
+        vcRet = VERSION_COMPARE::VERSION_EQUAL;
         for ( INT i = 0; i < 4; i++ )
         {
             if ( wNew[i] > wExist[i] )
             {
-                vcRet = VERSION_NEWER;
+                vcRet = VERSION_COMPARE::VERSION_NEWER;
                 break;
             }
             else if ( wNew[i] < wExist[i] )
             {
-                vcRet = VERSION_OLDER;
+                vcRet = VERSION_COMPARE::VERSION_OLDER;
                 break;
             }
             else
@@ -928,7 +935,7 @@ BOOL CFile::Read( std::string & aData, SIZE_T aDataSize, BOOL aAppend )
 
     if ( m_strReadBuf.size() > 0 )
     {
-        size_t uCopied = min( dwLeft, m_strReadBuf.size() );
+        size_t uCopied = std::min( static_cast<size_t>( dwLeft ), m_strReadBuf.size() );
         aData.append( m_strReadBuf, 0, uCopied );
         dwLeft -= uCopied;
         m_strReadBuf.erase( 0, uCopied );

@@ -72,7 +72,7 @@ VOID TrimStringA( IN OUT std::string & aString, CONST CHAR * aTrimChars );
 BOOL IsBase64SpecialCharA( CHAR aChar );
 BOOL IsBase64CharA( CHAR aChar );
 BOOL IsBase64StringA( CONST CHAR * aStr, SIZE_T aStrLen );
-StringType GetStringTypeA( CONST CHAR * aStr, SIZE_T aStrLen );
+StringType GuessStringTypeA( CONST CHAR * aStr, SIZE_T aStrLen );
 BOOL WildcardMatchW( IN CONST WCHAR * aString, IN CONST WCHAR * aWildcardPattern );
 
 CONST WCHAR * GetPathBaseNameW( IN CONST WCHAR * aFullPath );

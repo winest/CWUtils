@@ -22,6 +22,7 @@ REM %!SUBCOMP!    Subcomponent name             String
 SET "ToolDir=F:\Code\_Tools\WppLog\Windows"
 SET "TmpDir=Temp"
 REM SET "SymbolDir=..\Output\Debug\Win32"
+REM SET "SymbolDir=..\Output\Debug\x64"
 SET "SymbolDir=..\Output\Release\x64"
 SET "LogName=TestCWUtils"
 

@@ -34,7 +34,7 @@ extern "C" {
 
 
 
-typedef enum _StringType    //Lower index generally has higher restriction
+typedef enum class _StringType    //Lower index generally has higher restriction
 {
     STRING_TYPE_START = 0,
     STRING_TYPE_NUM,         //isdigit()
@@ -77,7 +77,7 @@ VOID TrimStringA( IN OUT std::string & aString, CONST CHAR * aTrimChars );
 BOOL IsBase64SpecialCharA( CHAR aChar );
 BOOL IsBase64CharA( CHAR aChar );
 BOOL IsBase64StringA( CONST CHAR * aStr, SIZE_T aStrLen );
-StringType GetStringTypeA( CONST CHAR * aStr, SIZE_T aStrLen );
+StringType GuessStringTypeA( CONST CHAR * aStr, SIZE_T aStrLen );
 BOOL WildcardMatchW( IN CONST WCHAR * aString, IN CONST WCHAR * aWildcardPattern );
 
 
@@ -200,8 +200,8 @@ class CString
     public:
     CString();
     CString( const CHAR * aData, INT aLen = -1 );
-    CString( const CString & aRhs );
-    CString( CString && aRhs );
+    CString( const CString & aRhs ) noexcept;
+    CString( CString && aRhs ) noexcept;
     ~CString();
 
     CString operator+( const CString & aRhs ) const;

@@ -18,7 +18,7 @@ VOID TestGetStringType()
                                "123\xFFisgood" };
     for ( SIZE_T i = 0; i < _countof( aryTest ); i++ )
     {
-        wprintf_s( L"%hs => %u\n", aryTest[i], CWUtils::GetStringTypeA( aryTest[i], strlen( aryTest[i] ) ) );
+        wprintf_s( L"%hs => %u\n", aryTest[i], CWUtils::GuessStringTypeA( aryTest[i], strlen( aryTest[i] ) ) );
     }
 
     wprintf_s( L"\n========== TestGetStringType() Leave ==========\n" );

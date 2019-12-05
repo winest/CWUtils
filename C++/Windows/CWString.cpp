@@ -199,12 +199,14 @@ BOOL CDECL FormatStringW( OUT wstring & aOutString, IN CONST WCHAR * aFormat, ..
 
 VOID ToLower( IN OUT std::string & aString )
 {
-    std::transform( aString.begin(), aString.end(), aString.begin(), std::tolower );
+    std::transform( aString.begin(), aString.end(), aString.begin(),
+                    []( char c ) { return static_cast<char>( std::tolower( c ) ); } );
 }
 
 VOID ToUpper( IN OUT std::string & aString )
 {
-    std::transform( aString.begin(), aString.end(), aString.begin(), std::toupper );
+    std::transform( aString.begin(), aString.end(), aString.begin(),
+                    []( char c ) { return static_cast<char>( std::toupper( c ) ); } );
 }
 
 INT ToInt( CONST CHAR * aStr, SIZE_T aStrLen )
@@ -484,181 +486,181 @@ exit:
 }
 
 
-StringType GetStringTypeA( CONST CHAR * aStr, SIZE_T aStrLen )
+StringType GuessStringTypeA( CONST CHAR * aStr, SIZE_T aStrLen )
 {
-    StringType type = STRING_TYPE_START;
+    StringType type = StringType::STRING_TYPE_START;
 
     for ( SIZE_T i = 0; i < aStrLen; i++ )
     {
         INT c = ( aStr[i] & 0xFF );
         switch ( type )
         {
-            case STRING_TYPE_NUM:
+            case StringType::STRING_TYPE_NUM:
             {
                 if ( false == isdigit( c ) )
                 {
                     if ( isalpha( c ) )
                     {
-                        type = STRING_TYPE_ALPHANUM;
+                        type = StringType::STRING_TYPE_ALPHANUM;
                     }
                     else if ( IsBase64SpecialCharA( static_cast<CHAR>( c ) ) )
                     {
-                        type = STRING_TYPE_BASE64;
+                        type = StringType::STRING_TYPE_BASE64;
                     }
                     else if ( isprint( c ) )
                     {
-                        type = STRING_TYPE_PRINTABLE;
+                        type = StringType::STRING_TYPE_PRINTABLE;
                     }
                     else if ( isspace( c ) )
                     {
-                        type = STRING_TYPE_READABLE;
+                        type = StringType::STRING_TYPE_READABLE;
                     }
                     else
                     {
-                        type = STRING_TYPE_BINARY;
+                        type = StringType::STRING_TYPE_BINARY;
                         goto exit;
                     }
                 }
                 break;
             }
-            case STRING_TYPE_ALPHA:
+            case StringType::STRING_TYPE_ALPHA:
             {
                 if ( false == isalpha( c ) )
                 {
                     if ( isdigit( c ) )
                     {
-                        type = STRING_TYPE_ALPHANUM;
+                        type = StringType::STRING_TYPE_ALPHANUM;
                     }
                     else if ( IsBase64SpecialCharA( static_cast<CHAR>( c ) ) )
                     {
-                        type = STRING_TYPE_BASE64;
+                        type = StringType::STRING_TYPE_BASE64;
                     }
                     else if ( isprint( c ) )
                     {
-                        type = STRING_TYPE_PRINTABLE;
+                        type = StringType::STRING_TYPE_PRINTABLE;
                     }
                     else if ( isspace( c ) )
                     {
-                        type = STRING_TYPE_READABLE;
+                        type = StringType::STRING_TYPE_READABLE;
                     }
                     else
                     {
-                        type = STRING_TYPE_BINARY;
+                        type = StringType::STRING_TYPE_BINARY;
                         goto exit;
                     }
                 }
                 break;
             }
-            case STRING_TYPE_ALPHANUM:
+            case StringType::STRING_TYPE_ALPHANUM:
             {
                 if ( false == isalnum( c ) )
                 {
                     if ( IsBase64SpecialCharA( static_cast<CHAR>( c ) ) )
                     {
-                        type = STRING_TYPE_BASE64;
+                        type = StringType::STRING_TYPE_BASE64;
                     }
                     else if ( isprint( c ) )
                     {
-                        type = STRING_TYPE_PRINTABLE;
+                        type = StringType::STRING_TYPE_PRINTABLE;
                     }
                     else if ( isspace( c ) )
                     {
-                        type = STRING_TYPE_READABLE;
+                        type = StringType::STRING_TYPE_READABLE;
                     }
                     else
                     {
-                        type = STRING_TYPE_BINARY;
+                        type = StringType::STRING_TYPE_BINARY;
                         goto exit;
                     }
                 }
                 break;
             }
-            case STRING_TYPE_BASE64:
+            case StringType::STRING_TYPE_BASE64:
             {
                 if ( false == IsBase64CharA( static_cast<CHAR>( c ) ) )
                 {
                     if ( isprint( c ) )
                     {
-                        type = STRING_TYPE_PRINTABLE;
+                        type = StringType::STRING_TYPE_PRINTABLE;
                     }
                     else if ( isspace( c ) )
                     {
-                        type = STRING_TYPE_READABLE;
+                        type = StringType::STRING_TYPE_READABLE;
                     }
                     else
                     {
-                        type = STRING_TYPE_BINARY;
+                        type = StringType::STRING_TYPE_BINARY;
                         goto exit;
                     }
                 }
                 break;
             }
-            case STRING_TYPE_PRINTABLE:
+            case StringType::STRING_TYPE_PRINTABLE:
             {
                 if ( false == isprint( c ) )
                 {
                     if ( isspace( c ) )
                     {
-                        type = STRING_TYPE_READABLE;
+                        type = StringType::STRING_TYPE_READABLE;
                     }
                     else
                     {
-                        type = STRING_TYPE_BINARY;
+                        type = StringType::STRING_TYPE_BINARY;
                         goto exit;
                     }
                 }
                 break;
             }
-            case STRING_TYPE_READABLE:
+            case StringType::STRING_TYPE_READABLE:
             {
                 if ( false == isprint( c ) && false == isspace( c ) )
                 {
-                    type = STRING_TYPE_BINARY;
+                    type = StringType::STRING_TYPE_BINARY;
                     goto exit;
                 }
                 break;
             }
-            case STRING_TYPE_START:
+            case StringType::STRING_TYPE_START:
             {
                 if ( isdigit( c ) )
                 {
-                    type = STRING_TYPE_NUM;
+                    type = StringType::STRING_TYPE_NUM;
                 }
                 else if ( isalpha( c ) )
                 {
-                    type = STRING_TYPE_ALPHA;
+                    type = StringType::STRING_TYPE_ALPHA;
                 }
                 else if ( IsBase64SpecialCharA( static_cast<CHAR>( c ) ) )
                 {
-                    type = STRING_TYPE_BASE64;
+                    type = StringType::STRING_TYPE_BASE64;
                 }
                 else if ( isprint( c ) )
                 {
-                    type = STRING_TYPE_PRINTABLE;
+                    type = StringType::STRING_TYPE_PRINTABLE;
                 }
                 else if ( isspace( c ) )
                 {
-                    type = STRING_TYPE_READABLE;
+                    type = StringType::STRING_TYPE_READABLE;
                 }
                 else
                 {
-                    type = STRING_TYPE_BINARY;
+                    type = StringType::STRING_TYPE_BINARY;
                     goto exit;
                 }
                 break;
             }
             default:
             {
-                type = STRING_TYPE_BINARY;
+                type = StringType::STRING_TYPE_BINARY;
                 goto exit;
             }
         }
     }
 
     //Special handling for base64 to check it follows the rule
-    if ( STRING_TYPE_BASE64 == type && FALSE == IsBase64StringA( aStr, aStrLen ) )
+    if ( StringType::STRING_TYPE_BASE64 == type && FALSE == IsBase64StringA( aStr, aStrLen ) )
     {
-        type = STRING_TYPE_PRINTABLE;
+        type = StringType::STRING_TYPE_PRINTABLE;
     }
 
 exit:
@@ -667,12 +669,12 @@ exit:
 
 BOOL WildcardMatchW( IN CONST WCHAR * aString, IN CONST WCHAR * aWildcardPattern )
 {
-    enum State
+    enum class State
     {
         Exact,       //Exact match
         Any,         //?
         AnyRepeat    //*
-    } state = Exact;
+    } state = State::Exact;
 
     CONST WCHAR * wzTmp = nullptr;
 
@@ -683,14 +685,14 @@ BOOL WildcardMatchW( IN CONST WCHAR * aString, IN CONST WCHAR * aWildcardPattern
         switch ( *aWildcardPattern )
         {
             case L'*':
-                state = AnyRepeat;
+                state = State::AnyRepeat;
                 wzTmp = aWildcardPattern + 1;
                 break;
             case L'?':
-                state = Any;
+                state = State::Any;
                 break;
             default:
-                state = Exact;
+                state = State::Exact;
                 break;
         }
 
@@ -699,17 +701,17 @@ BOOL WildcardMatchW( IN CONST WCHAR * aString, IN CONST WCHAR * aWildcardPattern
 
         switch ( state )
         {
-            case Exact:
+            case State::Exact:
                 bMatch = ( *aString == *aWildcardPattern );
                 aString++;
                 aWildcardPattern++;
                 break;
-            case Any:
+            case State::Any:
                 bMatch = TRUE;
                 aString++;
                 aWildcardPattern++;
                 break;
-            case AnyRepeat:
+            case State::AnyRepeat:
                 bMatch = TRUE;
                 aString++;
                 if ( *aString == *wzTmp )
@@ -722,9 +724,9 @@ BOOL WildcardMatchW( IN CONST WCHAR * aString, IN CONST WCHAR * aWildcardPattern
 
     switch ( state )
     {
-        case AnyRepeat:
+        case State::AnyRepeat:
             return ( *aString == *wzTmp );
-        case Any:
+        case State::Any:
             return ( *aString == *aWildcardPattern );
         default:
             return ( bMatch && ( *aString == *aWildcardPattern ) );
@@ -1076,18 +1078,18 @@ CString::CString() : m_nLen( 0 ), m_szData( nullptr ) {}
 
 CString::CString( const CHAR * aData, INT aLen )
 {
-    m_nLen = ( aLen < 0 ) ? strlen( aData ) : aLen;
+    m_nLen = ( aLen < 0 ) ? static_cast<INT>( strlen( aData ) ) : aLen;
     m_szData = new CHAR[m_nLen + 1];
     memcpy( m_szData, aData, m_nLen );
     m_szData[m_nLen] = 0;
 }
 
-CString::CString( const CString & aRhs ) : m_nLen( 0 ), m_szData( nullptr )
+CString::CString( const CString & aRhs ) noexcept : m_nLen( 0 ), m_szData( nullptr )
 {
     this->Copy( aRhs );
 }
 
-CString::CString( CString && aRhs ) : m_nLen( 0 ), m_szData( nullptr )
+CString::CString( CString && aRhs ) noexcept : m_nLen( 0 ), m_szData( nullptr )
 {
     //Use std::swap() because of noexcept
     std::swap( m_nLen, aRhs.m_nLen );

@@ -879,9 +879,9 @@ BOOL CDllInjectServer::ReloadCommonConfig()
             }
             else if ( itMap->first == L"WorkerCnt" )
             {
-                m_CommonCfg.ulWorkerCnt =
-                    max( DLL_INJECT_SERVER_WORKER_COUNT_MIN,
-                         min( DLL_INJECT_SERVER_WORKER_COUNT_MAX, wcstoul( itMap->second.c_str(), NULL, 10 ) ) );
+                m_CommonCfg.ulWorkerCnt = std::max(
+                    DLL_INJECT_SERVER_WORKER_COUNT_MIN,
+                    std::min( DLL_INJECT_SERVER_WORKER_COUNT_MAX, wcstoul( itMap->second.c_str(), NULL, 10 ) ) );
             }
             else if ( itMap->first == L"ProcPath" )
             {

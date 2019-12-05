@@ -477,7 +477,7 @@ exit:
 }
 
 
-StringType GetStringTypeA( CONST CHAR * aStr, SIZE_T aStrLen )
+StringType GuessStringTypeA( CONST CHAR * aStr, SIZE_T aStrLen )
 {
     StringType type = STRING_TYPE_START;
 
