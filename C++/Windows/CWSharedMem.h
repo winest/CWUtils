@@ -251,6 +251,179 @@ SIZE_T CSharedMemFileMapping::GetMaxSize()
 #endif
 
 
+template<typename TShmType>
+class CFixedSizeShmQueue
+{
+    public:
+    bool InitWriter( std::string aShmName, size_t aDataSize, size_t aMaxDataCnt );
+    bool InitReader( std::string aShmName, size_t aDataSize, bool aReadFromEnd = true );
+
+    void PushBack( const uint8_t * aData );
+    uint8_t * GetData();
+    void PopFront();
+
+    void Close();
+
+    protected:
+    //      StartPos             LastIdx                  EndIdx
+    //         |                    |                        |
+    //--------------------------------------------------------
+    //| ShmHdr | Data | Data | Data |          Empty         |
+    //--------------------------------------------------------
+    //                       |
+    //                    CurrPos
+    struct ShmHdr
+    {
+        size_t LastIdx;    //No data since LastIdx
+        size_t EndIdx;
+    };
+
+    private:
+    TShmType m_Shm;
+    ShmHdr * m_Hdr;          //Common header, only writer will modify it
+    uint8_t * m_StartPos;    //Used by each process to remember start position
+    uint8_t * m_CurrPos;     //Used by each process to remember current position
+
+    size_t m_DataSize;
+};
+
+
+template<typename TShmType>
+bool CFixedSizeShmQueue<TShmType>::InitWriter( std::string aShmName, size_t aDataSize, size_t aMaxDataCnt )
+{
+    assert( aDataSize > 0 );
+    bool bRet = false;
+
+    do
+    {
+        if ( aMaxDataCnt == 0 )
+        {
+            aMaxDataCnt = ( SIZE_MAX - sizeof( ShmHdr ) ) / aDataSize;
+        }
+        size_t uAllDataSize = aMaxDataCnt * aDataSize;
+        while ( sizeof( ShmHdr ) + uAllDataSize < uAllDataSize )    //Overflow
+        {
+            aMaxDataCnt--;
+            if ( aMaxDataCnt == 0 )
+            {
+                DbgOut( MUST, DBG_UTILS, "Not enough memory to hold data" );
+                break;
+            }
+            uAllDataSize = aMaxDataCnt * aDataSize;
+        }
+        if ( aMaxDataCnt == 0 )
+        {
+            break;
+        }
+
+        if ( !m_Shm.Create( aShmName.c_str(), sizeof( ShmHdr ) + uAllDataSize,
+                            CWUtils::SHARED_MEM_PERM_READ | CWUtils::SHARED_MEM_PERM_WRITE ) )
+        {
+            DbgOut( ERRO, DBG_UTILS, "Failed to create shm. aShmName=%s, Err=%!WINERROR!", aShmName.c_str(),
+                    GetLastError() );
+            break;
+        }
+
+        uint8_t * pMem = static_cast<uint8_t *>( m_Shm.GetData() );
+        m_Hdr = reinterpret_cast<ShmHdr *>( pMem );
+        m_Hdr->LastIdx = 0;
+        m_Hdr->EndIdx = aMaxDataCnt;
+        m_StartPos = pMem + sizeof( ShmHdr );
+        m_CurrPos = m_StartPos;
+        m_DataSize = aDataSize;
+
+        DbgOut( VERB, DBG_UTILS, "aShmName=%s, pMem=0x%p, m_StartPos=0x%p, m_CurrPos=0x%p", aShmName.c_str(), pMem,
+                m_StartPos, m_CurrPos );
+        bRet = true;
+    } while ( 0 );
+
+    return bRet;
+}
+
+template<typename TShmType>
+bool CFixedSizeShmQueue<TShmType>::InitReader( std::string aShmName, size_t aDataSize, bool aReadFromEnd )
+{
+    bool bRet = false;
+
+    do
+    {
+        if ( !m_Shm.Open( aShmName.c_str(), CWUtils::SHARED_MEM_PERM_READ ) )
+        {
+            DbgOut( ERRO, DBG_UTILS, "Failed to create shm. aShmName=%s, Err=%!WINERROR!", aShmName.c_str(),
+                    GetLastError() );
+            break;
+        }
+
+        uint8_t * pMem = static_cast<uint8_t *>( m_Shm.GetData() );
+        m_Hdr = reinterpret_cast<ShmHdr *>( pMem );
+        m_StartPos = pMem + sizeof( ShmHdr );
+        m_CurrPos = ( aReadFromEnd ) ? m_StartPos + ( m_DataSize * m_Hdr->LastIdx ) : m_StartPos;
+        m_DataSize = aDataSize;
+
+        DbgOut( VERB, DBG_UTILS, "aShmName=%s, pMem=0x%p, m_StartPos=0x%p, m_CurrPos=0x%p", aShmName.c_str(), pMem,
+                m_StartPos, m_CurrPos );
+        bRet = true;
+    } while ( 0 );
+
+    return bRet;
+}
+
+template<typename TShmType>
+void CFixedSizeShmQueue<TShmType>::PushBack( const uint8_t * aData )
+{
+    memcpy( m_StartPos + ( m_DataSize * m_Hdr->LastIdx ), aData, m_DataSize );
+
+    uint64_t uNextIdx = m_Hdr->LastIdx + 1;
+    if ( uNextIdx == m_Hdr->EndIdx )
+    {
+        DbgOut( WARN, DBG_UTILS, "Shm is full. Overwrite from beginning. ShmName=%s", m_Shm.GetName().c_str() );
+        uNextIdx = 0;
+    }
+
+    m_Hdr->LastIdx = uNextIdx;
+}
+
+template<typename TShmType>
+uint8_t * CFixedSizeShmQueue<TShmType>::GetData()
+{
+    //wprintf_s( L"Idx=%Iu / %Iu\n", ( m_CurrPos - m_StartPos ) / m_DataSize , m_Hdr->LastIdx );
+    if ( m_CurrPos != m_StartPos + ( m_DataSize * m_Hdr->LastIdx ) )
+    {
+        return m_CurrPos;
+    }
+    else
+    {
+        DbgOut( WARN, DBG_UTILS, "Shm is empty. ShmName=%s", m_Shm.GetName().c_str() );
+        return nullptr;
+    }
+}
+
+template<typename TShmType>
+void CFixedSizeShmQueue<TShmType>::PopFront()
+{
+    if ( m_CurrPos == m_StartPos + ( m_DataSize * m_Hdr->LastIdx ) )
+    {
+        DbgOut( WARN, DBG_UTILS, "Shm is empty. ShmName=%s", m_Shm.GetName().c_str() );
+        return;
+    }
+
+    uint8_t * pNextPos = m_CurrPos + m_DataSize;
+    if ( pNextPos == m_StartPos + ( m_DataSize * m_Hdr->EndIdx ) )
+    {
+        DbgOut( WARN, DBG_UTILS, "Shm is full. Get from beginning. ShmName=%s", m_Shm.GetName().c_str() );
+        pNextPos = m_StartPos;
+    }
+    m_CurrPos = pNextPos;
+}
+
+template<typename TShmType>
+void CFixedSizeShmQueue<TShmType>::Close()
+{
+    m_Shm.Close();
+}
+
+
+
 
 
 
@@ -277,8 +450,8 @@ class CFixedTypeShmQueue
     //                    CurrPos
     struct ShmHdr
     {
-        uint64_t LastIdx;    //No data since LastIdx
-        uint64_t EndIdx;
+        size_t LastIdx;    //No data since LastIdx
+        size_t EndIdx;
     };
 
     private:
@@ -299,8 +472,8 @@ bool CFixedTypeShmQueue<TShmType, TDataType>::InitWriter( std::string aShmName, 
         {
             aMaxDataCnt = ( SIZE_MAX - sizeof( ShmHdr ) ) / sizeof( TDataType );
         }
-        size_t uDataSize = aMaxDataCnt * sizeof( TDataType );
-        while ( sizeof( ShmHdr ) + uDataSize < uDataSize )    //Overflow
+        size_t uAllDataSize = aMaxDataCnt * sizeof( TDataType );
+        while ( sizeof( ShmHdr ) + uAllDataSize < uAllDataSize )    //Overflow
         {
             aMaxDataCnt--;
             if ( aMaxDataCnt == 0 )
@@ -308,14 +481,14 @@ bool CFixedTypeShmQueue<TShmType, TDataType>::InitWriter( std::string aShmName, 
                 DbgOut( MUST, DBG_UTILS, "Not enough memory to hold data" );
                 break;
             }
-            uDataSize = aMaxDataCnt * sizeof( TDataType );
+            uAllDataSize = aMaxDataCnt * sizeof( TDataType );
         }
         if ( aMaxDataCnt == 0 )
         {
             break;
         }
 
-        if ( !m_Shm.Create( aShmName.c_str(), sizeof( ShmHdr ) + uDataSize,
+        if ( !m_Shm.Create( aShmName.c_str(), sizeof( ShmHdr ) + uAllDataSize,
                             CWUtils::SHARED_MEM_PERM_READ | CWUtils::SHARED_MEM_PERM_WRITE ) )
         {
             DbgOut( ERRO, DBG_UTILS, "Failed to create shm. aShmName=%s, Err=%!WINERROR!", aShmName.c_str(),
@@ -323,7 +496,7 @@ bool CFixedTypeShmQueue<TShmType, TDataType>::InitWriter( std::string aShmName, 
             break;
         }
 
-        char * pMem = static_cast<char *>( m_Shm.GetData() );
+        uint8_t * pMem = static_cast<uint8_t *>( m_Shm.GetData() );
         m_Hdr = reinterpret_cast<ShmHdr *>( pMem );
         m_Hdr->LastIdx = 0;
         m_Hdr->EndIdx = aMaxDataCnt;
@@ -352,7 +525,7 @@ bool CFixedTypeShmQueue<TShmType, TDataType>::InitReader( std::string aShmName, 
             break;
         }
 
-        char * pMem = static_cast<char *>( m_Shm.GetData() );
+        uint8_t * pMem = static_cast<uint8_t *>( m_Shm.GetData() );
         m_Hdr = reinterpret_cast<ShmHdr *>( pMem );
         m_StartPos = reinterpret_cast<TDataType *>( pMem + sizeof( ShmHdr ) );
         m_CurrPos = ( aReadFromEnd ) ? &m_StartPos[m_Hdr->LastIdx] : m_StartPos;
@@ -383,7 +556,7 @@ void CFixedTypeShmQueue<TShmType, TDataType>::PushBack( const TDataType & aData 
 template<typename TShmType, typename TDataType>
 TDataType * CFixedTypeShmQueue<TShmType, TDataType>::GetData()
 {
-    //wprintf_s( L"Idx=%Iu / %I64u\n", ( m_CurrPos - m_StartPos ) , m_Hdr->LastIdx );
+    //wprintf_s( L"Idx=%Iu / %Iu\n", ( m_CurrPos - m_StartPos ) , m_Hdr->LastIdx );
     if ( m_CurrPos != &m_StartPos[m_Hdr->LastIdx] )
     {
         return m_CurrPos;

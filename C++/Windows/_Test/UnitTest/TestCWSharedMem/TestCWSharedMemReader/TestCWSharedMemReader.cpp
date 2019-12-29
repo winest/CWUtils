@@ -9,16 +9,18 @@
 #include "_GenerateTmh.h"
 #include "TestCWSharedMemReader.tmh"
 
-CWUtils::CFixedTypeShmQueue<CWUtils::CSharedMemFileMapping, Data> g_Shm;
-int64_t g_Cnt = 0;
-int64_t g_Sum = 0;
+CWUtils::CFixedSizeShmQueue<CWUtils::CSharedMemFileMapping> g_ShmFixedSize;
+CWUtils::CFixedTypeShmQueue<CWUtils::CSharedMemFileMapping, Data> g_ShmFixedType;
+int64_t g_CntFixedSize = 0, g_CntFixedType = 0;
+int64_t g_SumFixedSize = 0, g_SumFixedType = 0;
 bool g_Stop = false;
 void SignalHandler( int aSignal )
 {
     g_Stop = true;
-    g_Shm.Close();
+    g_ShmFixedType.Close();
     wprintf_s( L"SignalHandler=%d\n", aSignal );
-    wprintf_s( L"Cnt=%I64d, Sum=%I64d\n", g_Cnt, g_Sum );
+    wprintf_s( L"CntFixedSize=%I64d, SumFixedSize=%I64d\n", g_CntFixedSize, g_SumFixedSize );
+    wprintf_s( L"CntFixedType=%I64d, SumFixedType=%I64d\n", g_CntFixedType, g_SumFixedType );
     system( "pause" );
     exit( -1 );
 }
@@ -41,29 +43,50 @@ INT wmain( INT aArgc, WCHAR * aArgv[] )
 
     do
     {
-        if ( false == g_Shm.InitReader( "TestShm", false ) )
+        if ( false == g_ShmFixedSize.InitReader( "TestShmFixedSize", sizeof( Data ), false ) )
         {
-            DbgOut( INFO, DBG_TEST, "InitReader() failed. Err=%!WINERROR!", GetLastError() );
+            DbgOut( INFO, DBG_TEST, "TestShmFixedSize InitReader() failed. Err=%!WINERROR!", GetLastError() );
+            break;
+        }
+        if ( false == g_ShmFixedType.InitReader( "TestShmFixedType", false ) )
+        {
+            DbgOut( INFO, DBG_TEST, "TestShmFixedType InitReader() failed. Err=%!WINERROR!", GetLastError() );
             break;
         }
 
-        while ( g_Cnt < 10000 && !g_Stop )
+        while ( ( g_CntFixedSize < 10000 || g_CntFixedType < 10000 ) && !g_Stop )
         {
-            Data * data = g_Shm.GetData();
-            if ( data != nullptr )
+            bool bHasData = false;
+
+            Data * dataFixedSize = reinterpret_cast<Data *>( g_ShmFixedSize.GetData() );
+            if ( dataFixedSize != nullptr )
             {
-                g_Sum += data->Num;
-                g_Shm.PopFront();
-                ++g_Cnt;
+                g_SumFixedSize += dataFixedSize->Num;
+                g_ShmFixedSize.PopFront();
+                ++g_CntFixedSize;
+                bHasData = true;
             }
-            else
+
+            Data * dataFixedType = g_ShmFixedType.GetData();
+            if ( dataFixedType != nullptr )
+            {
+                g_SumFixedType += dataFixedType->Num;
+                g_ShmFixedType.PopFront();
+                ++g_CntFixedType;
+                bHasData = true;
+            }
+
+
+            if ( !bHasData )
             {
                 Sleep( rand() % 5 );
             }
         }
-        g_Shm.Close();
+        g_ShmFixedSize.Close();
+        g_ShmFixedType.Close();
 
-        wprintf_s( L"nSum=%I64d\n", g_Sum );
+        wprintf_s( L"CntFixedSize=%I64d, SumFixedSize=%I64d\n", g_CntFixedSize, g_SumFixedSize );
+        wprintf_s( L"CntFixedType=%I64d, SumFixedType=%I64d\n", g_CntFixedType, g_SumFixedType );
     } while ( 0 );
 
     stopWatch.Stop();
