@@ -29,10 +29,10 @@ class CSharedMemFileMapping
                  UINT32 aPermission = SHARED_MEM_PERM_READ | SHARED_MEM_PERM_WRITE );
     BOOL Open( CONST CHAR * aName, UINT32 aPermission = SHARED_MEM_PERM_READ | SHARED_MEM_PERM_WRITE );
     VOID Close();
-    const std::string & GetName();
+    const std::string & GetName() const;
 
-    VOID * GetData();
-    SIZE_T GetMaxSize();
+    VOID * GetData() const;
+    SIZE_T GetMaxSize() const;
 
     private:
     SIZE_T m_uMaxSize;
@@ -228,18 +228,18 @@ VOID CSharedMemFileMapping::Close()
     }
 }
 
-const std::string & CSharedMemFileMapping::GetName()
+const std::string & CSharedMemFileMapping::GetName() const
 {
     return m_strName;
 }
 
 
-VOID * CSharedMemFileMapping::GetData()
+VOID * CSharedMemFileMapping::GetData() const
 {
     return m_pData;
 }
 
-SIZE_T CSharedMemFileMapping::GetMaxSize()
+SIZE_T CSharedMemFileMapping::GetMaxSize() const
 {
     return m_uMaxSize;
 }
@@ -256,10 +256,10 @@ class CFixedSizeShmQueue
 {
     public:
     bool InitWriter( std::string aShmName, size_t aDataSize, size_t aMaxDataCnt );
-    bool InitReader( std::string aShmName, size_t aDataSize, bool aReadFromEnd = true );
+    bool InitReader( std::string aShmName, size_t aDataSize, bool aReadFromEnd );
 
     void PushBack( const uint8_t * aData );
-    uint8_t * GetData();
+    uint8_t * GetData() const;
     void PopFront();
 
     void Close();
@@ -384,7 +384,7 @@ void CFixedSizeShmQueue<TShmType>::PushBack( const uint8_t * aData )
 }
 
 template<typename TShmType>
-uint8_t * CFixedSizeShmQueue<TShmType>::GetData()
+uint8_t * CFixedSizeShmQueue<TShmType>::GetData() const
 {
     //wprintf_s( L"Idx=%Iu / %Iu\n", ( m_CurrPos - m_StartPos ) / m_DataSize , m_Hdr->LastIdx );
     if ( m_CurrPos != m_StartPos + ( m_DataSize * m_Hdr->LastIdx ) )
@@ -432,10 +432,10 @@ class CFixedTypeShmQueue
 {
     public:
     bool InitWriter( std::string aShmName, size_t aMaxDataCnt );
-    bool InitReader( std::string aShmName, bool aReadFromEnd = true );
+    bool InitReader( std::string aShmName, bool aReadFromEnd );
 
     void PushBack( const TDataType & aData );
-    TDataType * GetData();
+    TDataType * GetData() const;
     void PopFront();
 
     void Close();
@@ -554,7 +554,7 @@ void CFixedTypeShmQueue<TShmType, TDataType>::PushBack( const TDataType & aData 
 }
 
 template<typename TShmType, typename TDataType>
-TDataType * CFixedTypeShmQueue<TShmType, TDataType>::GetData()
+TDataType * CFixedTypeShmQueue<TShmType, TDataType>::GetData() const
 {
     //wprintf_s( L"Idx=%Iu / %Iu\n", ( m_CurrPos - m_StartPos ) , m_Hdr->LastIdx );
     if ( m_CurrPos != &m_StartPos[m_Hdr->LastIdx] )

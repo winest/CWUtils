@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CWService.h"
+#include <algorithm>
 
 namespace CWUtils
 {
@@ -101,8 +102,8 @@ BOOL _WaitForServiceState( SC_HANDLE aService, DWORD aDesiredState, DWORD aTimeo
         }
 
         //Wait the specified period of time
-        DWORD dwWaitHint = svcStatus.dwWaitHint / 10;              //Poll 1/10 of the wait hint
-        dwWaitHint = min( 10 * 1000, max( 1000, dwWaitHint ) );    //Sleep 1~10 seconds
+        DWORD dwWaitHint = svcStatus.dwWaitHint / 10;    //Poll 1/10 of the wait hint
+        dwWaitHint = std::min( 10 * 1000, std::max( 1000, static_cast<int>( dwWaitHint ) ) );    //Sleep 1~10 seconds
         Sleep( dwWaitHint );
     }
 
