@@ -10,4 +10,18 @@
 *.vcxproj text eol=crlf
 *.vcxproj.filters text eol=crlf
 
+*.exe binary
+*.dll binary
+*.pdb binary
+*.zip binary
+*.rar binary
+*.tar.gz binary
+*.jpg binary
+*.png binary
+*.ico binary
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.vsdx binary
 *.ocx binary
+*.etl binary

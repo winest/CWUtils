@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * Copyright (c) 2009-2020, ChienWei Hung <winestwinest@gmail.com>
  * CWUtils is published under the BSD-3-Clause license.
  *
- * CWUtils is a set of standalone APIs for developers to speed up their 
- * programming. It should be very easy to port them to other projects or 
- * learn how to implement things on different languages and platforms. 
+ * CWUtils is a set of standalone APIs for developers to speed up their
+ * programming. It should be very easy to port them to other projects or
+ * learn how to implement things on different languages and platforms.
  *
  * The latest version can be found at https://github.com/winest/CWUtils
  */
@@ -53,7 +53,7 @@ CWUtils.StringToHexDump = CWUtils.StringToHexDump || function( aString , aBytesP
                 }
                 break;
             }
-            
+
             //if ( CWUtils.m_lookup32[aString.charCodeAt(nCurr)] )
             //{
             //    WScript.Echo( nCurr + " => " + aString.charCodeAt(nCurr) + " => " + (aString.charCodeAt(nCurr) & 0xFF) + " => " + CWUtils.m_lookup32[aString.charCodeAt(nCurr) & 0xFF].toString(16) + " => " + CWUtils.m_lookup32[50].toString(16) );
@@ -84,8 +84,8 @@ CWUtils.StringToHexDump = CWUtils.StringToHexDump || function( aString , aBytesP
                 }
                 break;
             }
-            
-            var code = aString.charCodeAt( nCurr );            
+
+            var code = aString.charCodeAt( nCurr );
             strBuilder += ((code >= 0x0000 && code <= 0x001f) || (code >= 0x007f && code <= 0x009f)) ? "." : aString.charAt(nCurr);
         }
         strBuilder += "\n";

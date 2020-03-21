@@ -19,7 +19,7 @@ function LoadJs( aJsPath )
 eval( LoadJs( "..\\CWString.js" ) );
 
 //Test functions
-WScript.Echo( "CWUtils.StringToHexDump( \"12345\" + String.fromCharCode(0) + \"789\\n\\n\\n\\n123456\" ) return:\n" + 
+WScript.Echo( "CWUtils.StringToHexDump( \"12345\" + String.fromCharCode(0) + \"789\\n\\n\\n\\n123456\" ) return:\n" +
               CWUtils.StringToHexDump( "12345" + String.fromCharCode(0) + "789\n\n\n\n123456" ) );
 
 

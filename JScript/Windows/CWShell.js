@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * Copyright (c) 2009-2020, ChienWei Hung <winestwinest@gmail.com>
  * CWUtils is published under the BSD-3-Clause license.
  *
- * CWUtils is a set of standalone APIs for developers to speed up their 
- * programming. It should be very easy to port them to other projects or 
- * learn how to implement things on different languages and platforms. 
+ * CWUtils is a set of standalone APIs for developers to speed up their
+ * programming. It should be very easy to port them to other projects or
+ * learn how to implement things on different languages and platforms.
  *
  * The latest version can be found at https://github.com/winest/CWUtils
  */
@@ -35,13 +35,13 @@ CWUtils.IsX86 = CWUtils.IsX86 || function()
 CWUtils.Exec = CWUtils.Exec || function( aCmd , aWaitEnd , aWaitEndOutput , aPrintWhileWaitEnd )
 {
     aWaitEnd = ( aWaitEnd ) ? true : false;
-    if ( aWaitEndOutput 
+    if ( aWaitEndOutput
          //&& Object.prototype.toString.call( aWaitEndOutput ) === "[object Array]"         //Don't check it so programmer can find bug when developing
        )
     {
         aWaitEndOutput.length = 0;
     }
-    
+
     //Return a WshScriptExec object, refer to http://msdn.microsoft.com/en-us/library/2f38xsxe(v=vs.84).aspx
     var execObj = CWUtils.WshShell.Exec( aCmd );
     if ( true == aWaitEnd )
@@ -95,7 +95,7 @@ CWUtils.RunCmd = CWUtils.RunCmd || function( aCmd , aHideWindow , aWaitEnd )
     // 9: Activates and displays the window. If the window is minimized or maximized, the system restores it to its original size and position. An application should specify this flag when restoring a minimized window.
     // 10: Sets the show-state based on the state of the program that started the application.
     var nWindowStyle = ( aHideWindow ) ? 0 : 8;
-    aWaitEnd = ( aWaitEnd ) ? true : false;    
+    aWaitEnd = ( aWaitEnd ) ? true : false;
     return CWUtils.WshShell.Run( aCmd , nWindowStyle , aWaitEnd );
 };
 
@@ -142,7 +142,7 @@ CWUtils.DeleteReg = CWUtils.DeleteReg || function( aValName , aIsKey )
 
     try
     {
-        
+
         CWUtils.WshShell.RegDelete( aValName );
         return true;
     }

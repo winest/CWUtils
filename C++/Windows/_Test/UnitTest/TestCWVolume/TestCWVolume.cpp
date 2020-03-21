@@ -343,7 +343,7 @@ INT WINAPI WinMain( HINSTANCE aHInstance, HINSTANCE aHPrevInstance, LPSTR aCmdLi
     wndClass.lpszClassName = szClassName;
     wndClass.hIconSm = LoadIcon( NULL, IDI_APPLICATION );
 
-    if ( !RegisterClassEx( &wndClass ) )
+    if ( ! RegisterClassEx( &wndClass ) )
     {
         CWUtils::ShowDebugMsg( L"Error: failed to register wndClass" );
         return -1;
@@ -353,7 +353,7 @@ INT WINAPI WinMain( HINSTANCE aHInstance, HINSTANCE aHPrevInstance, LPSTR aCmdLi
     }
 
     /*
-HWND CreateWindowEx(          
+HWND CreateWindowEx(
     DWORD dwExStyle ,
     LPCTSTR lpClassName, LPCTSTR lpWindowName ,
     DWORD dwStyle ,
@@ -374,16 +374,16 @@ HWND CreateWindowEx(
     UpdateWindow( hWnd );
 
     /*
-BOOL GetMessage( LPMSG lpMsg , HWND hWnd , UINT wMsgFilterMin , UINT wMsgFilterMax ); 
+BOOL GetMessage( LPMSG lpMsg , HWND hWnd , UINT wMsgFilterMin , UINT wMsgFilterMax );
 
 Return value:
 If the function retrieves a message other than WM_QUIT, the return value is nonzero.
-If the function retrieves the WM_QUIT message, the return value is zero. 
+If the function retrieves the WM_QUIT message, the return value is zero.
 If there is an error, the return value is -1. To get extended error information, call GetLastError.
 */
     while ( GetMessage( &msg, NULL, 0, 0 ) > 0 )
     {
-        if ( !IsDialogMessage( hWnd, &msg ) )
+        if ( ! IsDialogMessage( hWnd, &msg ) )
         {
             TranslateMessage( &msg );
             DispatchMessage( &msg );

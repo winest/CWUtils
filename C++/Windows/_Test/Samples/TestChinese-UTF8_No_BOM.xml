@@ -5,7 +5,7 @@
     <child myAttr="1234">Markup is &lt;escaped&gt; for this string</child>
     <anotherChild>&#x61;</anotherChild>
     <![CDATA[This is CDATA text.]]>
-    <!--This is a comment 
+    <!--This is a comment
     "湯姆" with different encoding
     Unicode: U+6E6F U+59C6
     UTF-8: E6 B9 AF E5 A7 86

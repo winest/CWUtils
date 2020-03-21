@@ -25,7 +25,7 @@
     </Function>
     <Function name="StopDriver">
         <Argument name="aDriverName"></Argument>
-        <Comment>Stop a driver</Comment>        
+        <Comment>Stop a driver</Comment>
         <Implementation>
             WshShell.Run( "net stop \"" + aDriverName + "\"" );
         </Implementation>

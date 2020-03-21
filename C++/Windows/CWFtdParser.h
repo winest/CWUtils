@@ -1,12 +1,12 @@
 #pragma once
 
 /*
- * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * Copyright (c) 2009-2020, ChienWei Hung <winestwinest@gmail.com>
  * CWUtils is published under the BSD-3-Clause license.
  *
- * CWUtils is a set of standalone APIs for developers to speed up their 
- * programming. It should be very easy to port them to other projects or 
- * learn how to implement things on different languages and platforms. 
+ * CWUtils is a set of standalone APIs for developers to speed up their
+ * programming. It should be very easy to port them to other projects or
+ * learn how to implement things on different languages and platforms.
  *
  * The latest version can be found at https://github.com/winest/CWUtils
  */
@@ -83,7 +83,7 @@ typedef enum _FtdPartId
     FTD_PART_ID_FTDC_END
 } FtdPartId;
 
-#define FTD_FLAG_NONE 0x0
+#define FTD_FLAG_NONE            0x0
 #define FTD_FLAG_FTDC_COMPRESSED 0x1
 
 namespace CWUtils

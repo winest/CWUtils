@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * Copyright (c) 2009-2020, ChienWei Hung <winestwinest@gmail.com>
  * CWUtils is published under the BSD-3-Clause license.
  *
- * CWUtils is a set of standalone APIs for developers to speed up their 
- * programming. It should be very easy to port them to other projects or 
- * learn how to implement things on different languages and platforms. 
+ * CWUtils is a set of standalone APIs for developers to speed up their
+ * programming. It should be very easy to port them to other projects or
+ * learn how to implement things on different languages and platforms.
  *
  * The latest version can be found at https://github.com/winest/CWUtils
  */
@@ -14,11 +14,11 @@ using System.Collections;
 using System.IO;
 using System.Text;
 using System.Threading;
- 
+
 namespace CWUtils
 {
     class CLogFile
-    {   
+    {
         private static CLogFile m_self = new CLogFile();
         public static CLogFile GetInstance()
         {
@@ -191,7 +191,7 @@ namespace CWUtils
                     aBuf = "<NULL>";
                 }
                 lock( this.m_twFile )
-                {                    
+                {
                     this.m_twFile.WriteLine( "[MUST][" + aFuncName + "] " + aBuf );
                     if ( 0 == this.m_nFlushTime )
                     {
@@ -341,13 +341,13 @@ namespace CWUtils
     {
         private Hashtable m_mapKeyVals = new Hashtable();
         private String m_strIniPath = string.Empty;
- 
+
         private struct SectionPair
         {
             public String strSection;
             public String strKey;
         }
- 
+
         public CIniParser() {}
         ~CIniParser() {}
 
@@ -355,7 +355,7 @@ namespace CWUtils
         {
             return m_strIniPath;
         }
-        
+
         public bool ParseIni( String aIniPath , Encoding aEncoding )
         {
             if ( false == File.Exists(aIniPath) )
@@ -369,10 +369,10 @@ namespace CWUtils
             String strLine = null;
             String strCurrentSection = String.Empty;
             String [] pairKeyVal = null;
- 
+
             m_strIniPath = aIniPath;
             m_mapKeyVals.Clear();
- 
+
             try
             {
                 fsFile = new FileStream( aIniPath , FileMode.Open , FileAccess.Read );
@@ -396,7 +396,7 @@ namespace CWUtils
                         else
                         {
                             pairKeyVal = strLine.Split( new char[] { '=' } , 2 );
- 
+
                             SectionPair sectionPair;
                             sectionPair.strSection = strCurrentSection;
                             sectionPair.strKey = pairKeyVal[0];
@@ -434,7 +434,7 @@ namespace CWUtils
             }
             return bRet;
         }
- 
+
 
 
         public void SetValue( String aSection , String aKey , String aVal )
@@ -442,10 +442,10 @@ namespace CWUtils
             SectionPair sectionPair;
             sectionPair.strSection = aSection.ToUpper();
             sectionPair.strKey = aKey.ToUpper();
- 
+
             if ( m_mapKeyVals.ContainsKey(sectionPair) )
             {
-                m_mapKeyVals.Remove( sectionPair ); 
+                m_mapKeyVals.Remove( sectionPair );
             }
             m_mapKeyVals.Add( sectionPair , aVal );
         }
@@ -455,7 +455,7 @@ namespace CWUtils
             SectionPair sectionPair;
             sectionPair.strSection = aSection.ToUpper();
             sectionPair.strKey = aKey.ToUpper();
- 
+
             if ( m_mapKeyVals.ContainsKey(sectionPair) )
             {
                 return (String)m_mapKeyVals[sectionPair];
@@ -465,7 +465,7 @@ namespace CWUtils
                 return String.Empty;
             }
         }
- 
+
 
 
         public void DeleteSectionKey( String aSection , String aKey )
@@ -473,14 +473,14 @@ namespace CWUtils
             SectionPair sectionPair;
             sectionPair.strSection = aSection.ToUpper();
             sectionPair.strKey = aKey.ToUpper();
- 
+
             m_mapKeyVals.Remove( sectionPair );
         }
 
         public String[] GetSectionKeys( String aSection )
         {
             ArrayList keys = new ArrayList();
- 
+
             foreach ( SectionPair pair in m_mapKeyVals.Keys )
             {
                 if ( pair.strSection == aSection.ToUpper() )
@@ -488,11 +488,11 @@ namespace CWUtils
                     keys.Add( pair.strKey );
                 }
             }
- 
+
             return (String[])keys.ToArray( typeof(String) );
         }
-  
-        
+
+
 
         public String[] GetSections()
         {
@@ -507,7 +507,7 @@ namespace CWUtils
             }
             return (String[])sections.ToArray( typeof(String) );
         }
- 
+
 
 
         public bool SaveIni( String aIniPath )
@@ -520,7 +520,7 @@ namespace CWUtils
                 foreach ( String section in sections )
                 {
                     twFile.WriteLine( "[" + section + "]" );
- 
+
                     foreach ( SectionPair sectionPair in m_mapKeyVals.Keys )
                     {
                         if ( sectionPair.strSection == section )

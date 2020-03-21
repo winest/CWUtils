@@ -1,12 +1,12 @@
 #pragma once
 
 /*
- * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * Copyright (c) 2009-2020, ChienWei Hung <winestwinest@gmail.com>
  * CWUtils is published under the BSD-3-Clause license.
  *
- * CWUtils is a set of standalone APIs for developers to speed up their 
- * programming. It should be very easy to port them to other projects or 
- * learn how to implement things on different languages and platforms. 
+ * CWUtils is a set of standalone APIs for developers to speed up their
+ * programming. It should be very easy to port them to other projects or
+ * learn how to implement things on different languages and platforms.
  *
  * The latest version can be found at https://github.com/winest/CWUtils
  */
@@ -355,15 +355,15 @@ void CMatrix<TYPE>::EigenV2x2( TYPE * aEigenvalue ) const
 }
 
 /*
-# Get eigenvalues and eigenvectors of a real symmetric matrix 
+# Get eigenvalues and eigenvectors of a real symmetric matrix
 #
 # Algorithm:
 # 1. get a nonzero and non-diagonal element a[i,j] of matrix A, usually
-#    the maximun absolute value of non-diagonal elements of A (max(A));  
-# 2. give sin(theta) and cos(theta) by 
+#    the maximun absolute value of non-diagonal elements of A (max(A));
+# 2. give sin(theta) and cos(theta) by
 #    ( a[j,j]-a[i,i] )*sin(2*theta) + 2*a[i,j]*cos(2*theta) = 0 ;
-#    => tan(2*theta) = 2*a[i,j]/(a[i,i]-a[j,j]) 
-#    => theta = arctan(2*a[i,j]/(a[i,i]-a[j,j]))/2 
+#    => tan(2*theta) = 2*a[i,j]/(a[i,i]-a[j,j])
+#    => theta = arctan(2*a[i,j]/(a[i,i]-a[j,j]))/2
 # 3. get elements of a new matrix A1(a1[i,j]) by
 #    a1[i,i] = a[i,i]*cos^2(theta) + a[j,j]*sin^2(theta) + 2*a[i,j]*cos(theta)*sin(theta)
 #    a1[j,j] = a[i,i]*sin^2(theta) + a[j,j]*cos^2(theta) - 2*a[i,j]*cos(theta)*sin(theta)
@@ -371,7 +371,7 @@ void CMatrix<TYPE>::EigenV2x2( TYPE * aEigenvalue ) const
 #    a1[j,k] = a1[k,j] = -a[i,k]*sin(theta) + a[j,k]*cos(theta)      ( k!=i,j )
 #    a1[k,m] = a1[m,k] = a[m,k]                                  ( m,k != i,j )
 #    a1[i,j] = a1[j,i] = { (a[j,j]-a[i,i])*sin(2*theta) }/2 + a[i,j]*(cos^2(theta) - sin^2(theta))
-# 4. let A1 be the substitution of A, repeat step 1,2,3 and get A2, and A3,A4,...,An can be 
+# 4. let A1 be the substitution of A, repeat step 1,2,3 and get A2, and A3,A4,...,An can be
 #    obtained by the same way. Calculation ceases if max(An) is less than the given threshold.
 */
 template<class TYPE>

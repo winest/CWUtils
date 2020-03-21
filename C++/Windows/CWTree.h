@@ -1,12 +1,12 @@
 #pragma once
 
 /*
- * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * Copyright (c) 2009-2020, ChienWei Hung <winestwinest@gmail.com>
  * CWUtils is published under the BSD-3-Clause license.
  *
- * CWUtils is a set of standalone APIs for developers to speed up their 
- * programming. It should be very easy to port them to other projects or 
- * learn how to implement things on different languages and platforms. 
+ * CWUtils is a set of standalone APIs for developers to speed up their
+ * programming. It should be very easy to port them to other projects or
+ * learn how to implement things on different languages and platforms.
  *
  * The latest version can be found at https://github.com/winest/CWUtils
  */
@@ -15,69 +15,56 @@
 
 namespace CWUtils
 {
-
-
 //Create a mapper from CHAR to index according to the min CHAR set
-#define CHAR_SET_SIZE   256
+#define CHAR_SET_SIZE 256
 class CCharMap
 {
-    public :
-        CCharMap( BOOL aCaseSensitive , const CHAR * aString , SIZE_T aStrSize ) : m_bCase(TRUE) , m_uTableSize(0)
+    public:
+    CCharMap( BOOL aCaseSensitive, const CHAR * aString, SIZE_T aStrSize ) : m_bCase( TRUE ), m_uTableSize( 0 )
+    {
+        m_bCase = aCaseSensitive;
+        m_uTableSize = 0;
+
+        bool aryCharEnable[CHAR_SET_SIZE] = {};
+
+        for ( SIZE_T i = 0; i < sizeof( m_aryCaseMap ); i++ )
         {
-            m_bCase = aCaseSensitive;
-            m_uTableSize = 0;
-
-            bool aryCharEnable[CHAR_SET_SIZE] = {};
-
-            for ( SIZE_T i = 0 ; i < sizeof(m_aryCaseMap) ; i++ )
-            {
-                m_aryCaseMap[i] = ( aCaseSensitive ) ? (UCHAR)i : (UCHAR)tolower( i ); //Map CHAR according to case sensitive/insensitive
-            }
-
-            for ( SIZE_T i = 0 ; i < aStrSize ; i++ )
-            {
-                aryCharEnable[m_aryCaseMap[aString[i]]] = true; //Include the input CHAR
-            }
-
-            for ( INT i = 0 ; i < sizeof(aryCharEnable) ; i++ )
-            {
-                if ( aryCharEnable[i] )
-                {
-                    m_aryCharIndexMap[i] = (INT)m_uTableSize++; //Save the index of included CHAR
-                }
-                else
-                {
-                    m_aryCharIndexMap[i] = -1;           //-1 means this CHAR is not in the table
-                }
-            }
-        }
-        inline SIZE_T GetTableSize()
-        {
-            return m_uTableSize;
-        }
-        inline INT GetIndex( CHAR aChar )
-        {
-            _ASSERT( (UCHAR)aChar <= CHAR_SET_SIZE &&
-                     m_aryCaseMap[(UCHAR)aChar] <= CHAR_SET_SIZE );
-            return m_aryCharIndexMap[m_aryCaseMap[(UCHAR)aChar]]; //Return the mapped index
+            m_aryCaseMap[i] = ( aCaseSensitive )
+                                  ? (UCHAR)i
+                                  : (UCHAR)tolower( i );    //Map CHAR according to case sensitive/insensitive
         }
 
-        
-    private :
-        UCHAR m_aryCaseMap[CHAR_SET_SIZE];
-        INT m_aryCharIndexMap[CHAR_SET_SIZE];
-        BOOL m_bCase;
-        SIZE_T m_uTableSize;
+        for ( SIZE_T i = 0; i < aStrSize; i++ )
+        {
+            aryCharEnable[m_aryCaseMap[aString[i]]] = true;    //Include the input CHAR
+        }
+
+        for ( INT i = 0; i < sizeof( aryCharEnable ); i++ )
+        {
+            if ( aryCharEnable[i] )
+            {
+                m_aryCharIndexMap[i] = (INT)m_uTableSize++;    //Save the index of included CHAR
+            }
+            else
+            {
+                m_aryCharIndexMap[i] = -1;    //-1 means this CHAR is not in the table
+            }
+        }
+    }
+    inline SIZE_T GetTableSize() { return m_uTableSize; }
+    inline INT GetIndex( CHAR aChar )
+    {
+        _ASSERT( (UCHAR)aChar <= CHAR_SET_SIZE && m_aryCaseMap[(UCHAR)aChar] <= CHAR_SET_SIZE );
+        return m_aryCharIndexMap[m_aryCaseMap[(UCHAR)aChar]];    //Return the mapped index
+    }
+
+
+    private:
+    UCHAR m_aryCaseMap[CHAR_SET_SIZE];
+    INT m_aryCharIndexMap[CHAR_SET_SIZE];
+    BOOL m_bCase;
+    SIZE_T m_uTableSize;
 };
-
-
-
-
-
-
-
-
-
 
 
 
@@ -87,79 +74,89 @@ class CCharMap
 template<typename T>
 class CPrefixTree
 {
-        typedef struct _Node
-        {
-            _Node() : bLeaf(FALSE) , data() , pTable(NULL) {}
-            BOOL bLeaf;
-            T data;
-            _Node ** pTable;
-        } Node;
+    typedef struct _Node
+    {
+        _Node() : bLeaf( FALSE ), data(), pTable( NULL ) {}
+        BOOL bLeaf;
+        T data;
+        _Node ** pTable;
+    } Node;
 
-    private :
-        CCharMap *  m_CharMap;
-        Node *      m_RootNode;
+    private:
+    CCharMap * m_CharMap;
+    Node * m_RootNode;
 
-    private :
-        Node ** AllocateTable();
-        VOID    FreeTable( Node * pRootNode );
+    private:
+    Node ** AllocateTable();
+    VOID FreeTable( Node * pRootNode );
 
-    public :
-        enum
-        {
-            HIT = 0,   //The optimal result is found in given data
-            MISS ,     //No result match in given data
-            MORE_ONE , //There is no result found in given data for the time being, more data is needed to determine the final result
-            MORE_OPT   //Only happen with SearchShortest(). There is a sub-optimal result found in given data, to determine optimal result, more data is needed
-        };
+    public:
+    enum
+    {
+        HIT = 0,    //The optimal result is found in given data
+        MISS,       //No result match in given data
+        MORE_ONE,    //There is no result found in given data for the time being, more data is needed to determine the final result
+        MORE_OPT    //Only happen with SearchShortest(). There is a sub-optimal result found in given data, to determine optimal result, more data is needed
+    };
 
-        CPrefixTree( BOOL aCaseSensitive , std::map<std::string , T> & aKeyValMap );
-        ~CPrefixTree();
+    CPrefixTree( BOOL aCaseSensitive, std::map<std::string, T> & aKeyValMap );
+    ~CPrefixTree();
 
-        //Returns:   CPrefixTree<T>::HIT, CPrefixTree<T>::MISS or CPrefixTree<T>::MORE_ONE
-        //Parameter: VOID * aBegin         The pointer used for continue previous search.
-        //Parameter: VOID ** aNextBegin    The pointer used to save current status for the next continuous search.
-        //Parameter: const CHAR * aBuf     The string for key
-        //Parameter: SIZE_T aBufSize           The length of string (not including null terminator)
-        //Parameter: SIZE_T & aMatchSize    The processed length only for current search. (not include previous processed length)
-        //Parameter: T & data              The matching result, will be set if return code is CPrefixTree<T>::HIT
-        INT SearchShortest( VOID * aBegin , VOID ** aNextBegin , const CHAR * aBuf , SIZE_T aBufSize , SIZE_T & aMatchSize , T & data );
-        INT SearchShortest( const CHAR * aBuf , SIZE_T aBufSize , SIZE_T & aMatchSize , T & data );
-        INT SearchShortest( const CHAR * aBuf , SIZE_T aBufSize , T & data );
+    //Returns:   CPrefixTree<T>::HIT, CPrefixTree<T>::MISS or CPrefixTree<T>::MORE_ONE
+    //Parameter: VOID * aBegin         The pointer used for continue previous search.
+    //Parameter: VOID ** aNextBegin    The pointer used to save current status for the next continuous search.
+    //Parameter: const CHAR * aBuf     The string for key
+    //Parameter: SIZE_T aBufSize           The length of string (not including null terminator)
+    //Parameter: SIZE_T & aMatchSize    The processed length only for current search. (not include previous processed length)
+    //Parameter: T & data              The matching result, will be set if return code is CPrefixTree<T>::HIT
+    INT SearchShortest( VOID * aBegin,
+                        VOID ** aNextBegin,
+                        const CHAR * aBuf,
+                        SIZE_T aBufSize,
+                        SIZE_T & aMatchSize,
+                        T & data );
+    INT SearchShortest( const CHAR * aBuf, SIZE_T aBufSize, SIZE_T & aMatchSize, T & data );
+    INT SearchShortest( const CHAR * aBuf, SIZE_T aBufSize, T & data );
 
-        //Returns:   CPrefixTree<T>::HIT, CPrefixTree<T>::MISS, CPrefixTree<T>::MORE_ONE or CPrefixTree<T>::MORE_OPT
-        //Parameter: VOID * aBegin         The pointer used for continue previous search.
-        //Parameter: VOID ** aNextBegin    The pointer used to save current status for the next continuous search.
-        //Parameter: const CHAR * aBuf     The string for key
-        //Parameter: SIZE_T aBufSize           The length of string (not including null terminator)
-        //Parameter: SIZE_T & aMatchSize    The processed length only for current search. (not include previous processed length)
-        //Parameter: T & data              The matching result, will be set if return code is CPrefixTree<T>::HIT or CPrefixTree<T>::MORE_OPT
-        INT SearchLongest( VOID * aBegin , VOID ** aNextBegin , const CHAR * aBuf , SIZE_T aBufSize , SIZE_T & aMatchSize , T & data );
-        INT SearchLongest( const CHAR * aBuf , SIZE_T aBufSize , SIZE_T & aMatchSize , T & data );
-        INT SearchLongest( const CHAR * aBuf , SIZE_T aBufSize , T & data );
+    //Returns:   CPrefixTree<T>::HIT, CPrefixTree<T>::MISS, CPrefixTree<T>::MORE_ONE or CPrefixTree<T>::MORE_OPT
+    //Parameter: VOID * aBegin         The pointer used for continue previous search.
+    //Parameter: VOID ** aNextBegin    The pointer used to save current status for the next continuous search.
+    //Parameter: const CHAR * aBuf     The string for key
+    //Parameter: SIZE_T aBufSize           The length of string (not including null terminator)
+    //Parameter: SIZE_T & aMatchSize    The processed length only for current search. (not include previous processed length)
+    //Parameter: T & data              The matching result, will be set if return code is CPrefixTree<T>::HIT or CPrefixTree<T>::MORE_OPT
+    INT SearchLongest( VOID * aBegin,
+                       VOID ** aNextBegin,
+                       const CHAR * aBuf,
+                       SIZE_T aBufSize,
+                       SIZE_T & aMatchSize,
+                       T & data );
+    INT SearchLongest( const CHAR * aBuf, SIZE_T aBufSize, SIZE_T & aMatchSize, T & data );
+    INT SearchLongest( const CHAR * aBuf, SIZE_T aBufSize, T & data );
 };
 
 template<typename T>
-CPrefixTree<T>::CPrefixTree( BOOL aCaseSensitive , std::map<std::string , T> & aKeyValMap )
+CPrefixTree<T>::CPrefixTree( BOOL aCaseSensitive, std::map<std::string, T> & aKeyValMap )
 {
     std::string strCharSet;
-    m_RootNode = new (std::nothrow) Node();
+    m_RootNode = new ( std::nothrow ) Node();
 
     //Initialize mapper to contains all possible characters
-    for ( std::map<std::string , T>::iterator it = aKeyValMap.begin() ; it != aKeyValMap.end() ; it++ )
+    for ( std::map<std::string, T>::iterator it = aKeyValMap.begin(); it != aKeyValMap.end(); it++ )
     {
         strCharSet.append( it->first );
     }
-    m_CharMap = new (std::nothrow) CCharMap( aCaseSensitive , strCharSet.c_str() , strCharSet.length() );
+    m_CharMap = new ( std::nothrow ) CCharMap( aCaseSensitive, strCharSet.c_str(), strCharSet.length() );
 
     //Initialize search tree
     if ( ! aKeyValMap.empty() )
     {
         m_RootNode->pTable = AllocateTable();
-        for ( std::map<std::string , T>::iterator it = aKeyValMap.begin() ; it != aKeyValMap.end() ; it++ )
+        for ( std::map<std::string, T>::iterator it = aKeyValMap.begin(); it != aKeyValMap.end(); it++ )
         {
             Node * pCurNode = m_RootNode;
             SIZE_T uCurSize = it->first.size();
-            for ( const CHAR* pc = it->first.c_str() ; uCurSize > 0 ; uCurSize-- , pc++ )
+            for ( const CHAR * pc = it->first.c_str(); uCurSize > 0; uCurSize--, pc++ )
             {
                 if ( NULL == pCurNode->pTable )
                 {
@@ -170,7 +167,7 @@ CPrefixTree<T>::CPrefixTree( BOOL aCaseSensitive , std::map<std::string , T> & a
                 _ASSERT( 0 <= nIndex && nIndex < CHAR_SET_SIZE );
                 if ( NULL == pCurNode->pTable[nIndex] )
                 {
-                    pCurNode->pTable[nIndex] = new (std::nothrow) Node();
+                    pCurNode->pTable[nIndex] = new ( std::nothrow ) Node();
                 }
 
                 pCurNode = pCurNode->pTable[nIndex];
@@ -195,23 +192,28 @@ CPrefixTree<T>::~CPrefixTree()
 }
 
 template<typename T>
-INT CPrefixTree<T>::SearchShortest( const CHAR * aBuf , SIZE_T aBufSize , T & aData )
+INT CPrefixTree<T>::SearchShortest( const CHAR * aBuf, SIZE_T aBufSize, T & aData )
 {
     SIZE_T aMatchSize = 0;
-    return SearchShortest( aBuf , aBufSize , aMatchSize , aData );
+    return SearchShortest( aBuf, aBufSize, aMatchSize, aData );
 }
 
 template<typename T>
-INT CPrefixTree<T>::SearchShortest( const CHAR * aBuf , SIZE_T aBufSize , SIZE_T & aMatchSize , T & aData )
+INT CPrefixTree<T>::SearchShortest( const CHAR * aBuf, SIZE_T aBufSize, SIZE_T & aMatchSize, T & aData )
 {
-    return SearchShortest( NULL , NULL , aBuf , aBufSize , aMatchSize , aData );
+    return SearchShortest( NULL, NULL, aBuf, aBufSize, aMatchSize, aData );
 }
 
 template<typename T>
-INT CPrefixTree<T>::SearchShortest( VOID * aBegin , VOID ** aNextBegin , const CHAR * aBuf , SIZE_T aBufSize , SIZE_T & aMatchSize , T & aData )
+INT CPrefixTree<T>::SearchShortest( VOID * aBegin,
+                                    VOID ** aNextBegin,
+                                    const CHAR * aBuf,
+                                    SIZE_T aBufSize,
+                                    SIZE_T & aMatchSize,
+                                    T & aData )
 {
     aMatchSize = 0;
-    Node * pCurNode = ( aBegin ) ? static_cast<Node *>(aBegin) : m_RootNode;
+    Node * pCurNode = ( aBegin ) ? static_cast<Node *>( aBegin ) : m_RootNode;
 
     while ( NULL != pCurNode && 0 < aBufSize )
     {
@@ -248,23 +250,28 @@ INT CPrefixTree<T>::SearchShortest( VOID * aBegin , VOID ** aNextBegin , const C
 }
 
 template<typename T>
-INT CPrefixTree<T>::SearchLongest( const CHAR * aBuf , SIZE_T aBufSize , T & aData )
+INT CPrefixTree<T>::SearchLongest( const CHAR * aBuf, SIZE_T aBufSize, T & aData )
 {
     SIZE_T aMatchSize = 0;
-    return SearchLongest( aBuf , aBufSize , aMatchSize , aData );
+    return SearchLongest( aBuf, aBufSize, aMatchSize, aData );
 }
 
 template<typename T>
-INT CPrefixTree<T>::SearchLongest( const CHAR * aBuf , SIZE_T aBufSize , SIZE_T & aMatchSize , T & aData )
+INT CPrefixTree<T>::SearchLongest( const CHAR * aBuf, SIZE_T aBufSize, SIZE_T & aMatchSize, T & aData )
 {
-    return SearchLongest( NULL , NULL , aBuf , aBufSize , aMatchSize , aData );
+    return SearchLongest( NULL, NULL, aBuf, aBufSize, aMatchSize, aData );
 }
 
 template<typename T>
-INT CPrefixTree<T>::SearchLongest( VOID * aBegin , VOID ** aNextBegin ,  const CHAR * aBuf , SIZE_T aBufSize , SIZE_T & aMatchSize , T & aData )
+INT CPrefixTree<T>::SearchLongest( VOID * aBegin,
+                                   VOID ** aNextBegin,
+                                   const CHAR * aBuf,
+                                   SIZE_T aBufSize,
+                                   SIZE_T & aMatchSize,
+                                   T & aData )
 {
     aMatchSize = 0;
-    Node * pCurNode = ( aBegin ) ? static_cast<Node *>(aBegin) : m_RootNode;
+    Node * pCurNode = ( aBegin ) ? static_cast<Node *>( aBegin ) : m_RootNode;
     BOOL bFound = FALSE;
     while ( NULL != pCurNode && 0 < aBufSize )
     {
@@ -304,8 +311,8 @@ template<typename T>
 typename CPrefixTree<T>::Node ** CPrefixTree<T>::AllocateTable()
 {
     SIZE_T nSize = m_CharMap->GetTableSize();
-    Node ** pTable = new (std::nothrow) Node *[nSize];
-    ZeroMemory( pTable , nSize * sizeof(Node *) );
+    Node ** pTable = new ( std::nothrow ) Node *[nSize];
+    ZeroMemory( pTable, nSize * sizeof( Node * ) );
     return pTable;
 }
 
@@ -317,14 +324,14 @@ VOID CPrefixTree<T>::FreeTable( Node * pRootNode )
         if ( pRootNode->pTable )
         {
             SIZE_T nSize = m_CharMap->GetTableSize();
-            for ( SIZE_T i = 0 ; i < nSize ; i++ )
+            for ( SIZE_T i = 0; i < nSize; i++ )
             {
                 if ( pRootNode->pTable[i] )
                 {
                     FreeTable( pRootNode->pTable[i] );
                 }
             }
-            delete [] pRootNode->pTable;
+            delete[] pRootNode->pTable;
             pRootNode->pTable = NULL;
         }
         delete pRootNode;
@@ -336,53 +343,40 @@ VOID CPrefixTree<T>::FreeTable( Node * pRootNode )
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-template <class T>
+template<class T>
 class CBinaryTree
 {
-    public :
-        CBinaryTree();
-        CBinaryTree( T & aInitNode );
-        CBinaryTree( const CBinaryTree<T> & aInitTree );
-        ~CBinaryTree();
-        
-        void SetLeft( CBinaryTree<T> & aParent , CBinaryTree<T> & aLeftChild , bool aRecursive = true );
-        void SetRight( CBinaryTree<T> & aParent , CBinaryTree<T> & aRightChild , bool aRecursive = true );
-        
-        void SwapNode( CBinaryTree<T> & aNode1 , CBinaryTree<T> & aNode2 );
-        void SwapSubTree( CBinaryTree<T> & aTree1 , CBinaryTree<T> & aTree2 );
+    public:
+    CBinaryTree();
+    CBinaryTree( T & aInitNode );
+    CBinaryTree( const CBinaryTree<T> & aInitTree );
+    ~CBinaryTree();
 
-        CBinaryTree<T> & Merge( CBinaryTree<T> & aLeftChild , CBinaryTree<T> & aRightChild );
+    void SetLeft( CBinaryTree<T> & aParent, CBinaryTree<T> & aLeftChild, bool aRecursive = true );
+    void SetRight( CBinaryTree<T> & aParent, CBinaryTree<T> & aRightChild, bool aRecursive = true );
 
-    private :
-        void UpgradeHeight( CBinaryTree<T> * aChild );
-        void CopyRecursive( CBinaryTree<T> * aParent );
-        void CopyLeft( CBinaryTree<T> & aParent , CBinaryTree<T> & aLeftChild );
-        void CopyRight( CBinaryTree<T> & aParent , CBinaryTree<T> & aRightChild );
+    void SwapNode( CBinaryTree<T> & aNode1, CBinaryTree<T> & aNode2 );
+    void SwapSubTree( CBinaryTree<T> & aTree1, CBinaryTree<T> & aTree2 );
 
-    public :
-        int m_nHeight;    //Total depth of the tree
+    CBinaryTree<T> & Merge( CBinaryTree<T> & aLeftChild, CBinaryTree<T> & aRightChild );
 
-        CBinaryTree<T> * m_left;
-        CBinaryTree<T> * m_right;
-        CBinaryTree<T> * m_parent;
+    private:
+    void UpgradeHeight( CBinaryTree<T> * aChild );
+    void CopyRecursive( CBinaryTree<T> * aParent );
+    void CopyLeft( CBinaryTree<T> & aParent, CBinaryTree<T> & aLeftChild );
+    void CopyRight( CBinaryTree<T> & aParent, CBinaryTree<T> & aRightChild );
 
-        T m_value;
+    public:
+    int m_nHeight;    //Total depth of the tree
+
+    CBinaryTree<T> * m_left;
+    CBinaryTree<T> * m_right;
+    CBinaryTree<T> * m_parent;
+
+    T m_value;
 };
 
-template <class T>
+template<class T>
 CBinaryTree<T>::CBinaryTree()
 {
     m_nHeight = 0;
@@ -391,7 +385,7 @@ CBinaryTree<T>::CBinaryTree()
     m_parent = NULL;
 }
 
-template <class T>
+template<class T>
 CBinaryTree<T>::CBinaryTree( T & aInitNode )
 {
     m_nHeight = 0;
@@ -401,17 +395,17 @@ CBinaryTree<T>::CBinaryTree( T & aInitNode )
     m_value = aInitNode;    //Copy content of aInitNode to m_value
 }
 
-template <class T>
+template<class T>
 CBinaryTree<T>::CBinaryTree( const CBinaryTree<T> & aInitTree )
-{    
+{
     m_value = aInitTree.m_value;    //Copy content of aInitNode to m_value
     m_nHeight = 0;
     m_parent = NULL;
-    SetLeft( *this , *aInitTree.m_left , true );
-    SetRight( *this , *aInitTree.m_right , true );
+    SetLeft( *this, *aInitTree.m_left, true );
+    SetRight( *this, *aInitTree.m_right, true );
 }
 
-template <class T>
+template<class T>
 CBinaryTree<T>::~CBinaryTree()
 {
     if ( m_right != NULL )
@@ -421,10 +415,10 @@ CBinaryTree<T>::~CBinaryTree()
 }
 
 
-template <class T>
-void CBinaryTree<T>::SetLeft( CBinaryTree<T> & aParent , CBinaryTree<T> & aLeftChild , bool aRecursive )
+template<class T>
+void CBinaryTree<T>::SetLeft( CBinaryTree<T> & aParent, CBinaryTree<T> & aLeftChild, bool aRecursive )
 {
-    CopyLeft( aParent , aLeftChild );
+    CopyLeft( aParent, aLeftChild );
 
     if ( aRecursive )
     {
@@ -438,13 +432,13 @@ void CBinaryTree<T>::SetLeft( CBinaryTree<T> & aParent , CBinaryTree<T> & aLeftC
     }
 }
 
-template <class T>
-void CBinaryTree<T>::SetRight( CBinaryTree<T> & aParent , CBinaryTree<T> & aRightChild , bool aRecursive )
+template<class T>
+void CBinaryTree<T>::SetRight( CBinaryTree<T> & aParent, CBinaryTree<T> & aRightChild, bool aRecursive )
 {
-    CopyRight( aParent , aRightChild );
+    CopyRight( aParent, aRightChild );
 
     if ( aRecursive )
-    {        
+    {
         CopyRecursive( aParent.m_right );
     }
     else
@@ -457,16 +451,16 @@ void CBinaryTree<T>::SetRight( CBinaryTree<T> & aParent , CBinaryTree<T> & aRigh
 
 
 
-template <class T>
-void CBinaryTree<T>::SwapNode( CBinaryTree<T> & aNode1 , CBinaryTree<T> & aNode2 )
+template<class T>
+void CBinaryTree<T>::SwapNode( CBinaryTree<T> & aNode1, CBinaryTree<T> & aNode2 )
 {
     T tmp = aNode1.m_value;
     aNode1.m_value = aNode2.m_value;
     aNode2.m_value = tmp;
 }
 
-template <class T>
-void CBinaryTree<T>::SwapSubTree( CBinaryTree<T> & aTree1 , CBinaryTree<T> & aTree2 )
+template<class T>
+void CBinaryTree<T>::SwapSubTree( CBinaryTree<T> & aTree1, CBinaryTree<T> & aTree2 )
 {
     CBinaryTree<T> * tmp = aTree1.m_parent;
     aTree1.m_parent = aTree2.m_parent;
@@ -478,26 +472,26 @@ void CBinaryTree<T>::SwapSubTree( CBinaryTree<T> & aTree1 , CBinaryTree<T> & aTr
 
 
 
-template <class T>
-CBinaryTree<T> & CBinaryTree<T>::Merge( CBinaryTree<T> & aLeftChild , CBinaryTree<T> & aRightChild )
+template<class T>
+CBinaryTree<T> & CBinaryTree<T>::Merge( CBinaryTree<T> & aLeftChild, CBinaryTree<T> & aRightChild )
 {
     CBinaryTree<T> * newParent = new CBinaryTree<T>( aLeftChild.m_value + aRightChild.m_value );
 
-    SetLeft( *newParent , aLeftChild , true );
-    SetRight( *newParent , aRightChild , true );
+    SetLeft( *newParent, aLeftChild, true );
+    SetRight( *newParent, aRightChild, true );
 
     return *newParent;
 }
 
 
 
-template <class T>
+template<class T>
 void CBinaryTree<T>::UpgradeHeight( CBinaryTree<T> * aChild )
 {
     //Calculate the distance from aChild to root. After the loop, tmp will point to the root
     CBinaryTree<T> * tmp = aChild;
     int currDepth = 0;
-    do    
+    do
     {
         tmp = tmp->m_parent;
         currDepth++;
@@ -508,17 +502,17 @@ void CBinaryTree<T>::UpgradeHeight( CBinaryTree<T> * aChild )
     } while ( tmp->m_parent != NULL );
 }
 
-template <class T>
+template<class T>
 void CBinaryTree<T>::CopyRecursive( CBinaryTree<T> * aParent )
 {
     if ( aParent->m_left != NULL )
     {
-        CopyLeft( *aParent , *(aParent->m_left) );
+        CopyLeft( *aParent, *( aParent->m_left ) );
         CopyRecursive( aParent->m_left );
     }
     if ( aParent->m_right != NULL )
     {
-        CopyRight( *aParent , *(aParent->m_right) );
+        CopyRight( *aParent, *( aParent->m_right ) );
         CopyRecursive( aParent->m_right );
     }
 
@@ -526,8 +520,8 @@ void CBinaryTree<T>::CopyRecursive( CBinaryTree<T> * aParent )
     UpgradeHeight( aParent );
 }
 
-template <class T>
-void CBinaryTree<T>::CopyLeft( CBinaryTree<T> & aParent , CBinaryTree<T> & aLeftChild )
+template<class T>
+void CBinaryTree<T>::CopyLeft( CBinaryTree<T> & aParent, CBinaryTree<T> & aLeftChild )
 {
     CBinaryTree<T> * left = new CBinaryTree<T>( aLeftChild.m_value );
     left->m_parent = &aParent;
@@ -537,8 +531,8 @@ void CBinaryTree<T>::CopyLeft( CBinaryTree<T> & aParent , CBinaryTree<T> & aLeft
     aParent.m_left = left;
 }
 
-template <class T>
-void CBinaryTree<T>::CopyRight( CBinaryTree<T> & aParent , CBinaryTree<T> & aRightChild )
+template<class T>
+void CBinaryTree<T>::CopyRight( CBinaryTree<T> & aParent, CBinaryTree<T> & aRightChild )
 {
     CBinaryTree<T> * right = new CBinaryTree<T>( aRightChild.m_value );
     right->m_parent = &aParent;

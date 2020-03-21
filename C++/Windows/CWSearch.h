@@ -1,12 +1,12 @@
 #pragma once
 
 /*
- * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * Copyright (c) 2009-2020, ChienWei Hung <winestwinest@gmail.com>
  * CWUtils is published under the BSD-3-Clause license.
  *
- * CWUtils is a set of standalone APIs for developers to speed up their 
- * programming. It should be very easy to port them to other projects or 
- * learn how to implement things on different languages and platforms. 
+ * CWUtils is a set of standalone APIs for developers to speed up their
+ * programming. It should be very easy to port them to other projects or
+ * learn how to implement things on different languages and platforms.
  *
  * The latest version can be found at https://github.com/winest/CWUtils
  */
@@ -21,7 +21,7 @@
  * Primitive Boyer-Moore create bad-character-shift and good-suffix-shift tables by preprocessing pattern
  * Boyer-Moore-Horspool and Boyer-Moore-Horspool-Raita use only bad-character-shift table, where the latter check the first
  * character soon after checking the last character
- * 
+ *
  * If the full string has length n, and pattern has length m
  * Use amortize analysis to analyze time complexity depends on comparison times without preprocessing
  * Primitive Boyer-Moore: Best: n/m , Average: theta(n) with higher coefficient , Worst: 4n

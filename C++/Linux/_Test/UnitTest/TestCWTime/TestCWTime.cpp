@@ -12,14 +12,14 @@ int main()
     printf( "Wait 3 seconds\n" );
     sleep( 3 );
     stopWatch.Stop();
-    
+
     string strTime;
-    CWUtils::FormatTime( stopWatch.GetIntervalInMilli() , strTime );
-    
-    printf( "%llu milli-seconds (%s)\n" , stopWatch.GetIntervalInMilli() , strTime.c_str() );
+    CWUtils::FormatTime( stopWatch.GetIntervalInMilli(), strTime );
+
+    printf( "%llu milli-seconds (%s)\n", stopWatch.GetIntervalInMilli(), strTime.c_str() );
 
     timespec timeInt;
     stopWatch.GetInterval( timeInt );
-    printf( "%us %uns\n" , timeInt.tv_sec , timeInt.tv_nsec );
+    printf( "%us %uns\n", timeInt.tv_sec, timeInt.tv_nsec );
     return 0;
 }

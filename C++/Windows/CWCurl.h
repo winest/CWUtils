@@ -1,12 +1,12 @@
 #pragma once
 
 /*
- * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * Copyright (c) 2009-2020, ChienWei Hung <winestwinest@gmail.com>
  * CWUtils is published under the BSD-3-Clause license.
  *
- * CWUtils is a set of standalone APIs for developers to speed up their 
- * programming. It should be very easy to port them to other projects or 
- * learn how to implement things on different languages and platforms. 
+ * CWUtils is a set of standalone APIs for developers to speed up their
+ * programming. It should be very easy to port them to other projects or
+ * learn how to implement things on different languages and platforms.
  *
  * The latest version can be found at https://github.com/winest/CWUtils
  */
@@ -29,10 +29,10 @@ namespace CWUtils
 extern "C" {
 #endif
 
-#define CURL_DEFAULT_GET_TIMEOUT ( 10 * 1000 )     //In milli-seconds, specify 0 to use curl's default timeout
-#define CURL_DEFAULT_POST_TIMEOUT ( 10 * 1000 )    //In milli-seconds, specify 0 to use curl's default timeout
-#define CURL_DEFAULT_UPLOAD_TIMEOUT ( 0 )          //In milli-seconds, specify 0 to use curl's default timeout
-#define CURL_DEFAULT_DOWNLOAD_TIMEOUT ( 0 )        //In milli-seconds, specify 0 to use curl's default timeout
+#define CURL_DEFAULT_GET_TIMEOUT      ( 10 * 1000 )    //In milli-seconds, specify 0 to use curl's default timeout
+#define CURL_DEFAULT_POST_TIMEOUT     ( 10 * 1000 )    //In milli-seconds, specify 0 to use curl's default timeout
+#define CURL_DEFAULT_UPLOAD_TIMEOUT   ( 0 )            //In milli-seconds, specify 0 to use curl's default timeout
+#define CURL_DEFAULT_DOWNLOAD_TIMEOUT ( 0 )            //In milli-seconds, specify 0 to use curl's default timeout
 
 
 typedef struct _CurlResponse

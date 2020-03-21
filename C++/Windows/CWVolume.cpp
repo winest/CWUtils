@@ -262,10 +262,10 @@ BOOL GetVolumeInfo( CONST WCHAR * aVolumePath,
 //aFsFlag, aSerial, and aMaxFileLen are optional
 //Return TRUE if successful, FALSE otherwise
 BOOL GetVolumeInfo( HANDLE hFile , WCHAR * aVolumeName , DWORD aVolumeNameLen ,
-                               WCHAR * aFs , DWORD aFsLen , DWORD * aFsFlag , 
+                               WCHAR * aFs , DWORD aFsLen , DWORD * aFsFlag ,
                                DWORD * aSerial , DWORD * aMaxFileLen )
 {
-    if ( GetVolumeInformationByHandleW( hFile , aVolumeName , aVolumeNameLen + 1 , 
+    if ( GetVolumeInformationByHandleW( hFile , aVolumeName , aVolumeNameLen + 1 ,
                                         aSerial , aMaxFileLen , FsFlag , aFs , aFsLen + 1 ) )
     {
         return TRUE;

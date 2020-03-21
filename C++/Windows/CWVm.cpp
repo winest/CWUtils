@@ -150,7 +150,7 @@ BOOL CDetectVm::TestSidt( TCHAR * aInfo )
 
     if ( idtr[5] > 0xd0 )
         return TRUE;
-    else 
+    else
         return FALSE;
 */
 }

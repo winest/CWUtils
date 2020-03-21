@@ -5,45 +5,46 @@ using namespace std;
 
 
 
-int main( int aArgc , char * aArgv[] )
+int main( int aArgc, char * aArgv[] )
 {
-    CWUtils::CEvent evtManualP2C , evtManualC2P;
-    CWUtils::CEvent evtAutoP2C , evtAutoC2P;
-    
+    CWUtils::CEvent evtManualP2C, evtManualC2P;
+    CWUtils::CEvent evtAutoP2C, evtAutoC2P;
+
     BOOL bLoop = TRUE;
     do
     {
-        if ( FALSE == evtManualP2C.Create( "Manual_P2C" , TRUE , FALSE ) )
+        if ( FALSE == evtManualP2C.Create( "Manual_P2C", TRUE, FALSE ) )
         {
-            printf( "evtManualP2C.Create() failed, errno=%s\n" , strerror(errno) );
+            printf( "evtManualP2C.Create() failed, errno=%s\n", strerror( errno ) );
             break;
         }
-        if ( FALSE == evtManualC2P.Create( "Manual_C2P" , TRUE , FALSE ) )
+        if ( FALSE == evtManualC2P.Create( "Manual_C2P", TRUE, FALSE ) )
         {
-            printf( "evtManualC2P.Create() failed, errno=%s\n" , strerror(errno) );
+            printf( "evtManualC2P.Create() failed, errno=%s\n", strerror( errno ) );
             break;
         }
 
-        if ( FALSE == evtAutoP2C.Create( "Auto_P2C" , FALSE , FALSE ) )
+        if ( FALSE == evtAutoP2C.Create( "Auto_P2C", FALSE, FALSE ) )
         {
-            printf( "evtAutoP2C.Create() failed, errno=%s\n" , strerror(errno) );
+            printf( "evtAutoP2C.Create() failed, errno=%s\n", strerror( errno ) );
             break;
         }
-        if ( FALSE == evtAutoC2P.Create( "Auto_C2P" , FALSE , FALSE ) )
+        if ( FALSE == evtAutoC2P.Create( "Auto_C2P", FALSE, FALSE ) )
         {
-            printf( "evtAutoC2P.Create() failed, errno=%s\n" , strerror(errno) );
+            printf( "evtAutoC2P.Create() failed, errno=%s\n", strerror( errno ) );
             break;
         }
-        
-        
+
+
         while ( bLoop )
         {
             INT nNum;
-            printf( "Please enter option:\n"
-                    "    0: exit\n"
-                    "    1: test manual event\n"
-                    "    2: test auto event\n" );
-            scanf( "%d" , &nNum );
+            printf(
+                "Please enter option:\n"
+                "    0: exit\n"
+                "    1: test manual event\n"
+                "    2: test auto event\n" );
+            scanf( "%d", &nNum );
             if ( nNum == 0 )
             {
                 bLoop = FALSE;
@@ -54,7 +55,7 @@ int main( int aArgc , char * aArgv[] )
                 printf( "Set event to child_manual\n" );
                 if ( FALSE == evtManualP2C.Set() )
                 {
-                    printf( "evtManualP2C.Set() failed, errno=%d\n" , errno );
+                    printf( "evtManualP2C.Set() failed, errno=%d\n", errno );
                     bLoop = FALSE;
                     break;
                 }
@@ -62,7 +63,7 @@ int main( int aArgc , char * aArgv[] )
 
                 if ( FALSE == evtManualP2C.Reset() )
                 {
-                    printf( "evtManualP2C.Reset() failed, errno=%d\n" , errno );
+                    printf( "evtManualP2C.Reset() failed, errno=%d\n", errno );
                     bLoop = FALSE;
                     break;
                 }
@@ -72,30 +73,30 @@ int main( int aArgc , char * aArgv[] )
                 printf( "Wait event from child_auto\n" );
                 if ( FALSE == evtAutoC2P.Wait() )
                 {
-                    printf( "evtAutoC2P.Wait() failed, errno=%d\n" , errno );
+                    printf( "evtAutoC2P.Wait() failed, errno=%d\n", errno );
                     bLoop = FALSE;
                     break;
                 }
                 printf( "evtAutoC2P.Wait() succeed\n" );
                 sleep( 3 );
-                
-                
-                
+
+
+
                 printf( "Set event to child_auto\n" );
                 if ( FALSE == evtAutoP2C.Set() )
                 {
-                    printf( "evtAutoP2C.Set() failed, errno=%d\n" , errno );
+                    printf( "evtAutoP2C.Set() failed, errno=%d\n", errno );
                     bLoop = FALSE;
                     break;
                 }
                 printf( "evtAutoP2C.Set() succeed\n" );
-                
-                
-                
+
+
+
                 printf( "Wait event from child_auto\n" );
                 if ( FALSE == evtAutoC2P.Wait() )
                 {
-                    printf( "evtAutoC2P.Wait() failed, errno=%d\n" , errno );
+                    printf( "evtAutoC2P.Wait() failed, errno=%d\n", errno );
                     bLoop = FALSE;
                     break;
                 }
@@ -107,12 +108,11 @@ int main( int aArgc , char * aArgv[] )
             }
         }
     } while ( 0 );
-    
-    
+
+
     evtManualP2C.Close();
     evtManualC2P.Close();
     evtAutoP2C.Close();
     evtAutoC2P.Close();
     return 0;
 }
-

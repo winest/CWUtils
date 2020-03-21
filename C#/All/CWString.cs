@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * Copyright (c) 2009-2020, ChienWei Hung <winestwinest@gmail.com>
  * CWUtils is published under the BSD-3-Clause license.
  *
- * CWUtils is a set of standalone APIs for developers to speed up their 
- * programming. It should be very easy to port them to other projects or 
- * learn how to implement things on different languages and platforms. 
+ * CWUtils is a set of standalone APIs for developers to speed up their
+ * programming. It should be very easy to port them to other projects or
+ * learn how to implement things on different languages and platforms.
  *
  * The latest version can be found at https://github.com/winest/CWUtils
  */
@@ -13,7 +13,7 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Text;
- 
+
 namespace CWUtils
 {
     class CWString
@@ -120,7 +120,7 @@ namespace CWUtils
             {
                 throw new ArgumentException( string.Format("Length if not the multiple of {0}" , nOneLineSize) );
             }
-            int nTotalLines = ( aHexDump.Length / nOneLineSize );            
+            int nTotalLines = ( aHexDump.Length / nOneLineSize );
             byte [] bytes = new byte[nTotalLines *  aBytesPerLine];
             int nRealSize = 0;
             for ( int i = 0 ; i < nTotalLines ; i++ )
@@ -149,4 +149,4 @@ namespace CWUtils
 
     }
 }
-    
+

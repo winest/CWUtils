@@ -1,12 +1,12 @@
 #pragma once
 
 /*
- * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * Copyright (c) 2009-2020, ChienWei Hung <winestwinest@gmail.com>
  * CWUtils is published under the BSD-3-Clause license.
  *
- * CWUtils is a set of standalone APIs for developers to speed up their 
- * programming. It should be very easy to port them to other projects or 
- * learn how to implement things on different languages and platforms. 
+ * CWUtils is a set of standalone APIs for developers to speed up their
+ * programming. It should be very easy to port them to other projects or
+ * learn how to implement things on different languages and platforms.
  *
  * The latest version can be found at https://github.com/winest/CWUtils
  */
@@ -111,7 +111,7 @@ typedef struct _PppHdr    //PPPoE Session Header ( 2 bytes )
 typedef union _Ipv4Address    //IPv4 Header ( 20 bytes )
 {
     BOOL operator==( const _Ipv4Address & aAddr ) const { return ( this->u32 == aAddr.u32 ); }
-    BOOL operator!=( const _Ipv4Address & aAddr ) const { return !( this->u32 == aAddr.u32 ); }
+    BOOL operator!=( const _Ipv4Address & aAddr ) const { return ! ( this->u32 == aAddr.u32 ); }
     BOOL operator<( const _Ipv4Address & aAddr ) const { return ( this->u32 < aAddr.u32 ); }
     uint8_t u8[IPV4_ADDR_SIZE / sizeof( uint8_t )];
     uint32_t u32;
@@ -158,7 +158,7 @@ typedef union _Ipv6Address
         }
         return TRUE;
     }
-    BOOL operator!=( const _Ipv6Address & aAddr ) const { return !( *this == aAddr ); }
+    BOOL operator!=( const _Ipv6Address & aAddr ) const { return ! ( *this == aAddr ); }
     BOOL operator<( const _Ipv6Address & aAddr ) const
     {
         for ( SIZE_T i = 0; i < _countof( u32 ); i++ )
@@ -253,10 +253,7 @@ typedef struct _UdpHdr    //UDP Header ( 8 bytes )
 typedef struct _CW_NETWORK_INTERFACE_INFO
 {
     _CW_NETWORK_INTERFACE_INFO() :
-        ulIfType( IF_TYPE_OTHER ),
-        nOperStatus( IfOperStatusUnknown ),
-        u64UploadSpeed( 0 ),
-        u64DownloadSpeed( 0 )
+        ulIfType( IF_TYPE_OTHER ), nOperStatus( IfOperStatusUnknown ), u64UploadSpeed( 0 ), u64DownloadSpeed( 0 )
     {
         ZeroMemory( &byMacAddr, sizeof( byMacAddr ) );
     }

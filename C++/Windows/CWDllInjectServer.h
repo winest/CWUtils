@@ -1,12 +1,12 @@
 #pragma once
 
 /*
- * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * Copyright (c) 2009-2020, ChienWei Hung <winestwinest@gmail.com>
  * CWUtils is published under the BSD-3-Clause license.
  *
- * CWUtils is a set of standalone APIs for developers to speed up their 
- * programming. It should be very easy to port them to other projects or 
- * learn how to implement things on different languages and platforms. 
+ * CWUtils is a set of standalone APIs for developers to speed up their
+ * programming. It should be very easy to port them to other projects or
+ * learn how to implement things on different languages and platforms.
  *
  * The latest version can be found at https://github.com/winest/CWUtils
  */
@@ -77,10 +77,10 @@ typedef struct _DllInjectServerUserCfg
 
 
 
-#define DLL_INJECT_SERVER_ENABLE_DEFAULT FALSE
+#define DLL_INJECT_SERVER_ENABLE_DEFAULT       FALSE
 #define DLL_INJECT_SERVER_WORKER_COUNT_DEFAULT 2
-#define DLL_INJECT_SERVER_WORKER_COUNT_MIN 1ul
-#define DLL_INJECT_SERVER_WORKER_COUNT_MAX 10ul
+#define DLL_INJECT_SERVER_WORKER_COUNT_MIN     1ul
+#define DLL_INJECT_SERVER_WORKER_COUNT_MAX     10ul
 
 class CDllInjectServer
 {
@@ -100,10 +100,7 @@ class CDllInjectServer
     {
         public:
         InjectClientInfo() :
-            lRefCnt( 0 ),
-            uInjectClientState( INJECT_CLIENT_STATE_PREPARING ),
-            hRemoteProc( NULL ),
-            hRemoteDll( NULL )
+            lRefCnt( 0 ), uInjectClientState( INJECT_CLIENT_STATE_PREPARING ), hRemoteProc( NULL ), hRemoteDll( NULL )
         {
             ZeroMemory( &hPerClientEvt, sizeof( hPerClientEvt ) );
         }
@@ -131,8 +128,7 @@ class CDllInjectServer
     typedef struct _DllInjectServerCommonCfg
     {
         _DllInjectServerCommonCfg() :
-            bEnabled( DLL_INJECT_SERVER_ENABLE_DEFAULT ),
-            ulWorkerCnt( DLL_INJECT_SERVER_WORKER_COUNT_DEFAULT )
+            bEnabled( DLL_INJECT_SERVER_ENABLE_DEFAULT ), ulWorkerCnt( DLL_INJECT_SERVER_WORKER_COUNT_DEFAULT )
         {
         }
         BOOL bEnabled;

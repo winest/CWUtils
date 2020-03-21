@@ -20,7 +20,7 @@
          SCAN_RET_BLOCK
      } ScanRet;
      ```
-    
+
   3. All words are adjoined with mixed cases unless it's a constant.
      For example, do_something() -> DoSomething()
 

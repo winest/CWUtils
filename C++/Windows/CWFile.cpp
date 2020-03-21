@@ -70,10 +70,16 @@ BOOL IsPathExist( CONST WCHAR * aFullPath )
     }
 }
 
-BOOL IsFileExist( CONST WCHAR * aFullPath )
+BOOL IsFileExistA( CONST CHAR * aFullPath )
+{
+    DWORD dwAttr = GetFileAttributesA( aFullPath );
+    return ( ( dwAttr != INVALID_FILE_ATTRIBUTES ) && ! ( dwAttr & FILE_ATTRIBUTE_DIRECTORY ) );
+}
+
+BOOL IsFileExistW( CONST WCHAR * aFullPath )
 {
     DWORD dwAttr = GetFileAttributesW( aFullPath );
-    return ( ( dwAttr != INVALID_FILE_ATTRIBUTES ) && !( dwAttr & FILE_ATTRIBUTE_DIRECTORY ) );
+    return ( ( dwAttr != INVALID_FILE_ATTRIBUTES ) && ! ( dwAttr & FILE_ATTRIBUTE_DIRECTORY ) );
 }
 
 UINT64 GetFileSizeByPath( IN CONST WCHAR * aFullPath )
@@ -477,7 +483,7 @@ BOOL GetFilePathFromHandle( IN HANDLE aFile, OUT wstring & aFilePath )
 
             //Get the file name
             WCHAR wzPath[MAX_PATH + 1] = { 0 };
-            if ( !GetMappedFileNameW( GetCurrentProcess(), pViewOfFile, wzPath, _countof( wzPath ) - 1 ) )
+            if ( ! GetMappedFileNameW( GetCurrentProcess(), pViewOfFile, wzPath, _countof( wzPath ) - 1 ) )
             {
                 break;
             }
@@ -562,7 +568,7 @@ BOOL IsEmptyDir( CONST WCHAR * aDirPath )
             count++;
             while ( FindNextFileW( hFind, &find ) != 0 )
             {
-                if ( !( find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ||
+                if ( ! ( find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ||
                      ( wcsncmp( find.cFileName, L".", 1 ) != 0 ) || ( wcsncmp( find.cFileName, L"..", 2 ) != 0 ) )
                 {
                     FindClose( hFind );

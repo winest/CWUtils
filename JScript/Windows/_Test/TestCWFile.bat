@@ -38,7 +38,7 @@ var aryComputeRelativePath = [ new stComputeRelativePath( "C:\\Windows\\System32
                                new stComputeRelativePath( "C:\\Windows\\..\\notepad.exe" , "C:\\Windows\\notepad++.exe" ) ];
 for ( var i = 0 ; i < aryComputeRelativePath.length ; i++ )
 {
-    WScript.Echo( "Src=" + aryComputeRelativePath[i].strSrcPath + "\tDst=" + aryComputeRelativePath[i].strDstPath + 
+    WScript.Echo( "Src=" + aryComputeRelativePath[i].strSrcPath + "\tDst=" + aryComputeRelativePath[i].strDstPath +
                   "\tResult=" + CWUtils.ComputeRelativePath( aryComputeRelativePath[i].strSrcPath , aryComputeRelativePath[i].strDstPath ) );
 }
 

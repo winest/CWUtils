@@ -33,8 +33,8 @@ __forceinline UINT64 _FinalizationMix64( UINT64 aNum )
 
 BOOL GetCrc32( CONST UCHAR * aBuf, SIZE_T aBufSize, UINT32 & aCrc32 )
 {
-    aCrc32 = 0 ^ ( -1 );
-    static UINT32 hexTable[] = {
+    aCrc32 = static_cast<UINT32>( 0 ^ ( -1 ) );
+    static constexpr UINT32 hexTable[] = {
         0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA, 0x076DC419, 0x706AF48F, 0xE963A535, 0x9E6495A3, 0x0EDB8832,
         0x79DCB8A4, 0xE0D5E91E, 0x97D2D988, 0x09B64C2B, 0x7EB17CBD, 0xE7B82D07, 0x90BF1D91, 0x1DB71064, 0x6AB020F2,
         0xF3B97148, 0x84BE41DE, 0x1ADAD47D, 0x6DDDE4EB, 0xF4D4B551, 0x83D385C7, 0x136C9856, 0x646BA8C0, 0xFD62F97A,
@@ -85,46 +85,53 @@ BOOL GetFileMd5( CONST WCHAR * aFilePath, std::string & aMd5 )
     HCRYPTHASH hHash = NULL;
     HANDLE hFile =
         CreateFileW( aFilePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL );
-    if ( INVALID_HANDLE_VALUE == hFile )
-    {
-        goto exit;
-    }
 
-    // Get handle to the crypto provider
-    if ( FALSE == CryptAcquireContext( &hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT ) ||
-         FALSE == CryptCreateHash( hProv, CALG_MD5, 0, 0, &hHash ) )
+    do
     {
-        goto exit;
-    }
-
-    BYTE byBuf[8192];
-    DWORD dwRead = 0;
-    while ( FALSE != ReadFile( hFile, byBuf, sizeof( byBuf ), &dwRead, NULL ) && 0 < dwRead )
-    {
-        if ( FALSE == CryptHashData( hHash, byBuf, dwRead, 0 ) )
+        if ( INVALID_HANDLE_VALUE == hFile )
         {
-            goto exit;
+            break;
         }
-    }
 
-    BYTE byHash[16] = { 0 };
-    DWORD dwHash = _countof( byHash );
-    CHAR szDigits[] = "0123456789abcdef";
-    if ( FALSE == CryptGetHashParam( hHash, HP_HASHVAL, byHash, &dwHash, 0 ) )
-    {
-        goto exit;
-    }
-    else
-    {
+        // Get handle to the crypto provider
+        if ( FALSE == CryptAcquireContext( &hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT ) ||
+             FALSE == CryptCreateHash( hProv, CALG_MD5, 0, 0, &hHash ) )
+        {
+            break;
+        }
+
+        BOOL bCrypted = TRUE;
+        BYTE byBuf[8192];
+        DWORD dwRead = 0;
+        while ( FALSE != ReadFile( hFile, byBuf, sizeof( byBuf ), &dwRead, NULL ) && 0 < dwRead )
+        {
+            if ( FALSE == CryptHashData( hHash, byBuf, dwRead, 0 ) )
+            {
+                bCrypted = FALSE;
+                break;
+            }
+        }
+        if ( ! bCrypted )
+        {
+            break;
+        }
+
+        BYTE byHash[16] = { 0 };
+        DWORD dwHash = _countof( byHash );
+        CHAR szDigits[] = "0123456789abcdef";
+        if ( FALSE == CryptGetHashParam( hHash, HP_HASHVAL, byHash, &dwHash, 0 ) )
+        {
+            break;
+        }
+
         for ( DWORD i = 0; i < dwHash; i++ )
         {
             aMd5.append( 1, szDigits[byHash[i] >> 4] );
             aMd5.append( 1, szDigits[byHash[i] & 0xf] );
         }
         bRet = TRUE;
-    }
+    } while ( 0 );
 
-exit:
     if ( INVALID_HANDLE_VALUE != hFile )
     {
         CloseHandle( hFile );

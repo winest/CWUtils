@@ -23,7 +23,7 @@ namespace TestCWFile
         {
             CLogFile.GetInstance().StartLog( "Log.txt" , CLogFile.LogLevel.LOG_LV_NOSY , 5000 );
             TestWriteLog();
-            
+
             Console.WriteLine( "Press any key to change log level" );
             Console.ReadKey();
 

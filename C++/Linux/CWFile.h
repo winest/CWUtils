@@ -1,7 +1,7 @@
 #pragma once
 
 /*
- * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * Copyright (c) 2009-2020, ChienWei Hung <winestwinest@gmail.com>
  * CWUtils is published under the BSD-3-Clause license.
  *
  * CWUtils is a set of standalone APIs for developers to speed up their
@@ -34,7 +34,7 @@ BOOL IsDirExist( CONST CHAR * aDirPath );
 SIZE_T GetFileSize( CONST CHAR * aFilePath );
 
 #ifndef FILE_LINE_SEP
-    #define FILE_LINE_SEP "\n"
+#    define FILE_LINE_SEP "\n"
 #endif
 CONST SIZE_T FILE_BUF_SIZE = 4096;
 
@@ -56,8 +56,12 @@ class CFile
     virtual ~CFile() { this->Close(); }
 
     public:
-    BOOL Open( CONST CHAR * aPath, UINT32 aOpenAttr = FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST | FILE_OPEN_ATTR_READ, std::string aLineSep = FILE_LINE_SEP );
-    BOOL Open( CONST WCHAR * aPath, UINT32 aOpenAttr = FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST | FILE_OPEN_ATTR_READ, std::string aLineSep = FILE_LINE_SEP );
+    BOOL Open( CONST CHAR * aPath,
+               UINT32 aOpenAttr = FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST | FILE_OPEN_ATTR_READ,
+               std::string aLineSep = FILE_LINE_SEP );
+    BOOL Open( CONST WCHAR * aPath,
+               UINT32 aOpenAttr = FILE_OPEN_ATTR_CREATE_IF_NOT_EXIST | FILE_OPEN_ATTR_READ,
+               std::string aLineSep = FILE_LINE_SEP );
     BOOL Write( CONST UCHAR * aData, SIZE_T aDataSize );
     BOOL WriteLine();
     BOOL WriteLine( CONST CHAR * aData, SIZE_T aDataSize );

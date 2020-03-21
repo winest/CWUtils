@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * Copyright (c) 2009-2020, ChienWei Hung <winestwinest@gmail.com>
  * CWUtils is published under the BSD-3-Clause license.
  *
- * CWUtils is a set of standalone APIs for developers to speed up their 
- * programming. It should be very easy to port them to other projects or 
- * learn how to implement things on different languages and platforms. 
+ * CWUtils is a set of standalone APIs for developers to speed up their
+ * programming. It should be very easy to port them to other projects or
+ * learn how to implement things on different languages and platforms.
  *
  * The latest version can be found at https://github.com/winest/CWUtils
  */
@@ -20,7 +20,7 @@ CWUtils.CXml = CWUtils.CXml || function()
 {
     this.objDom = null;
     this.document = null;
-    
+
     this.UnInit = function()
     {
         objHttp = null;
@@ -28,7 +28,7 @@ CWUtils.CXml = CWUtils.CXml || function()
         this.window = null;
         this.document = null;
     }
-    
+
     this.LoadFromFile = function( aFilePath )
     {
         var bRet = false;
@@ -40,7 +40,7 @@ CWUtils.CXml = CWUtils.CXml || function()
                 this.objDom = new ActiveXObject( types[i] );
                 this.objDom.async = false;
                 this.objDom.load( aFilePath );
-                
+
                 bRet = true;
                 break;
             }
@@ -53,7 +53,7 @@ CWUtils.CXml = CWUtils.CXml || function()
             this.document.setProperty( "SelectionLanguage" , "XPath" );
         }
     }
-    
+
     this.LoadFromString = function( aXmlContent )
     {
         var bRet = false;
@@ -65,7 +65,7 @@ CWUtils.CXml = CWUtils.CXml || function()
                 this.objDom = new ActiveXObject( types[i] );
                 this.objDom.async = false;
                 this.objDom.loadXML( aXmlContent );
-                
+
                 bRet = true;
                 break;
             }
@@ -86,7 +86,7 @@ CWUtils.CXml = CWUtils.CXml || function()
             this.document.save( aFilePath );
         }
     }
-    
+
     //We write a version of ourselves because Microsoft's version doesn't support namespace in XML (xmlns)
     //For accessing elements in namespace, use selectNodes()
     this.GetElementsByTagName = function( aTagName , aParent )
@@ -168,10 +168,10 @@ CWUtils.CHttp = CWUtils.CHttp || function()
             WScript.Echo( "Failed to connect with status code " + objHttp.Status + "(" + objHttp.StatusText + ")" );
             return false;
         }
-        
+
         return this.LoadFromString( objHttp.ResponseText );
     }
-    
+
     this.LoadFromFile = function( aFilePath , aEncoding )
     {
         var bRet = false;
@@ -187,7 +187,7 @@ CWUtils.CHttp = CWUtils.CHttp || function()
         }
         catch ( err ) {}
     }
-    
+
     this.LoadFromString = function( aString )
     {
         //Refer to IHTMLDocument object on http://msdn.microsoft.com/en-us/library/hh801967(v=vs.85).aspx
@@ -195,7 +195,7 @@ CWUtils.CHttp = CWUtils.CHttp || function()
         objHtml.open();
         objHtml.write( aString );
         objHtml.close();
-        
+
         //Refer to IHTMLElement object on http://msdn.microsoft.com/en-us/library/aa752279(v=vs.85).aspx
         //and html element object on http://msdn.microsoft.com/en-us/library/ms535255(v=vs.85).aspx
         if ( null == objHtml.parentWindow || null == objHtml.parentWindow.document )
@@ -203,7 +203,7 @@ CWUtils.CHttp = CWUtils.CHttp || function()
             WScript.Echo( "window or document is null" );
             return false;
         }
-        
+
         this.window = objHtml.parentWindow;
         this.document = objHtml.parentWindow.document;
         this.document.getElementsByClassName = function( aClassName , aParent )

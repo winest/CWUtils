@@ -3,7 +3,7 @@
 #include "stdafx.h"
 
 #include "_GenerateTmh.h"
-#include "CWSharedMem.tmh"
+#include <header/CWSharedMem.tmh>
 
 
 namespace CWUtils
@@ -41,209 +41,6 @@ class CSharedMemFileMapping
     std::string m_strName;
 };
 
-BOOL CSharedMemFileMapping::Create( CONST CHAR * aName, SIZE_T aMaxSize, UINT32 aPermission )
-{
-    BOOL bRet = FALSE;
-    this->Close();
-
-    do
-    {
-        if ( NULL != aName )
-        {
-            m_strName = aName;
-        }
-
-        //Create shared memory
-        SECURITY_ATTRIBUTES secAttr;
-        SECURITY_DESCRIPTOR secDesc;
-        ZeroMemory( &secAttr, sizeof( secAttr ) );
-        ZeroMemory( &secDesc, sizeof( secDesc ) );
-        InitializeSecurityDescriptor( &secDesc, SECURITY_DESCRIPTOR_REVISION );
-        SetSecurityDescriptorDacl( &secDesc, TRUE, NULL, FALSE );
-        secAttr.nLength = sizeof( SECURITY_ATTRIBUTES );
-        secAttr.lpSecurityDescriptor = &secDesc;
-        secAttr.bInheritHandle = FALSE;
-
-        DWORD dwCreatePerm = 0;
-        if ( aPermission & SHARED_MEM_PERM_READ )
-        {
-            if ( aPermission & SHARED_MEM_PERM_EXECUTE )
-            {
-                dwCreatePerm = PAGE_EXECUTE_READ;
-            }
-            else
-            {
-                dwCreatePerm = PAGE_READONLY;
-            }
-        }
-        if ( aPermission & SHARED_MEM_PERM_WRITE )
-        {
-            if ( aPermission & SHARED_MEM_PERM_EXECUTE )
-            {
-                dwCreatePerm = PAGE_EXECUTE_READWRITE;
-            }
-            else
-            {
-                dwCreatePerm = PAGE_READWRITE;
-            }
-        }
-
-        m_hSm = CreateFileMappingA( INVALID_HANDLE_VALUE, &secAttr, dwCreatePerm, ( aMaxSize >> 32 ),
-                                    ( aMaxSize & 0xFFFFFFFF ), aName );
-        if ( NULL == m_hSm )
-        {
-            DbgOut( ERRO, DBG_UTILS, "CreateFileMapping() failed. GetLastError()=%!WINERROR!", GetLastError() );
-            break;
-        }
-
-
-
-        //Map shared memory
-        DWORD dwMapPerm = 0;
-        if ( aPermission & SHARED_MEM_PERM_READ )
-        {
-            dwMapPerm = FILE_MAP_READ;
-        }
-        if ( aPermission & SHARED_MEM_PERM_WRITE )
-        {
-            dwMapPerm = FILE_MAP_WRITE;
-        }
-        if ( aPermission & SHARED_MEM_PERM_EXECUTE )
-        {
-            dwMapPerm |= FILE_MAP_EXECUTE;
-        }
-
-        m_pData = (VOID *)MapViewOfFile( m_hSm, dwMapPerm, 0, 0, 0 );
-        if ( NULL == m_pData )
-        {
-            DbgOut( ERRO, DBG_UTILS, "MapViewOfFile() failed. GetLastError()=%!WINERROR!", GetLastError() );
-            break;
-        }
-
-
-
-        //Zero-fill memory for initialization
-        ZeroMemory( m_pData, aMaxSize );
-
-        bRet = TRUE;
-    } while ( 0 );
-
-    if ( FALSE == bRet )
-    {
-        this->Close();
-    }
-
-    return bRet;
-}
-
-
-
-BOOL CSharedMemFileMapping::Open( CONST CHAR * aName, UINT32 aPermission )
-{
-    BOOL bRet = FALSE;
-    this->Close();
-
-    do
-    {
-        if ( NULL != aName )
-        {
-            m_strName = aName;
-        }
-
-        //Open shared memory
-        DWORD dwOpenPerm = 0;
-        if ( aPermission & SHARED_MEM_PERM_READ )
-        {
-            dwOpenPerm = FILE_MAP_READ;
-        }
-        if ( aPermission & SHARED_MEM_PERM_WRITE )
-        {
-            dwOpenPerm = FILE_MAP_WRITE;
-        }
-        if ( aPermission & SHARED_MEM_PERM_EXECUTE )
-        {
-            dwOpenPerm |= FILE_MAP_EXECUTE;
-        }
-
-        m_hSm = OpenFileMappingA( dwOpenPerm, FALSE, aName );
-        if ( NULL == m_hSm )
-        {
-            DbgOut( ERRO, DBG_UTILS, "OpenFileMappingA() failed. GetLastError()=%!WINERROR!", GetLastError() );
-            break;
-        }
-
-
-
-        //Map shared memory
-        DWORD dwMapPerm = 0;
-        if ( aPermission & SHARED_MEM_PERM_READ )
-        {
-            dwMapPerm = FILE_MAP_READ;
-        }
-        if ( aPermission & SHARED_MEM_PERM_WRITE )
-        {
-            dwMapPerm = FILE_MAP_WRITE;
-        }
-        if ( aPermission & SHARED_MEM_PERM_EXECUTE )
-        {
-            dwMapPerm |= FILE_MAP_EXECUTE;
-        }
-
-        m_pData = (VOID *)MapViewOfFile( m_hSm, dwMapPerm, 0, 0, 0 );
-        if ( NULL == m_pData )
-        {
-            DbgOut( ERRO, DBG_UTILS, "MapViewOfFile() failed. GetLastError()=%!WINERROR!", GetLastError() );
-            break;
-        }
-
-
-
-        bRet = TRUE;
-    } while ( 0 );
-
-    if ( FALSE == bRet )
-    {
-        this->Close();
-    }
-
-    return bRet;
-}
-
-
-
-VOID CSharedMemFileMapping::Close()
-{
-    if ( m_pData != NULL )
-    {
-        UnmapViewOfFile( m_pData );
-        m_pData = NULL;
-    }
-
-    m_uMaxSize = 0;
-
-    if ( m_hSm >= 0 )
-    {
-        CloseHandle( m_hSm );
-        m_strName.clear();
-    }
-}
-
-const std::string & CSharedMemFileMapping::GetName() const
-{
-    return m_strName;
-}
-
-
-VOID * CSharedMemFileMapping::GetData() const
-{
-    return m_pData;
-}
-
-SIZE_T CSharedMemFileMapping::GetMaxSize() const
-{
-    return m_uMaxSize;
-}
-
 
 
 #ifdef __cplusplus
@@ -255,6 +52,9 @@ template<typename TShmType>
 class CFixedSizeShmQueue
 {
     public:
+    CFixedSizeShmQueue();
+    ~CFixedSizeShmQueue();
+
     bool InitWriter( std::string aShmName, size_t aDataSize, size_t aMaxDataCnt );
     bool InitReader( std::string aShmName, size_t aDataSize, bool aReadFromEnd );
 
@@ -287,6 +87,17 @@ class CFixedSizeShmQueue
     size_t m_DataSize;
 };
 
+template<typename TShmType>
+CFixedSizeShmQueue<TShmType>::CFixedSizeShmQueue() :
+    m_Hdr( nullptr ), m_StartPos( nullptr ), m_CurrPos( nullptr ), m_DataSize( 0 )
+{
+}
+
+template<typename TShmType>
+CFixedSizeShmQueue<TShmType>::~CFixedSizeShmQueue()
+{
+    this->Close();
+}
 
 template<typename TShmType>
 bool CFixedSizeShmQueue<TShmType>::InitWriter( std::string aShmName, size_t aDataSize, size_t aMaxDataCnt )
@@ -296,28 +107,36 @@ bool CFixedSizeShmQueue<TShmType>::InitWriter( std::string aShmName, size_t aDat
 
     do
     {
-        if ( aMaxDataCnt == 0 )
+        size_t uAllDataSize = 0;
+        if ( aMaxDataCnt == SIZE_MAX )
         {
             aMaxDataCnt = ( SIZE_MAX - sizeof( ShmHdr ) ) / aDataSize;
-        }
-        size_t uAllDataSize = aMaxDataCnt * aDataSize;
-        while ( sizeof( ShmHdr ) + uAllDataSize < uAllDataSize )    //Overflow
-        {
-            aMaxDataCnt--;
-            if ( aMaxDataCnt == 0 )
-            {
-                DbgOut( MUST, DBG_UTILS, "Not enough memory to hold data" );
-                break;
-            }
             uAllDataSize = aMaxDataCnt * aDataSize;
         }
-        if ( aMaxDataCnt == 0 )
+        else
         {
-            break;
+            uAllDataSize = aMaxDataCnt * aDataSize;
+            while ( uAllDataSize < aMaxDataCnt || uAllDataSize < aDataSize ||
+                    sizeof( ShmHdr ) + uAllDataSize < uAllDataSize )    //Overflow
+            {
+                aMaxDataCnt--;
+                if ( aMaxDataCnt == 0 )
+                {
+                    DbgOut( ERRO, DBG_UTILS, "Not enough memory to hold data" );
+                    break;
+                }
+                uAllDataSize = aMaxDataCnt * aDataSize;
+            }
+            if ( aMaxDataCnt == 0 )
+            {
+                break;
+            }
         }
 
-        if ( !m_Shm.Create( aShmName.c_str(), sizeof( ShmHdr ) + uAllDataSize,
-                            CWUtils::SHARED_MEM_PERM_READ | CWUtils::SHARED_MEM_PERM_WRITE ) )
+        DbgOut( INFO, DBG_UTILS, "Try to create shm. aShmName=%s, aDataSize=%Iu, aMaxDataCnt=%Iu", aShmName.c_str(),
+                aDataSize, aMaxDataCnt );
+        if ( ! m_Shm.Create( aShmName.c_str(), sizeof( ShmHdr ) + uAllDataSize,
+                             CWUtils::SHARED_MEM_PERM_READ | CWUtils::SHARED_MEM_PERM_WRITE ) )
         {
             DbgOut( ERRO, DBG_UTILS, "Failed to create shm. aShmName=%s, Err=%!WINERROR!", aShmName.c_str(),
                     GetLastError() );
@@ -347,7 +166,8 @@ bool CFixedSizeShmQueue<TShmType>::InitReader( std::string aShmName, size_t aDat
 
     do
     {
-        if ( !m_Shm.Open( aShmName.c_str(), CWUtils::SHARED_MEM_PERM_READ ) )
+        DbgOut( INFO, DBG_UTILS, "Try to open shm. aShmName=%s", aShmName.c_str() );
+        if ( ! m_Shm.Open( aShmName.c_str(), CWUtils::SHARED_MEM_PERM_READ ) )
         {
             DbgOut( ERRO, DBG_UTILS, "Failed to create shm. aShmName=%s, Err=%!WINERROR!", aShmName.c_str(),
                     GetLastError() );
@@ -360,8 +180,8 @@ bool CFixedSizeShmQueue<TShmType>::InitReader( std::string aShmName, size_t aDat
         m_CurrPos = ( aReadFromEnd ) ? m_StartPos + ( m_DataSize * m_Hdr->LastIdx ) : m_StartPos;
         m_DataSize = aDataSize;
 
-        DbgOut( VERB, DBG_UTILS, "aShmName=%s, pMem=0x%p, m_StartPos=0x%p, m_CurrPos=0x%p", aShmName.c_str(), pMem,
-                m_StartPos, m_CurrPos );
+        DbgOut( VERB, DBG_UTILS, "aShmName=%s, pMem=0x%p, m_StartPos=0x%p, m_CurrPos=0x%p, m_DataSize=%Iu",
+                aShmName.c_str(), pMem, m_StartPos, m_CurrPos, m_DataSize );
         bRet = true;
     } while ( 0 );
 
@@ -373,7 +193,7 @@ void CFixedSizeShmQueue<TShmType>::PushBack( const uint8_t * aData )
 {
     memcpy( m_StartPos + ( m_DataSize * m_Hdr->LastIdx ), aData, m_DataSize );
 
-    uint64_t uNextIdx = m_Hdr->LastIdx + 1;
+    size_t uNextIdx = m_Hdr->LastIdx + 1;
     if ( uNextIdx == m_Hdr->EndIdx )
     {
         DbgOut( WARN, DBG_UTILS, "Shm is full. Overwrite from beginning. ShmName=%s", m_Shm.GetName().c_str() );
@@ -386,14 +206,14 @@ void CFixedSizeShmQueue<TShmType>::PushBack( const uint8_t * aData )
 template<typename TShmType>
 uint8_t * CFixedSizeShmQueue<TShmType>::GetData() const
 {
-    //wprintf_s( L"Idx=%Iu / %Iu\n", ( m_CurrPos - m_StartPos ) / m_DataSize , m_Hdr->LastIdx );
+    //wprintf_s( L"%hs: Idx=%Iu / %Iu\n", m_Shm.GetName().c_str(), ( m_CurrPos - m_StartPos ) / m_DataSize , m_Hdr->LastIdx );
     if ( m_CurrPos != m_StartPos + ( m_DataSize * m_Hdr->LastIdx ) )
     {
         return m_CurrPos;
     }
     else
     {
-        DbgOut( WARN, DBG_UTILS, "Shm is empty. ShmName=%s", m_Shm.GetName().c_str() );
+        //DbgOut( VERB, DBG_UTILS, "Shm is empty. ShmName=%s", m_Shm.GetName().c_str() );
         return nullptr;
     }
 }
@@ -403,7 +223,7 @@ void CFixedSizeShmQueue<TShmType>::PopFront()
 {
     if ( m_CurrPos == m_StartPos + ( m_DataSize * m_Hdr->LastIdx ) )
     {
-        DbgOut( WARN, DBG_UTILS, "Shm is empty. ShmName=%s", m_Shm.GetName().c_str() );
+        //DbgOut( VERB, DBG_UTILS, "Shm is empty. ShmName=%s", m_Shm.GetName().c_str() );
         return;
     }
 
@@ -431,6 +251,9 @@ template<typename TShmType, typename TDataType>
 class CFixedTypeShmQueue
 {
     public:
+    CFixedTypeShmQueue();
+    ~CFixedTypeShmQueue();
+
     bool InitWriter( std::string aShmName, size_t aMaxDataCnt );
     bool InitReader( std::string aShmName, bool aReadFromEnd );
 
@@ -462,6 +285,18 @@ class CFixedTypeShmQueue
 };
 
 template<typename TShmType, typename TDataType>
+CFixedTypeShmQueue<TShmType, TDataType>::CFixedTypeShmQueue() :
+    m_Hdr( nullptr ), m_StartPos( nullptr ), m_CurrPos( nullptr )
+{
+}
+
+template<typename TShmType, typename TDataType>
+CFixedTypeShmQueue<TShmType, TDataType>::~CFixedTypeShmQueue()
+{
+    this->Close();
+}
+
+template<typename TShmType, typename TDataType>
 bool CFixedTypeShmQueue<TShmType, TDataType>::InitWriter( std::string aShmName, size_t aMaxDataCnt )
 {
     bool bRet = false;
@@ -478,7 +313,7 @@ bool CFixedTypeShmQueue<TShmType, TDataType>::InitWriter( std::string aShmName, 
             aMaxDataCnt--;
             if ( aMaxDataCnt == 0 )
             {
-                DbgOut( MUST, DBG_UTILS, "Not enough memory to hold data" );
+                DbgOut( ERRO, DBG_UTILS, "Not enough memory to hold data" );
                 break;
             }
             uAllDataSize = aMaxDataCnt * sizeof( TDataType );
@@ -488,8 +323,8 @@ bool CFixedTypeShmQueue<TShmType, TDataType>::InitWriter( std::string aShmName, 
             break;
         }
 
-        if ( !m_Shm.Create( aShmName.c_str(), sizeof( ShmHdr ) + uAllDataSize,
-                            CWUtils::SHARED_MEM_PERM_READ | CWUtils::SHARED_MEM_PERM_WRITE ) )
+        if ( ! m_Shm.Create( aShmName.c_str(), sizeof( ShmHdr ) + uAllDataSize,
+                             CWUtils::SHARED_MEM_PERM_READ | CWUtils::SHARED_MEM_PERM_WRITE ) )
         {
             DbgOut( ERRO, DBG_UTILS, "Failed to create shm. aShmName=%s, Err=%!WINERROR!", aShmName.c_str(),
                     GetLastError() );
@@ -518,7 +353,7 @@ bool CFixedTypeShmQueue<TShmType, TDataType>::InitReader( std::string aShmName, 
 
     do
     {
-        if ( !m_Shm.Open( aShmName.c_str(), CWUtils::SHARED_MEM_PERM_READ ) )
+        if ( ! m_Shm.Open( aShmName.c_str(), CWUtils::SHARED_MEM_PERM_READ ) )
         {
             DbgOut( ERRO, DBG_UTILS, "Failed to create shm. aShmName=%s, Err=%!WINERROR!", aShmName.c_str(),
                     GetLastError() );
@@ -556,14 +391,14 @@ void CFixedTypeShmQueue<TShmType, TDataType>::PushBack( const TDataType & aData 
 template<typename TShmType, typename TDataType>
 TDataType * CFixedTypeShmQueue<TShmType, TDataType>::GetData() const
 {
-    //wprintf_s( L"Idx=%Iu / %Iu\n", ( m_CurrPos - m_StartPos ) , m_Hdr->LastIdx );
+    //wprintf_s( L"%hs: Idx=%Iu / %Iu\n", m_Shm.GetName().c_str(), ( m_CurrPos - m_StartPos ) , m_Hdr->LastIdx );
     if ( m_CurrPos != &m_StartPos[m_Hdr->LastIdx] )
     {
         return m_CurrPos;
     }
     else
     {
-        DbgOut( WARN, DBG_UTILS, "Shm is empty. ShmName=%s", m_Shm.GetName().c_str() );
+        //DbgOut( VERB, DBG_UTILS, "Shm is empty. ShmName=%s", m_Shm.GetName().c_str() );
         return nullptr;
     }
 }
@@ -573,7 +408,7 @@ void CFixedTypeShmQueue<TShmType, TDataType>::PopFront()
 {
     if ( m_CurrPos == &m_StartPos[m_Hdr->LastIdx] )
     {
-        DbgOut( WARN, DBG_UTILS, "Shm is empty. ShmName=%s", m_Shm.GetName().c_str() );
+        //DbgOut( VERB, DBG_UTILS, "Shm is empty. ShmName=%s", m_Shm.GetName().c_str() );
         return;
     }
 

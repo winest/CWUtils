@@ -139,7 +139,7 @@ BOOL CVMWare::SetClipboard( TCHAR * aText, INT aTextLen )
     //Set the new text size to clipboard
     regLB.ecx.loWord = BDOOR_CMD_SETSELLENGTH;
     regLB.ebx.dword = size;
-    if ( !MagicLB( &regLB ) )
+    if ( ! MagicLB( &regLB ) )
         return FALSE;
 
     //Set the new text to clipboard
@@ -786,7 +786,7 @@ BOOL CVMWare::MagicLB( BDOOR_REG_LB * aBackdoorReg )
         {
             mov        edi , aBackdoorReg
             push    edi    //Save address of aBackdoorReg
-            
+
             mov        eax , [edi]
             mov        ebx , [edi + 4]
             mov        ecx , [edi + 8]
@@ -797,7 +797,7 @@ BOOL CVMWare::MagicLB( BDOOR_REG_LB * aBackdoorReg )
             in        eax , dx
 
             pop        edi    //Get address of aBackdoorReg
-            
+
             mov        [edi] , eax
             mov        [edi + 4] , ebx
             mov        [edi + 8] , ecx
@@ -827,20 +827,20 @@ BOOL CVMWare::MagicHBIn( BDOOR_REG_HB * aBackdoorRegHb )
         {
             mov        edi , aBackdoorRegHb
             push    edi    //Save address of aBackdoorRegHb
-            
+
             mov        eax , [edi]
             mov        ebx , [edi + 4]
             mov        ecx , [edi + 8]
             mov        edx , [edi + 12]
             mov        esi , [edi + 16]
             mov        ebp , [edi + 24]
-            mov        edi , [edi + 20]            
+            mov        edi , [edi + 20]
 
             cld
             rep insb
 
             pop        edi    //Get address of aBackdoorRegHb
-            
+
             mov        [edi] , eax
             mov        [edi + 4] , ebx
             mov        [edi + 8] , ecx
@@ -871,7 +871,7 @@ BOOL CVMWare::MagicHBOut( BDOOR_REG_HB * aBackdoorRegHb )
         {
             mov        edi , aBackdoorRegHb
             push    edi    //Save address of aBackdoorRegHb
-            
+
             mov        eax , [edi]
             mov        ebx , [edi + 4]
             mov        ecx , [edi + 8]
@@ -879,13 +879,13 @@ BOOL CVMWare::MagicHBOut( BDOOR_REG_HB * aBackdoorRegHb )
             mov        esi , [edi + 16]
             mov        ebp , [edi + 24]
             mov        edi , [edi + 20]
-            
+
 
             cld
             rep outsb
 
             pop        edi    //Get address of aBackdoorRegHb
-            
+
             mov        [edi] , eax
             mov        [edi + 4] , ebx
             mov        [edi + 8] , ecx

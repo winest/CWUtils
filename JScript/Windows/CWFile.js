@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2009-2015, ChienWei Hung <winestwinest@gmail.com>
+ * Copyright (c) 2009-2020, ChienWei Hung <winestwinest@gmail.com>
  * CWUtils is published under the BSD-3-Clause license.
  *
- * CWUtils is a set of standalone APIs for developers to speed up their 
- * programming. It should be very easy to port them to other projects or 
- * learn how to implement things on different languages and platforms. 
+ * CWUtils is a set of standalone APIs for developers to speed up their
+ * programming. It should be very easy to port them to other projects or
+ * learn how to implement things on different languages and platforms.
  *
  * The latest version can be found at https://github.com/winest/CWUtils
  */
@@ -41,7 +41,7 @@ CWUtils.SaveToFile = CWUtils.SaveToFile || function( aFilePath , aContent , aUni
         WScript.Echo( "Failed to open " + aFilePath );
         return false;
     }
-    
+
     fileSrc.Write( aContent );
     fileSrc.Close();
     return true;
@@ -154,7 +154,7 @@ CWUtils.ComputeRelativePath = CWUtils.ComputeRelativePath || function( aSrcPath 
             nCommonFolder = i;
         }
     }
-    
+
     var nDifferentFolderCnt = 0;
     for ( var i = nCommonFolder + 1 ; i < aSrcPath.length ; i++ )
     {
@@ -164,7 +164,7 @@ CWUtils.ComputeRelativePath = CWUtils.ComputeRelativePath || function( aSrcPath 
             nDifferentFolderCnt++;
         }
     }
-    
+
     if ( 0 == nDifferentFolderCnt )
     {
         strRelativePath = ".\\";
@@ -193,7 +193,7 @@ CWUtils.ReplaceFile = CWUtils.ReplaceFile || function( aFilePath , aOldStr , aNe
         WScript.Echo( "Failed to create " + tmpPath );
         return false;
     }
-    
+
     while ( ! fileSrc.AtEndOfStream )
     {
         line = fileSrc.ReadLine();
@@ -217,7 +217,7 @@ CWUtils.ReplaceFile = CWUtils.ReplaceFile || function( aFilePath , aOldStr , aNe
         }
         fileTmp.WriteLine( line );
     }
-    
+
     fileSrc.Close();
     fileTmp.Close();
 
@@ -244,7 +244,7 @@ CWUtils.MoveFilesToFolder = CWUtils.MoveFilesToFolder || function( aSrcFolder , 
             uSubFolderCnt--;
         }
     }
-    
+
     var bRet = true;
     var uFileCnt = 0;
     var enumFile = new Enumerator( folder.Files );
@@ -270,13 +270,13 @@ CWUtils.MoveFilesToFolder = CWUtils.MoveFilesToFolder || function( aSrcFolder , 
                 bRet = false;
             }
         }
-        catch ( err ) 
+        catch ( err )
         {
             WScript.Echo( "CWUtils.WshFileSystem.MoveFile() failed. err=" + err.message + ". Path=" + strSrc );
             bRet = false;
         }
     }
-    
+
     if ( 0 == uSubFolderCnt && 0 == uFileCnt )
     {
         CWUtils.WshFileSystem.DeleteFolder( aSrcFolder , true );
@@ -310,9 +310,9 @@ CWUtils.CWshTextFile = CWUtils.CWshTextFile || function()
     var m_WshFileSystem = null;
     var m_file = null;
     var m_mode = null;
-    
+
     CWUtils.CWshTextFile.Mode = { ForReading:1 , ForWriting:2 , ForAppending:8 };
-    
+
     this.Open = function( aFilePath , aMode , aUnicode , aCreate )
     {
         //WScript.Echo( "aFilePath=" + aFilePath + ", aMode=" + aMode );
@@ -327,7 +327,7 @@ CWUtils.CWshTextFile = CWUtils.CWshTextFile || function()
             {
                 m_file.Close();
             }
-            
+
             m_file = m_WshFileSystem.OpenTextFile( aFilePath , aMode , aCreate , (aUnicode) ? -1 : -2 );
             if ( null != m_file )
             {
@@ -339,7 +339,7 @@ CWUtils.CWshTextFile = CWUtils.CWshTextFile || function()
         return bRet;
     }
     this.Close = function() { if (m_file) { m_file.Close(); } }
-    
+
     this.Read = function( aCharCnt ) { return (m_file) ? m_file.Read(aCharCnt) : ""; }
     this.ReadLine = function() { return (m_file) ? m_file.ReadLine() : ""; }
     this.ReadAll = function() { return (m_file) ? m_file.ReadAll() : ""; }
@@ -348,7 +348,7 @@ CWUtils.CWshTextFile = CWUtils.CWshTextFile || function()
     this.Write = function( aStr ) { if (m_file) { m_file.Write(aStr); } }
     this.WriteLine = function( aStr ) { if (m_file) { m_file.WriteLine(aStr); } }
     this.WriteBlankLines = function( aLineCnt ) { if (m_file) { m_file.WriteBlankLines(aLineCnt); } }
-    
+
     this.AtEndOfStream = function() { return (m_file && CWUtils.CWshTextFile.Mode.ForReading == m_mode) ? m_file.AtEndOfStream : true; }
 };
 
@@ -357,7 +357,7 @@ CWUtils.CAdoTextFile = CWUtils.CAdoTextFile || function()
     var m_AdoStream = null;
     var m_path = null;
     var m_mode = null;
-    
+
     CWUtils.CAdoTextFile.ConnectModeEnum = { adModeUnknown:0 , adModeRead:1 , adModeWrite:2 , adModeReadWrite:3 , adModeShareDenyRead:4 , adModeShareDenyWrite:8 , adModeShareExclusive:12 , adModeShareDenyNone:16 , adModeRecursive:4194304 };
     CWUtils.CAdoTextFile.StreamTypeEnum = { adTypeBinary:1 , adTypeText:2 };
     CWUtils.CAdoTextFile.StreamReadEnum = { adReadAll:-1 , adReadLine:-2 };
@@ -374,7 +374,7 @@ CWUtils.CAdoTextFile = CWUtils.CAdoTextFile || function()
         {
             aConnectMode = CWUtils.CAdoTextFile.ConnectModeEnum.adModeReadWrite;
         }
-        
+
         var bRet = false;
         try
         {
@@ -405,7 +405,7 @@ CWUtils.CAdoTextFile = CWUtils.CAdoTextFile || function()
         catch ( err ) { WScript.Echo( "Err: " + err.message ); }
         return bRet;
     }
-    this.Close = function() 
+    this.Close = function()
     {
         if ( m_AdoStream )
         {
@@ -416,10 +416,10 @@ CWUtils.CAdoTextFile = CWUtils.CAdoTextFile || function()
                 //m_AdoStream.SaveToFile( m_path , CWUtils.CAdoTextFile.SaveOptionsEnum.adSaveCreateNotExist );
                 m_AdoStream.SaveToFile( m_path , CWUtils.CAdoTextFile.SaveOptionsEnum.adSaveCreateOverWrite );
             }
-            m_AdoStream.Close(); 
-        } 
+            m_AdoStream.Close();
+        }
     }
-   
+
     this.Write = function( aBuf )
     {
         if ( m_AdoStream )
@@ -437,7 +437,7 @@ CWUtils.CAdoTextFile = CWUtils.CAdoTextFile || function()
             m_AdoStream.Flush();
         }
     }
-    
+
     this.Read = function( aCharCnt ) { return (m_AdoStream) ? m_AdoStream.ReadText(aCharCnt) : ""; }
     this.ReadLine = function() { return (m_AdoStream) ? m_AdoStream.ReadText(CWUtils.CAdoTextFile.StreamReadEnum.adReadLine) : ""; }
     this.ReadAll = function() { return (m_AdoStream) ? m_AdoStream.ReadText(CWUtils.CAdoTextFile.StreamReadEnum.adReadAll) : ""; }
@@ -453,10 +453,10 @@ CWUtils.CBinaryFile = CWUtils.CBinaryFile || function()
     var adSaveCreateOverWrite = 2;
     //The trick - this is the 'old fassioned' not translation page. It let javascript use strings to act like raw octets
     var codePage = '437';
-   
+
     var forward  = new Array();
     var backward = new Array();
-   
+
     //Note - for better performance I should preconvert these hex
     //definitions to decimal - at some point :-) - AJT
     forward['80'] = '00C7';    forward['81'] = '00FC';    forward['82'] = '00E9';
@@ -562,7 +562,7 @@ CWUtils.CBinaryFile = CWUtils.CBinaryFile || function()
     {
         return parseInt(h,16);
     }
-   
+
     this.WriteAll = function( aFilePath , aText )
     {
         var AdoStream = null;
@@ -601,7 +601,7 @@ CWUtils.CBinaryFile = CWUtils.CBinaryFile || function()
             return "";
         }
     }
-   
+
     //bEncodeToCodePage437 = true: Convert a octet number to a code page 437 char code
     //bEncodeToCodePage437 = false: Convert a code page 437 char code to a octet number
     this.Handle437 = function( inString , bEncodeToCodePage437 )

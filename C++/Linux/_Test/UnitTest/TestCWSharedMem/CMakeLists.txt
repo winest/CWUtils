@@ -65,7 +65,7 @@ endif ()
 ## target definitions #########################################################
 ###############################################################################
 
-# The data is just added to the executable, because in some IDEs (QtCreator) 
+# The data is just added to the executable, because in some IDEs (QtCreator)
 # files are invisible when they are not explicitly part of the project.
 add_executable( TestCWSharedMem_parent "${SrcParent}" "${SrcCWUtils}" )
 add_executable( TestCWSharedMem_child  "${SrcChild}" "${SrcCWUtils}" )
