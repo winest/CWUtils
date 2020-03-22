@@ -21,6 +21,16 @@ namespace CWUtils
 extern "C" {
 #endif
 
+#if defined( _WIN32 ) || defined( _WIN64 )
+    #define PLATFORM_WINDOWS
+#elif defined( __APPLE__ ) || defined( __MACH__ )
+    #define PLATFORM_MAC_OS
+#elif define ( __ANDROID__ )
+    #define PLATFORM_ANDROID
+#else
+    #define PLATFORM_LINUX
+#endif
+
 typedef enum _OS_ID
 {
     OS_WIN_WINDOWS = 1,
