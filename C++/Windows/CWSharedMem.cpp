@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "CWSharedMem.h"
 
-#include "_GenerateTmh.h"
-#include <body/CWSharedMem.tmh>
+#include "GenerateTmh.h"
+#include <_Generated/Wpp/FromBody/CWSharedMem.tmh>
 
 
 namespace CWUtils

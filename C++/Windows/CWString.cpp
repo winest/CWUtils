@@ -335,17 +335,21 @@ VOID JoinStringA( CONST IN std::vector<std::string> aVec,
                   size_t aStartIndex,
                   size_t aEndIndex )
 {
-    size_t uEnd = min( aVec.size() - 1, aEndIndex );
-    std::stringstream ss;
-    for ( size_t i = aStartIndex; i <= uEnd; ++i )
+    aOutput.clear();
+    if ( aVec.size() > 0 )
     {
-        if ( i != aStartIndex )
+        size_t uEnd = min( aVec.size() - 1, aEndIndex );
+        std::stringstream ss;
+        for ( size_t i = aStartIndex; i <= uEnd; ++i )
         {
-            ss << aSplitter;
+            if ( i != aStartIndex )
+            {
+                ss << aSplitter;
+            }
+            ss << aVec[i];
         }
-        ss << aVec[i];
+        aOutput = ss.str();
     }
-    aOutput = ss.str();
 }
 
 VOID ReplaceStringW( IN OUT std::wstring & aString, IN CONST WCHAR * aOldString, IN CONST WCHAR * aNewString )
